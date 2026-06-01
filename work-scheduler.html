@@ -1,0 +1,1461 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WorkFlow — 업무 스케줄 관리</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0d0f;
+    --surface: #161619;
+    --surface2: #1e1e23;
+    --border: #2a2a32;
+    --accent: #e8ff47;
+    --accent2: #ff6b47;
+    --accent3: #47c4ff;
+    --text: #f0f0f5;
+    --text-muted: #6b6b80;
+    --text-dim: #3a3a50;
+    --high: #ff4757;
+    --mid: #ffa502;
+    --low: #2ed573;
+    --done: #48dbfb;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Noto Sans KR', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* HEADER */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 32px;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    background: rgba(13,13,15,0.92);
+    backdrop-filter: blur(20px);
+    z-index: 100;
+  }
+
+  .logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    letter-spacing: 3px;
+    color: var(--accent);
+  }
+
+  .logo span {
+    color: var(--text-muted);
+  }
+
+  .header-right {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+
+  .today-badge {
+    font-size: 12px;
+    color: var(--text-muted);
+    background: var(--surface2);
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    letter-spacing: 1px;
+  }
+
+  /* TABS */
+  .tabs {
+    display: flex;
+    gap: 2px;
+    padding: 16px 32px 0;
+    border-bottom: 1px solid var(--border);
+    overflow-x: auto;
+  }
+
+  .tab {
+    padding: 10px 20px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-muted);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    white-space: nowrap;
+    transition: all 0.2s;
+    letter-spacing: 0.5px;
+  }
+
+  .tab:hover { color: var(--text); }
+
+  .tab.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+
+  /* MAIN LAYOUT */
+  .main {
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    gap: 0;
+    min-height: calc(100vh - 115px);
+  }
+
+  .content { padding: 24px 32px; border-right: 1px solid var(--border); }
+  .sidebar { padding: 24px; }
+
+  /* VIEW PANELS */
+  .view-panel { display: none; }
+  .view-panel.active { display: block; }
+
+  /* SECTION HEADER */
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+  }
+
+  .section-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    letter-spacing: 2px;
+    color: var(--text);
+  }
+
+  /* BTN */
+  .btn {
+    padding: 8px 18px;
+    font-size: 12px;
+    font-weight: 700;
+    font-family: 'Noto Sans KR', sans-serif;
+    cursor: pointer;
+    border: none;
+    border-radius: 6px;
+    transition: all 0.18s;
+    letter-spacing: 0.5px;
+  }
+
+  .btn-accent {
+    background: var(--accent);
+    color: #0d0d0f;
+  }
+
+  .btn-accent:hover { background: #d4e83a; transform: translateY(-1px); }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+  }
+
+  .btn-ghost:hover { background: var(--surface2); color: var(--text); }
+
+  /* CALENDAR VIEW */
+  .cal-nav {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+
+  .cal-nav button {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    width: 30px; height: 30px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.15s;
+  }
+
+  .cal-nav button:hover { background: var(--border); }
+
+  .cal-month {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px;
+    letter-spacing: 2px;
+  }
+
+  .cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 2px;
+    background: var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .cal-day-label {
+    background: var(--surface2);
+    text-align: center;
+    padding: 8px 4px;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-muted);
+    letter-spacing: 1px;
+  }
+
+  .cal-day-label:first-child { color: var(--high); }
+  .cal-day-label:last-child { color: var(--accent3); }
+
+  .cal-cell {
+    background: var(--surface);
+    min-height: 80px;
+    padding: 6px;
+    cursor: pointer;
+    transition: background 0.15s;
+    position: relative;
+  }
+
+  .cal-cell:hover { background: var(--surface2); }
+
+  .cal-cell.today { background: #1a1a28; }
+
+  .cal-cell.today::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--accent);
+  }
+
+  .cal-cell.other-month .cal-date { color: var(--text-dim); }
+
+  .cal-date {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+  }
+
+  .cal-task-dot {
+    display: block;
+    font-size: 9px;
+    padding: 1px 5px;
+    border-radius: 3px;
+    margin-bottom: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+  }
+
+  /* KANBAN */
+  .kanban-board {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    overflow-x: auto;
+    padding-bottom: 8px;
+  }
+
+  .kanban-col {
+    background: var(--surface);
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+    min-width: 180px;
+  }
+
+  .kanban-col-header {
+    padding: 12px 14px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .kanban-col-body {
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-height: 200px;
+  }
+
+  .kanban-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px;
+    cursor: pointer;
+    transition: all 0.18s;
+    position: relative;
+  }
+
+  .kanban-card:hover { border-color: var(--accent); transform: translateY(-1px); }
+
+  .kanban-card-title {
+    font-size: 12px;
+    font-weight: 500;
+    margin-bottom: 6px;
+    line-height: 1.4;
+  }
+
+  /* GANTT */
+  .gantt-wrapper {
+    overflow-x: auto;
+  }
+
+  .gantt-table {
+    min-width: 700px;
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .gantt-table th {
+    padding: 8px 10px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: var(--text-muted);
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    text-align: left;
+  }
+
+  .gantt-row {
+    border-bottom: 1px solid var(--border);
+    transition: background 0.15s;
+  }
+
+  .gantt-row:hover { background: var(--surface2); }
+
+  .gantt-row td {
+    padding: 10px;
+    font-size: 12px;
+    vertical-align: middle;
+  }
+
+  .gantt-bar-cell { width: 55%; }
+
+  .gantt-bar-track {
+    background: var(--surface2);
+    border-radius: 4px;
+    height: 14px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .gantt-bar {
+    height: 100%;
+    border-radius: 4px;
+    position: absolute;
+    transition: width 0.3s ease;
+  }
+
+  /* TODO VIEW */
+  .todo-filters {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+
+  .filter-btn {
+    padding: 5px 14px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    border-radius: 20px;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-muted);
+    transition: all 0.15s;
+    font-family: 'Noto Sans KR', sans-serif;
+  }
+
+  .filter-btn.active, .filter-btn:hover {
+    background: var(--accent);
+    color: #0d0d0f;
+    border-color: var(--accent);
+  }
+
+  .todo-list { display: flex; flex-direction: column; gap: 8px; }
+
+  .todo-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    display: grid;
+    grid-template-columns: 24px 1fr auto;
+    gap: 12px;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.18s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .todo-item::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+  }
+
+  .todo-item.priority-high::before { background: var(--high); }
+  .todo-item.priority-mid::before { background: var(--mid); }
+  .todo-item.priority-low::before { background: var(--low); }
+  .todo-item.priority-done::before { background: var(--done); }
+
+  .todo-item:hover { border-color: var(--accent); background: var(--surface2); }
+
+  .todo-check {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    border: 2px solid var(--border);
+    cursor: pointer;
+    transition: all 0.18s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .todo-check.checked {
+    background: var(--done);
+    border-color: var(--done);
+    color: #0d0d0f;
+    font-size: 11px;
+  }
+
+  .todo-body { overflow: hidden; }
+
+  .todo-title {
+    font-size: 13px;
+    font-weight: 500;
+    margin-bottom: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .todo-title.done {
+    text-decoration: line-through;
+    color: var(--text-muted);
+  }
+
+  .todo-meta {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .tag {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 10px;
+    letter-spacing: 0.5px;
+  }
+
+  .tag-high { background: rgba(255,71,87,0.15); color: var(--high); }
+  .tag-mid { background: rgba(255,165,2,0.15); color: var(--mid); }
+  .tag-low { background: rgba(46,213,115,0.15); color: var(--low); }
+  .tag-done { background: rgba(72,219,251,0.15); color: var(--done); }
+  .tag-cat { background: var(--surface2); color: var(--text-muted); border: 1px solid var(--border); }
+
+  .todo-deadline {
+    font-size: 10px;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .todo-deadline.overdue { color: var(--high); }
+
+  .todo-progress-wrap { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+
+  .todo-progress-ring {
+    position: relative;
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+  }
+
+  .todo-progress-ring svg { transform: rotate(-90deg); }
+  .ring-bg { fill: none; stroke: var(--border); stroke-width: 3; }
+  .ring-fg { fill: none; stroke-width: 3; stroke-linecap: round; transition: stroke-dashoffset 0.4s ease; }
+
+  .ring-pct {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 9px;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  /* SIDEBAR */
+  .sidebar-section { margin-bottom: 28px; }
+
+  .sidebar-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 14px;
+    letter-spacing: 2px;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+  }
+
+  /* STATS */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 12px;
+    text-align: center;
+  }
+
+  .stat-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 32px;
+    letter-spacing: 1px;
+    line-height: 1;
+  }
+
+  .stat-label {
+    font-size: 10px;
+    color: var(--text-muted);
+    letter-spacing: 1px;
+    margin-top: 2px;
+  }
+
+  /* UPCOMING */
+  .upcoming-item {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .upcoming-item:last-child { border-bottom: none; }
+
+  .upcoming-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    margin-top: 4px;
+    flex-shrink: 0;
+  }
+
+  .upcoming-text { font-size: 12px; }
+  .upcoming-date { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
+
+  /* MODAL */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 200;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+  }
+
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px;
+    width: 480px;
+    max-width: 95vw;
+    max-height: 85vh;
+    overflow-y: auto;
+    animation: slideUp 0.25s ease;
+  }
+
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 22px;
+  }
+
+  .modal-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    letter-spacing: 2px;
+  }
+
+  .modal-close {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    width: 30px; height: 30px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: all 0.15s;
+  }
+
+  .modal-close:hover { background: var(--high); color: white; border-color: var(--high); }
+
+  .form-group { margin-bottom: 16px; }
+
+  .form-label {
+    display: block;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+  }
+
+  .form-input, .form-select, .form-textarea {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 9px 12px;
+    font-size: 13px;
+    color: var(--text);
+    font-family: 'Noto Sans KR', sans-serif;
+    transition: border-color 0.15s;
+    outline: none;
+  }
+
+  .form-input:focus, .form-select:focus, .form-textarea:focus {
+    border-color: var(--accent);
+  }
+
+  .form-select option { background: var(--surface); }
+
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  .progress-slider-wrap { display: flex; align-items: center; gap: 10px; }
+
+  .progress-slider {
+    flex: 1;
+    -webkit-appearance: none;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--border);
+    outline: none;
+    cursor: pointer;
+  }
+
+  .progress-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+  }
+
+  .progress-val {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--accent);
+    min-width: 36px;
+    text-align: right;
+  }
+
+  /* ALARM BADGE */
+  .alarm-on {
+    font-size: 9px;
+    background: rgba(232,255,71,0.15);
+    color: var(--accent);
+    padding: 2px 6px;
+    border-radius: 8px;
+    font-weight: 700;
+  }
+
+  /* EMPTY STATE */
+  .empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-dim);
+  }
+
+  .empty-state .icon { font-size: 40px; margin-bottom: 10px; }
+  .empty-state p { font-size: 13px; }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  /* TOAST */
+  .toast-container {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 300;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .toast {
+    background: var(--surface2);
+    border: 1px solid var(--accent);
+    border-radius: 8px;
+    padding: 12px 18px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text);
+    animation: toastIn 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  @keyframes toastIn {
+    from { opacity: 0; transform: translateX(20px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  .overdue-banner {
+    background: rgba(255,71,87,0.08);
+    border: 1px solid rgba(255,71,87,0.3);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 12px;
+    color: var(--high);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  @media (max-width: 900px) {
+    .main { grid-template-columns: 1fr; }
+    .sidebar { border-top: 1px solid var(--border); }
+    .kanban-board { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">WORK<span>FLOW</span></div>
+  <div class="header-right">
+    <div class="today-badge" id="todayBadge"></div>
+    <button class="btn btn-accent" onclick="openModal()">+ 업무 추가</button>
+  </div>
+</header>
+
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('todo')">📋 할 일 목록</div>
+  <div class="tab" onclick="switchTab('kanban')">🗂 칸반 보드</div>
+  <div class="tab" onclick="switchTab('calendar')">📅 캘린더</div>
+  <div class="tab" onclick="switchTab('gantt')">📊 간트 차트</div>
+</div>
+
+<div class="main">
+  <div class="content">
+
+    <!-- TODO VIEW -->
+    <div class="view-panel active" id="view-todo">
+      <div class="section-header">
+        <div class="section-title">업무 목록</div>
+        <div style="display:flex;gap:8px">
+          <select class="form-select" style="width:auto;padding:6px 10px;font-size:12px" id="sortSelect" onchange="renderAll()">
+            <option value="deadline">마감일 순</option>
+            <option value="priority">우선순위 순</option>
+            <option value="progress">진행률 순</option>
+          </select>
+        </div>
+      </div>
+      <div id="overdueBanner"></div>
+      <div class="todo-filters">
+        <button class="filter-btn active" onclick="setFilter('all', this)">전체</button>
+        <button class="filter-btn" onclick="setFilter('HIGH', this)">🔴 높음</button>
+        <button class="filter-btn" onclick="setFilter('MID', this)">🟡 중간</button>
+        <button class="filter-btn" onclick="setFilter('LOW', this)">🟢 낮음</button>
+        <button class="filter-btn" onclick="setFilter('done', this)">✅ 완료</button>
+        <button class="filter-btn" onclick="setFilter('ongoing', this)">⏳ 진행중</button>
+      </div>
+      <div class="todo-list" id="todoList"></div>
+    </div>
+
+    <!-- KANBAN VIEW -->
+    <div class="view-panel" id="view-kanban">
+      <div class="section-header">
+        <div class="section-title">칸반 보드</div>
+      </div>
+      <div class="kanban-board" id="kanbanBoard"></div>
+    </div>
+
+    <!-- CALENDAR VIEW -->
+    <div class="view-panel" id="view-calendar">
+      <div class="section-header">
+        <div class="section-title">캘린더</div>
+        <div class="cal-nav">
+          <button onclick="changeMonth(-1)">‹</button>
+          <span class="cal-month" id="calMonthLabel"></span>
+          <button onclick="changeMonth(1)">›</button>
+        </div>
+      </div>
+      <div class="cal-grid" id="calGrid"></div>
+    </div>
+
+    <!-- GANTT VIEW -->
+    <div class="view-panel" id="view-gantt">
+      <div class="section-header">
+        <div class="section-title">간트 차트</div>
+      </div>
+      <div class="gantt-wrapper">
+        <table class="gantt-table">
+          <thead>
+            <tr>
+              <th style="width:28%">업무명</th>
+              <th style="width:12%">우선순위</th>
+              <th style="width:10%">카테고리</th>
+              <th style="width:55%" class="gantt-bar-cell">진행률 / 마감일</th>
+            </tr>
+          </thead>
+          <tbody id="ganttBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-title">📊 현황 요약</div>
+      <div class="stats-grid" id="statsGrid"></div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-title">⏰ 마감 임박</div>
+      <div id="upcomingList"></div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-title">📈 전체 진행률</div>
+      <div id="overallProgress"></div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModalOutside(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modalTitle">새 업무 추가</div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="form-group">
+      <label class="form-label">업무명 *</label>
+      <input type="text" class="form-input" id="taskTitle" placeholder="업무명을 입력하세요">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">우선순위</label>
+        <select class="form-select" id="taskPriority">
+          <option value="HIGH">🔴 높음</option>
+          <option value="MID" selected>🟡 중간</option>
+          <option value="LOW">🟢 낮음</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">카테고리</label>
+        <select class="form-select" id="taskCategory">
+          <option value="기획">기획</option>
+          <option value="개발">개발</option>
+          <option value="디자인">디자인</option>
+          <option value="마케팅">마케팅</option>
+          <option value="영업">영업</option>
+          <option value="운영">운영</option>
+          <option value="기타">기타</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">시작일</label>
+        <input type="date" class="form-input" id="taskStart">
+      </div>
+      <div class="form-group">
+        <label class="form-label">마감일</label>
+        <input type="date" class="form-input" id="taskDeadline">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">상태</label>
+      <select class="form-select" id="taskStatus">
+        <option value="todo">할 일</option>
+        <option value="inprogress">진행 중</option>
+        <option value="review">검토 중</option>
+        <option value="done">완료</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">진행률: <span id="progressLabel">0%</span></label>
+      <div class="progress-slider-wrap">
+        <input type="range" class="progress-slider" id="taskProgress" min="0" max="100" value="0"
+          oninput="document.getElementById('progressLabel').textContent = this.value + '%'">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">마감 알림 (일 전)</label>
+        <select class="form-select" id="taskAlarm">
+          <option value="0">없음</option>
+          <option value="1">1일 전</option>
+          <option value="2" selected>2일 전</option>
+          <option value="3">3일 전</option>
+          <option value="7">7일 전</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">담당자</label>
+        <input type="text" class="form-input" id="taskAssignee" placeholder="이름">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">메모</label>
+      <textarea class="form-textarea" id="taskNote" rows="3" placeholder="업무 관련 메모..."></textarea>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:4px">
+      <button class="btn btn-ghost" onclick="closeModal()">취소</button>
+      <button class="btn btn-accent" onclick="saveTask()">저장</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+// ─── STATE ────────────────────────────────────────────────
+let tasks = JSON.parse(localStorage.getItem('wf_tasks') || '[]');
+let editId = null;
+let currentFilter = 'all';
+let calendarDate = new Date();
+
+// ─── SAMPLE DATA ──────────────────────────────────────────
+if (tasks.length === 0) {
+  const today = new Date();
+  const d = (offset) => {
+    const dt = new Date(today);
+    dt.setDate(dt.getDate() + offset);
+    return dt.toISOString().slice(0,10);
+  };
+  tasks = [
+    { id: 1, title: 'Q3 마케팅 전략 수립', priority: 'HIGH', category: '마케팅', status: 'inprogress', progress: 60, start: d(-5), deadline: d(3), alarm: 2, assignee: '김지수', note: '경쟁사 분석 포함' },
+    { id: 2, title: '신규 앱 UI 디자인', priority: 'HIGH', category: '디자인', status: 'inprogress', progress: 40, start: d(-3), deadline: d(5), alarm: 2, assignee: '이민호', note: '' },
+    { id: 3, title: '서버 인프라 점검', priority: 'MID', category: '개발', status: 'todo', progress: 0, start: d(1), deadline: d(8), alarm: 1, assignee: '박성훈', note: '' },
+    { id: 4, title: '투자자 PT 자료 제작', priority: 'HIGH', category: '기획', status: 'review', progress: 85, start: d(-7), deadline: d(1), alarm: 3, assignee: '최유진', note: 'CEO 검토 필요' },
+    { id: 5, title: '고객 설문 분석', priority: 'LOW', category: '운영', status: 'done', progress: 100, start: d(-10), deadline: d(-2), alarm: 0, assignee: '정다은', note: '' },
+    { id: 6, title: 'SNS 콘텐츠 기획', priority: 'MID', category: '마케팅', status: 'todo', progress: 10, start: d(0), deadline: d(7), alarm: 2, assignee: '한소미', note: '' },
+    { id: 7, title: 'API 문서화', priority: 'LOW', category: '개발', status: 'inprogress', progress: 50, start: d(-4), deadline: d(-1), alarm: 1, assignee: '오준혁', note: '' },
+  ];
+  save();
+}
+
+function save() {
+  localStorage.setItem('wf_tasks', JSON.stringify(tasks));
+}
+
+// ─── TABS ─────────────────────────────────────────────────
+function switchTab(view) {
+  document.querySelectorAll('.tab').forEach((t,i) => t.classList.remove('active'));
+  document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
+  const tabs = document.querySelectorAll('.tab');
+  const map = { todo:0, kanban:1, calendar:2, gantt:3 };
+  tabs[map[view]].classList.add('active');
+  document.getElementById('view-' + view).classList.add('active');
+  renderAll();
+}
+
+// ─── FILTER ───────────────────────────────────────────────
+function setFilter(f, btn) {
+  currentFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderTodo();
+}
+
+function getFiltered() {
+  return tasks.filter(t => {
+    // 완료 필터: hidden 포함 전부 표시
+    if (currentFilter === 'done') return t.status === 'done';
+    // 그 외: hidden(완료 3일 경과) 숨김
+    if (t.hidden) return false;
+    if (currentFilter === 'all') return true;
+    if (currentFilter === 'ongoing') return t.status !== 'done';
+    return t.priority === currentFilter;
+  });
+}
+
+// ─── RENDER ALL ───────────────────────────────────────────
+function renderAll() {
+  renderTodo();
+  renderKanban();
+  renderCalendar();
+  renderGantt();
+  renderSidebar();
+  checkAlarms();
+}
+
+// ─── PRIORITY COLOR ───────────────────────────────────────
+function prioColor(p) {
+  return { HIGH: 'var(--high)', MID: 'var(--mid)', LOW: 'var(--low)' }[p] || 'var(--text-muted)';
+}
+
+function prioClass(p) {
+  return { HIGH: 'priority-high', MID: 'priority-mid', LOW: 'priority-low' }[p] || '';
+}
+
+function prioLabel(p) {
+  return { HIGH: '높음', MID: '중간', LOW: '낮음' }[p] || p;
+}
+
+function statusLabel(s) {
+  return { todo: '할 일', inprogress: '진행 중', review: '검토 중', done: '완료' }[s] || s;
+}
+
+function ringColor(progress) {
+  if (progress >= 80) return 'var(--low)';
+  if (progress >= 40) return 'var(--mid)';
+  return 'var(--accent3)';
+}
+
+function isOverdue(t) {
+  if (!t.deadline || t.status === 'done') return false;
+  return new Date(t.deadline) < new Date(new Date().toDateString());
+}
+
+function daysUntil(dateStr) {
+  const diff = new Date(dateStr) - new Date(new Date().toDateString());
+  return Math.ceil(diff / 86400000);
+}
+
+// ─── TODO ─────────────────────────────────────────────────
+function renderTodo() {
+  const list = document.getElementById('todoList');
+  const sort = document.getElementById('sortSelect').value;
+  let items = [...getFiltered()];
+
+  if (sort === 'deadline') items.sort((a,b) => (a.deadline||'9') < (b.deadline||'9') ? -1 : 1);
+  else if (sort === 'priority') items.sort((a,b) => ['HIGH','MID','LOW'].indexOf(a.priority) - ['HIGH','MID','LOW'].indexOf(b.priority));
+  else if (sort === 'progress') items.sort((a,b) => b.progress - a.progress);
+
+  const overdue = tasks.filter(t => isOverdue(t));
+  const banner = document.getElementById('overdueBanner');
+  banner.innerHTML = overdue.length ? `<div class="overdue-banner">⚠️ 마감 기한이 지난 업무 ${overdue.length}개가 있습니다</div>` : '';
+
+  if (!items.length) {
+    list.innerHTML = '<div class="empty-state"><div class="icon">📭</div><p>해당하는 업무가 없습니다</p></div>';
+    return;
+  }
+
+  list.innerHTML = items.map(t => {
+    const r = 14; const circ = 2 * Math.PI * r;
+    const offset = circ - (t.progress / 100) * circ;
+    const done = t.status === 'done';
+    const due = t.deadline ? daysUntil(t.deadline) : null;
+    const dueText = due !== null ? (due < 0 ? `${Math.abs(due)}일 초과` : due === 0 ? '오늘 마감' : `${due}일 남음`) : '';
+    const dueClass = due !== null && due <= 0 ? 'overdue' : '';
+    return `
+    <div class="todo-item ${done ? 'priority-done' : prioClass(t.priority)}" onclick="editTask(${t.id})">
+      <div class="todo-check ${done ? 'checked' : ''}" onclick="toggleDone(event, ${t.id})">${done ? '✓' : ''}</div>
+      <div class="todo-body">
+        <div class="todo-title ${done ? 'done' : ''}">${t.title}</div>
+        <div class="todo-meta">
+          <span class="tag tag-${t.priority.toLowerCase()}">${prioLabel(t.priority)}</span>
+          <span class="tag tag-cat">${t.category}</span>
+          ${t.assignee ? `<span class="tag tag-cat">👤 ${t.assignee}</span>` : ''}
+          ${t.alarm > 0 ? `<span class="alarm-on">🔔 ${t.alarm}일</span>` : ''}
+          ${dueText ? `<span class="todo-deadline ${dueClass}">📅 ${dueText}</span>` : ''}
+        </div>
+      </div>
+      <div class="todo-progress-wrap">
+        <div class="todo-progress-ring">
+          <svg width="36" height="36" viewBox="0 0 36 36">
+            <circle class="ring-bg" cx="18" cy="18" r="${r}"/>
+            <circle class="ring-fg" cx="18" cy="18" r="${r}"
+              stroke="${ringColor(t.progress)}"
+              stroke-dasharray="${circ}"
+              stroke-dashoffset="${offset}"/>
+          </svg>
+          <div class="ring-pct">${t.progress}%</div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleDone(e, id) {
+  e.stopPropagation();
+  const t = tasks.find(t => t.id === id);
+  if (!t) return;
+  if (t.status === 'done') {
+    t.status = 'inprogress';
+    t.progress = Math.min(t.progress, 99);
+    delete t.doneAt;
+    delete t.hidden;
+  } else {
+    t.status = 'done';
+    t.progress = 100;
+    t.doneAt = new Date().toISOString().slice(0,10);
+  }
+  save(); renderAll();
+  showToast(t.status === 'done' ? '✅ 완료! 3일 후 자동으로 숨겨집니다' : '⏳ 진행 중으로 변경했습니다');
+}
+
+// ─── AUTO HIDE DONE (3일 후) ──────────────────────────────
+function purgeOldDone() {
+  const today = new Date(new Date().toDateString());
+  tasks.forEach(t => {
+    if (t.status === 'done' && t.doneAt) {
+      const diff = Math.floor((today - new Date(t.doneAt)) / 86400000);
+      if (diff >= 3) t.hidden = true;
+    }
+  });
+  save();
+}
+
+// ─── KANBAN ───────────────────────────────────────────────
+function renderKanban() {
+  const cols = [
+    { id: 'todo', label: '할 일', color: 'var(--text-muted)' },
+    { id: 'inprogress', label: '진행 중', color: 'var(--accent3)' },
+    { id: 'review', label: '검토 중', color: 'var(--mid)' },
+    { id: 'done', label: '완료', color: 'var(--low)' },
+  ];
+
+  document.getElementById('kanbanBoard').innerHTML = cols.map(col => {
+    const items = tasks.filter(t => t.status === col.id);
+    return `
+    <div class="kanban-col">
+      <div class="kanban-col-header" style="color:${col.color}">
+        ${col.label}
+        <span style="background:${col.color};color:#0d0d0f;border-radius:10px;padding:1px 8px;font-size:10px">${items.length}</span>
+      </div>
+      <div class="kanban-col-body">
+        ${items.length ? items.map(t => `
+          <div class="kanban-card" onclick="editTask(${t.id})">
+            <div class="kanban-card-title">${t.title}</div>
+            <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+              <span class="tag tag-${t.priority.toLowerCase()}">${prioLabel(t.priority)}</span>
+              <span class="tag tag-cat">${t.category}</span>
+            </div>
+            <div style="margin-top:8px;background:var(--border);border-radius:3px;height:4px;overflow:hidden">
+              <div style="width:${t.progress}%;height:100%;background:${ringColor(t.progress)};border-radius:3px"></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;margin-top:4px;font-size:10px;color:var(--text-muted)">
+              <span>${t.progress}%</span>
+              ${t.deadline ? `<span>📅 ${t.deadline}</span>` : ''}
+            </div>
+          </div>
+        `).join('') : '<div style="text-align:center;padding:20px;color:var(--text-dim);font-size:12px">없음</div>'}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ─── CALENDAR ─────────────────────────────────────────────
+function changeMonth(d) {
+  calendarDate.setMonth(calendarDate.getMonth() + d);
+  renderCalendar();
+}
+
+function renderCalendar() {
+  const year = calendarDate.getFullYear();
+  const month = calendarDate.getMonth();
+  document.getElementById('calMonthLabel').textContent = `${year}년 ${month + 1}월`;
+
+  const first = new Date(year, month, 1);
+  const last = new Date(year, month + 1, 0);
+  const startDay = first.getDay();
+  const today = new Date().toISOString().slice(0, 10);
+
+  const taskMap = {};
+  tasks.forEach(t => {
+    if (t.deadline) {
+      if (!taskMap[t.deadline]) taskMap[t.deadline] = [];
+      taskMap[t.deadline].push(t);
+    }
+  });
+
+  const days = ['일', '월', '화', '수', '목', '금', '토'];
+  let html = days.map(d => `<div class="cal-day-label">${d}</div>`).join('');
+
+  // Prev month filler
+  const prevLast = new Date(year, month, 0).getDate();
+  for (let i = startDay - 1; i >= 0; i--) {
+    const d = prevLast - i;
+    const key = `${year}-${String(month).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    html += `<div class="cal-cell other-month"><div class="cal-date">${d}</div></div>`;
+  }
+
+  for (let d = 1; d <= last.getDate(); d++) {
+    const key = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const isToday = key === today;
+    const dayTasks = taskMap[key] || [];
+    html += `<div class="cal-cell ${isToday ? 'today' : ''}">
+      <div class="cal-date" style="${isToday ? 'color:var(--accent);font-weight:700' : ''}">${d}</div>
+      ${dayTasks.slice(0,3).map(t => `
+        <span class="cal-task-dot" style="background:${prioColor(t.priority)}22;color:${prioColor(t.priority)}">${t.title}</span>
+      `).join('')}
+      ${dayTasks.length > 3 ? `<span style="font-size:9px;color:var(--text-muted)">+${dayTasks.length - 3}개</span>` : ''}
+    </div>`;
+  }
+
+  // Next month filler
+  const total = startDay + last.getDate();
+  const remainder = total % 7 === 0 ? 0 : 7 - (total % 7);
+  for (let d = 1; d <= remainder; d++) {
+    html += `<div class="cal-cell other-month"><div class="cal-date">${d}</div></div>`;
+  }
+
+  document.getElementById('calGrid').innerHTML = html;
+}
+
+// ─── GANTT ────────────────────────────────────────────────
+function renderGantt() {
+  const sorted = [...tasks].sort((a,b) => (a.deadline||'9') < (b.deadline||'9') ? -1 : 1);
+  if (!sorted.length) {
+    document.getElementById('ganttBody').innerHTML = '<tr><td colspan="4"><div class="empty-state"><div class="icon">📊</div><p>업무가 없습니다</p></div></td></tr>';
+    return;
+  }
+  document.getElementById('ganttBody').innerHTML = sorted.map(t => `
+    <tr class="gantt-row" onclick="editTask(${t.id})" style="cursor:pointer">
+      <td>
+        <div style="font-size:12px;font-weight:500">${t.title}</div>
+        ${t.assignee ? `<div style="font-size:10px;color:var(--text-muted)">👤 ${t.assignee}</div>` : ''}
+      </td>
+      <td><span class="tag tag-${t.priority.toLowerCase()}">${prioLabel(t.priority)}</span></td>
+      <td><span class="tag tag-cat">${t.category}</span></td>
+      <td>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div class="gantt-bar-track" style="flex:1">
+            <div class="gantt-bar" style="width:${t.progress}%;background:${ringColor(t.progress)}"></div>
+          </div>
+          <span style="font-size:11px;color:var(--text-muted);min-width:32px">${t.progress}%</span>
+          ${t.deadline ? `<span style="font-size:10px;color:${isOverdue(t) ? 'var(--high)' : 'var(--text-muted)'}">${t.deadline}</span>` : ''}
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+// ─── SIDEBAR ──────────────────────────────────────────────
+function renderSidebar() {
+  // Stats
+  const total = tasks.length;
+  const done = tasks.filter(t => t.status === 'done').length;
+  const ongoing = tasks.filter(t => t.status === 'inprogress').length;
+  const overdue = tasks.filter(t => isOverdue(t)).length;
+
+  document.getElementById('statsGrid').innerHTML = `
+    <div class="stat-card">
+      <div class="stat-num" style="color:var(--accent)">${total}</div>
+      <div class="stat-label">전체</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num" style="color:var(--low)">${done}</div>
+      <div class="stat-label">완료</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num" style="color:var(--accent3)">${ongoing}</div>
+      <div class="stat-label">진행 중</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num" style="color:var(--high)">${overdue}</div>
+      <div class="stat-label">마감 초과</div>
+    </div>
+  `;
+
+  // Upcoming deadlines
+  const upcoming = tasks.filter(t => t.deadline && t.status !== 'done' && daysUntil(t.deadline) <= 5)
+    .sort((a,b) => a.deadline < b.deadline ? -1 : 1).slice(0,5);
+
+  document.getElementById('upcomingList').innerHTML = upcoming.length ? upcoming.map(t => {
+    const d = daysUntil(t.deadline);
+    const txt = d < 0 ? `${Math.abs(d)}일 초과` : d === 0 ? '오늘' : `D-${d}`;
+    const clr = d <= 0 ? 'var(--high)' : d <= 2 ? 'var(--mid)' : prioColor(t.priority);
+    return `
+    <div class="upcoming-item">
+      <div class="upcoming-dot" style="background:${clr}"></div>
+      <div>
+        <div class="upcoming-text">${t.title}</div>
+        <div class="upcoming-date" style="color:${d<=0?'var(--high)':'var(--text-muted)'}">${txt} · ${t.deadline}</div>
+      </div>
+    </div>`;
+  }).join('') : '<div style="font-size:12px;color:var(--text-dim);padding:8px 0">임박한 마감일 없음</div>';
+
+  // Overall progress
+  const avg = total ? Math.round(tasks.reduce((s,t) => s + t.progress, 0) / total) : 0;
+  document.getElementById('overallProgress').innerHTML = `
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+      <div style="flex:1;background:var(--surface2);border-radius:4px;height:8px;overflow:hidden">
+        <div style="width:${avg}%;height:100%;background:${ringColor(avg)};border-radius:4px;transition:width 0.5s ease"></div>
+      </div>
+      <span style="font-family:'Bebas Neue';font-size:20px;color:${ringColor(avg)}">${avg}%</span>
+    </div>
+    <div style="font-size:11px;color:var(--text-muted)">${done}/${total} 업무 완료</div>
+  `;
+}
+
+// ─── ALARMS ───────────────────────────────────────────────
+function checkAlarms() {
+  const today = new Date(new Date().toDateString());
+  tasks.forEach(t => {
+    if (!t.deadline || !t.alarm || t.status === 'done') return;
+    const deadline = new Date(t.deadline);
+    const diff = Math.ceil((deadline - today) / 86400000);
+    if (diff === parseInt(t.alarm)) {
+      const key = `alarm_${t.id}_${t.deadline}`;
+      if (!sessionStorage.getItem(key)) {
+        sessionStorage.setItem(key, '1');
+        showToast(`🔔 "${t.title}" 마감 ${t.alarm}일 전입니다!`, 5000);
+      }
+    }
+  });
+}
+
+// ─── MODAL ────────────────────────────────────────────────
+function openModal() {
+  editId = null;
+  document.getElementById('modalTitle').textContent = '새 업무 추가';
+  document.getElementById('taskTitle').value = '';
+  document.getElementById('taskPriority').value = 'MID';
+  document.getElementById('taskCategory').value = '기획';
+  document.getElementById('taskStart').value = new Date().toISOString().slice(0,10);
+  document.getElementById('taskDeadline').value = '';
+  document.getElementById('taskStatus').value = 'todo';
+  document.getElementById('taskProgress').value = 0;
+  document.getElementById('progressLabel').textContent = '0%';
+  document.getElementById('taskAlarm').value = '2';
+  document.getElementById('taskAssignee').value = '';
+  document.getElementById('taskNote').value = '';
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+function editTask(id) {
+  const t = tasks.find(t => t.id === id);
+  if (!t) return;
+  editId = id;
+  document.getElementById('modalTitle').textContent = '업무 편집';
+  document.getElementById('taskTitle').value = t.title;
+  document.getElementById('taskPriority').value = t.priority;
+  document.getElementById('taskCategory').value = t.category;
+  document.getElementById('taskStart').value = t.start || '';
+  document.getElementById('taskDeadline').value = t.deadline || '';
+  document.getElementById('taskStatus').value = t.status;
+  document.getElementById('taskProgress').value = t.progress;
+  document.getElementById('progressLabel').textContent = t.progress + '%';
+  document.getElementById('taskAlarm').value = String(t.alarm || 0);
+  document.getElementById('taskAssignee').value = t.assignee || '';
+  document.getElementById('taskNote').value = t.note || '';
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('open');
+}
+
+function closeModalOutside(e) {
+  if (e.target === document.getElementById('modalOverlay')) closeModal();
+}
+
+function saveTask() {
+  const title = document.getElementById('taskTitle').value.trim();
+  if (!title) { showToast('⚠️ 업무명을 입력하세요', 2000, true); return; }
+
+  const data = {
+    title,
+    priority: document.getElementById('taskPriority').value,
+    category: document.getElementById('taskCategory').value,
+    start: document.getElementById('taskStart').value,
+    deadline: document.getElementById('taskDeadline').value,
+    status: document.getElementById('taskStatus').value,
+    progress: parseInt(document.getElementById('taskProgress').value),
+    alarm: parseInt(document.getElementById('taskAlarm').value),
+    assignee: document.getElementById('taskAssignee').value.trim(),
+    note: document.getElementById('taskNote').value.trim(),
+  };
+
+  if (data.status === 'done') {
+    data.progress = 100;
+    if (editId) {
+      const existing = tasks.find(t => t.id === editId);
+      if (existing && existing.status !== 'done') data.doneAt = new Date().toISOString().slice(0,10);
+    } else {
+      data.doneAt = new Date().toISOString().slice(0,10);
+    }
+  }
+
+  if (editId) {
+    const idx = tasks.findIndex(t => t.id === editId);
+    tasks[idx] = { ...tasks[idx], ...data };
+    showToast('✏️ 업무가 수정되었습니다');
+  } else {
+    data.id = Date.now();
+    tasks.push(data);
+    showToast('✅ 업무가 추가되었습니다');
+  }
+
+  save();
+  closeModal();
+  renderAll();
+}
+
+// ─── TOAST ────────────────────────────────────────────────
+function showToast(msg, duration = 3000, warn = false) {
+  const container = document.getElementById('toastContainer');
+  const el = document.createElement('div');
+  el.className = 'toast';
+  if (warn) el.style.borderColor = 'var(--high)';
+  el.textContent = msg;
+  container.appendChild(el);
+  setTimeout(() => el.remove(), duration);
+}
+
+// ─── TODAY BADGE ──────────────────────────────────────────
+function setTodayBadge() {
+  const d = new Date();
+  const days = ['일','월','화','수','목','금','토'];
+  document.getElementById('todayBadge').textContent =
+    `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')} (${days[d.getDay()]})`;
+}
+
+// ─── INIT ─────────────────────────────────────────────────
+setTodayBadge();
+purgeOldDone();
+renderAll();
+
+// Keyboard shortcut
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeModal();
+  if (e.key === 'n' && !e.target.matches('input,textarea,select')) openModal();
+});
+</script>
+</body>
+</html>
