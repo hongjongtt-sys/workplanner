@@ -125,7 +125,9 @@ header {
   background: var(--surface2);
   padding: 5px 12px; border-radius: 20px;
   border: 1px solid var(--border);
+  cursor: pointer; transition: all 0.15s;
 }
+.today-label:hover { background: var(--accent-light); color: var(--accent); border-color: var(--accent); }
 
 .btn {
   padding: 8px 18px;
@@ -295,7 +297,7 @@ header {
   background: var(--accent); color: white;
   border-radius: 10px; padding: 1px 7px;
 }
-.k-col-body { padding: 8px; display: flex; flex-direction: column; gap: 6px; min-height: 160px; }
+.k-col-body { padding: 8px; display: flex; flex-direction: column; gap: 6px; min-height: 160px; max-height: calc(100vh - 220px); overflow-y: auto; }
 .k-card {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -360,22 +362,7 @@ header {
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 
-/* GANTT */
-.gantt-table { width: 100%; border-collapse: collapse; }
-.gantt-table th {
-  padding: 10px 12px; font-size: 11px; font-weight: 700;
-  letter-spacing: 0.5px; color: var(--text-muted);
-  background: var(--surface2); border-bottom: 1px solid var(--border);
-  text-align: left;
-}
-.gantt-row { border-bottom: 1px solid var(--border); transition: background 0.15s; cursor: pointer; }
-.gantt-row:hover { background: var(--surface2); }
-.gantt-row td { padding: 10px 12px; font-size: 13px; vertical-align: middle; }
-.gantt-bar-bg {
-  background: var(--surface2); border-radius: 4px;
-  height: 12px; overflow: hidden; position: relative;
-}
-.gantt-bar-fill { height: 100%; border-radius: 4px; transition: width 0.4s; }
+
 
 /* SIDEBAR */
 .sidebar-section { margin-bottom: 24px; }
@@ -589,17 +576,16 @@ header {
 <header>
   <div class="logo">Work<em>Flow</em></div>
   <div class="header-center">
-    <div class="tab active" onclick="switchTab('todo')">📋 할 일</div>
+    <div class="tab active" onclick="switchTab('calendar')">📅 캘린더</div>
+    <div class="tab" onclick="switchTab('todo')">📋 할 일</div>
     <div class="tab" onclick="switchTab('kanban')">🗂 칸반</div>
-    <div class="tab" onclick="switchTab('calendar')">📅 캘린더</div>
-    <div class="tab" onclick="switchTab('gantt')">📊 간트</div>
   </div>
   <div class="header-right">
     <div class="sync-indicator">
       <div class="sync-dot" id="syncDot"></div>
       <span id="syncText">연결됨</span>
     </div>
-    <div class="today-label" id="todayLabel"></div>
+    <div class="today-label" id="todayLabel" onclick="goToday()" title="오늘로 이동"></div>
     <button class="btn btn-primary" onclick="openModal()">+ 업무 추가</button>
   </div>
 </header>
@@ -609,7 +595,7 @@ header {
   <div class="content">
 
     <!-- TODO -->
-    <div class="view active" id="view-todo">
+    <div class="view" id="view-todo">
       <div class="page-header">
         <div class="page-title">업무 목록</div>
         <select class="form-select" style="width:auto;padding:6px 12px;font-size:12px" id="sortSel" onchange="renderAll()">
@@ -638,7 +624,7 @@ header {
     </div>
 
     <!-- CALENDAR -->
-    <div class="view" id="view-calendar">
+    <div class="view active" id="view-calendar">
       <div class="page-header">
         <div class="page-title">캘린더</div>
         <div class="cal-nav">
@@ -650,24 +636,7 @@ header {
       <div class="cal-grid" id="calGrid"></div>
     </div>
 
-    <!-- GANTT -->
-    <div class="view" id="view-gantt">
-      <div class="page-header"><div class="page-title">간트 차트</div></div>
-      <div style="overflow-x:auto">
-        <table class="gantt-table">
-          <thead>
-            <tr>
-              <th style="width:30%">업무명</th>
-              <th style="width:12%">우선순위</th>
-              <th style="width:12%">카테고리</th>
-              <th style="width:10%">담당자</th>
-              <th>진행률 / 마감일</th>
-            </tr>
-          </thead>
-          <tbody id="ganttBody"></tbody>
-        </table>
-      </div>
-    </div>
+
 
   </div>
 
@@ -691,10 +660,9 @@ header {
 <!-- MOBILE NAV -->
 <div class="mobile-nav">
   <div class="mobile-nav-inner">
-    <div class="mobile-tab active" onclick="switchTab('todo')"><div class="mobile-tab-icon">📋</div>할 일</div>
+    <div class="mobile-tab active" onclick="switchTab('calendar')"><div class="mobile-tab-icon">📅</div>캘린더</div>
+    <div class="mobile-tab" onclick="switchTab('todo')"><div class="mobile-tab-icon">📋</div>할 일</div>
     <div class="mobile-tab" onclick="switchTab('kanban')"><div class="mobile-tab-icon">🗂</div>칸반</div>
-    <div class="mobile-tab" onclick="switchTab('calendar')"><div class="mobile-tab-icon">📅</div>캘린더</div>
-    <div class="mobile-tab" onclick="switchTab('gantt')"><div class="mobile-tab-icon">📊</div>간트</div>
   </div>
 </div>
 <button class="mobile-fab" onclick="openModal()">+</button>
@@ -967,7 +935,7 @@ function getVisible() {
 
 // ── Render ─────────────────────────────────────────────────
 window.renderAll = function() {
-  renderTodo(); renderKanban(); renderCalendar(); renderGantt(); renderSidebar(); checkAlarms();
+  renderTodo(); renderKanban(); renderCalendar(); renderSidebar(); checkAlarms();
 };
 
 function renderTodo() {
@@ -1056,7 +1024,15 @@ function renderCalendar() {
   const first = new Date(y,m,1), last = new Date(y,m+1,0);
   const today = new Date().toISOString().slice(0,10);
   const map = {};
-  window.tasks.forEach(t=>{ if(t.deadline){(map[t.deadline]=map[t.deadline]||[]).push(t);} });
+  window.tasks.forEach(t=>{
+    const start = t.start || t.deadline || null;
+    const end = t.deadline || t.start || null;
+    if(!start) return;
+    for(let d=new Date(start); d<=new Date(end); d.setDate(d.getDate()+1)){
+      const key = d.toISOString().slice(0,10);
+      (map[key] = map[key]||[]).push(t);
+    }
+  });
   const days=['일','월','화','수','목','금','토'];
   let html = days.map(d=>`<div class="cal-label">${d}</div>`).join('');
   const prevLast = new Date(y,m,0).getDate();
@@ -1066,7 +1042,15 @@ function renderCalendar() {
     const isToday=key===today, dayTasks=map[key]||[];
     html+=`<div class="cal-cell ${isToday?'today':''}">
       <div class="cal-date">${d}</div>
-      ${dayTasks.slice(0,3).map(t=>`<div class="cal-dot" style="background:${prioColor(t.priority)}18;color:${prioColor(t.priority)}">${t.title}</div>`).join('')}
+      ${dayTasks.slice(0,3).map(t=>{
+        const s = t.start || t.deadline;
+        const e = t.deadline || t.start;
+        const isOneDay = s === e;
+        const isStart = s === key;
+        const isEnd = e === key;
+        const marker = isOneDay ? '● ' : isStart ? '▶ ' : isEnd ? '⏹ ' : '▬ ';
+        return `<div class="cal-dot" style="background:${prioColor(t.priority)}18;color:${prioColor(t.priority)}">${marker}${t.title}</div>`;
+      }).join('')}
       ${dayTasks.length>3?`<div style="font-size:9px;color:var(--text-dim)">+${dayTasks.length-3}개</div>`:''}
     </div>`;
   }
@@ -1074,29 +1058,7 @@ function renderCalendar() {
   document.getElementById('calGrid').innerHTML = html;
 }
 
-function renderGantt() {
-  const sorted = [...window.tasks].filter(t=>!t._hidden).sort((a,b)=>(a.deadline||'9999')<(b.deadline||'9999')?-1:1);
-  if(!sorted.length){
-    document.getElementById('ganttBody').innerHTML=`<tr><td colspan="5"><div class="empty"><div class="empty-icon">📊</div><p>업무가 없습니다</p></div></td></tr>`;
-    return;
-  }
-  document.getElementById('ganttBody').innerHTML = sorted.map(t=>`
-    <tr class="gantt-row" onclick="editTask('${t.id}')">
-      <td><div style="font-weight:500">${t.title}</div>${t.note?`<div style="font-size:11px;color:var(--text-dim)">${t.note}</div>`:''}</td>
-      <td><span class="badge ${prioBg(t.priority)}">${prioLabel(t.priority)}</span></td>
-      <td><span class="badge badge-cat">${t.category}</span></td>
-      <td style="font-size:12px">${t.assignee||'-'}</td>
-      <td>
-        <div style="display:flex;align-items:center;gap:8px">
-          <div class="gantt-bar-bg" style="flex:1">
-            <div class="gantt-bar-fill" style="width:${t.progress}%;background:${ringColor(t.progress)}"></div>
-          </div>
-          <span style="font-size:11px;color:var(--text-muted);min-width:32px">${t.progress}%</span>
-          ${t.deadline?`<span style="font-size:11px;color:${isOverdue(t)?'var(--high)':'var(--text-muted)'}">${t.deadline}</span>`:''}
-        </div>
-      </td>
-    </tr>`).join('');
-}
+
 
 function renderSidebar() {
   const total=window.tasks.length, done=window.tasks.filter(t=>t.status==='done').length;
@@ -1192,11 +1154,16 @@ window.closeOutside = function(e) { if(e.target===document.getElementById('overl
 window.switchTab = function(view) {
   document.querySelectorAll('.tab,.mobile-tab').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
-  const map={todo:0,kanban:1,calendar:2,gantt:3};
+  const map={calendar:0,todo:1,kanban:2};
   document.querySelectorAll('.tab')[map[view]]?.classList.add('active');
   document.querySelectorAll('.mobile-tab')[map[view]]?.classList.add('active');
   document.getElementById('view-'+view).classList.add('active');
   renderAll();
+};
+
+window.goToday = function() {
+  window.calDate = new Date();
+  switchTab('calendar');
 };
 
 window.setFilter = function(f, btn) {
