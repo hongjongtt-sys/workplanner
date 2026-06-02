@@ -335,7 +335,7 @@ header {
   gap: 2px; border-radius: var(--radius); overflow: hidden;
   background: var(--border); border: 1px solid var(--border);
   margin-top: 16px;
-  min-width: 560px;
+  min-width: 770px;
 }
 .cal-label {
   background: var(--surface2);
@@ -347,7 +347,7 @@ header {
 .cal-label:last-child { color: var(--accent); }
 .cal-cell {
   background: var(--surface);
-  min-height: 80px; padding: 6px;
+  min-height: 80px; min-width: 110px; padding: 6px;
   cursor: pointer; transition: background 0.15s;
   position: relative;
 }
@@ -551,7 +551,78 @@ header {
 }
 .mobile-fab:hover { transform: scale(1.05); }
 
-/* SCROLLBAR */
+/* HABIT */
+.habit-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 10px;
+  box-shadow: var(--shadow);
+}
+.habit-head {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 12px;
+}
+.habit-info { display: flex; align-items: center; gap: 10px; }
+.habit-icon { font-size: 24px; }
+.habit-name { font-size: 15px; font-weight: 600; }
+.habit-note { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+.habit-streak {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 13px; font-weight: 700; color: var(--mid);
+}
+.habit-streak-num { font-family: 'Instrument Serif', serif; font-size: 22px; color: var(--mid); }
+
+.habit-days {
+  display: grid; grid-template-columns: repeat(7,1fr); gap: 4px;
+  margin-bottom: 10px;
+}
+.habit-day {
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+}
+.habit-day-label { font-size: 9px; color: var(--text-dim); font-weight: 600; }
+.habit-day-btn {
+  width: 32px; height: 32px;
+  border-radius: 50%; border: 2px solid var(--border);
+  background: var(--surface2); cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; transition: all 0.15s;
+}
+.habit-day-btn.checked { background: var(--low); border-color: var(--low); }
+.habit-day-btn.checked::after { content: '✓'; color: white; font-size: 13px; font-weight: 700; }
+.habit-day-btn.today-btn { border-color: var(--accent); }
+.habit-day-btn.future { opacity: 0.3; cursor: default; }
+.habit-day-btn:not(.future):hover { border-color: var(--accent); transform: scale(1.1); }
+
+.habit-stats {
+  display: flex; gap: 12px; align-items: center;
+}
+.habit-month-bar {
+  flex: 1; background: var(--surface2);
+  border-radius: 4px; height: 6px; overflow: hidden;
+}
+.habit-month-bar-fill { height: 100%; border-radius: 4px; background: var(--low); transition: width 0.4s; }
+.habit-month-pct { font-size: 11px; font-weight: 700; color: var(--low); min-width: 36px; text-align: right; }
+
+.habit-edit-btn {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 6px; padding: 4px 10px;
+  font-size: 11px; color: var(--text-muted);
+  cursor: pointer; transition: all 0.15s;
+  font-family: 'Pretendard', sans-serif;
+}
+.habit-edit-btn:hover { background: var(--accent-light); color: var(--accent); border-color: var(--accent); }
+
+.day-check {
+  display: flex; align-items: center; gap: 4px;
+  font-size: 12px; cursor: pointer;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 6px; padding: 5px 10px;
+  transition: all 0.15s;
+}
+.day-check:has(input:checked) { background: var(--accent-light); border-color: var(--accent); color: var(--accent); }
+.day-check input { display: none; }
 ::-webkit-scrollbar { width: 4px; height: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
@@ -585,6 +656,7 @@ header {
     <div class="tab active" onclick="switchTab('calendar')">📅 캘린더</div>
     <div class="tab" onclick="switchTab('todo')">📋 할 일</div>
     <div class="tab" onclick="switchTab('kanban')">🗂 칸반</div>
+    <div class="tab" onclick="switchTab('habit')">🔥 습관</div>
   </div>
   <div class="header-right">
     <div class="sync-indicator">
@@ -643,8 +715,14 @@ header {
         <div class="cal-grid" id="calGrid"></div>
       </div>
     </div>
-
-
+    <!-- HABIT -->
+    <div class="view" id="view-habit">
+      <div class="page-header">
+        <div class="page-title">습관 트래커</div>
+        <button class="btn btn-primary" onclick="openHabitModal()">+ 습관 추가</button>
+      </div>
+      <div id="habitList"></div>
+    </div>
 
   </div>
 
@@ -671,6 +749,7 @@ header {
     <div class="mobile-tab active" onclick="switchTab('calendar')"><div class="mobile-tab-icon">📅</div>캘린더</div>
     <div class="mobile-tab" onclick="switchTab('todo')"><div class="mobile-tab-icon">📋</div>할 일</div>
     <div class="mobile-tab" onclick="switchTab('kanban')"><div class="mobile-tab-icon">🗂</div>칸반</div>
+    <div class="mobile-tab" onclick="switchTab('habit')"><div class="mobile-tab-icon">🔥</div>습관</div>
   </div>
 </div>
 <button class="mobile-fab" onclick="openModal()">+</button>
@@ -793,12 +872,64 @@ header {
 
 <div class="toast-wrap" id="toastWrap"></div>
 
+<!-- HABIT MODAL -->
+<div class="overlay" id="habitOverlay" onclick="closeHabitOutside(event)">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title" id="habitModalTitle">새 습관</div>
+      <button class="modal-close" onclick="closeHabitModal()">✕</button>
+    </div>
+    <div class="form-group">
+      <label class="form-label">습관 이름 *</label>
+      <input type="text" class="form-input" id="hName" placeholder="예: 물 2리터 마시기">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">아이콘</label>
+        <input type="text" class="form-input" id="hIcon" placeholder="이모지 (예: 💧)">
+      </div>
+      <div class="form-group">
+        <label class="form-label">목표 주기</label>
+        <select class="form-select" id="hFreq">
+          <option value="daily">매일</option>
+          <option value="weekday">평일만</option>
+          <option value="weekend">주말만</option>
+          <option value="custom">직접 선택</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group" id="hCustomDays" style="display:none">
+      <label class="form-label">요일 선택</label>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <label class="day-check"><input type="checkbox" value="0"> 일</label>
+        <label class="day-check"><input type="checkbox" value="1"> 월</label>
+        <label class="day-check"><input type="checkbox" value="2"> 화</label>
+        <label class="day-check"><input type="checkbox" value="3"> 수</label>
+        <label class="day-check"><input type="checkbox" value="4"> 목</label>
+        <label class="day-check"><input type="checkbox" value="5"> 금</label>
+        <label class="day-check"><input type="checkbox" value="6"> 토</label>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">메모</label>
+      <input type="text" class="form-input" id="hNote" placeholder="간단한 메모">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-danger" id="hDeleteBtn" onclick="deleteHabit()" style="display:none">삭제</button>
+      <div class="modal-actions-right">
+        <button class="btn btn-ghost" onclick="closeHabitModal()">취소</button>
+        <button class="btn btn-primary" onclick="saveHabit()">저장</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- FIREBASE -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
 import {
   getFirestore, collection, onSnapshot,
-  addDoc, updateDoc, deleteDoc, doc, serverTimestamp
+  addDoc, updateDoc, deleteDoc, doc, serverTimestamp, setDoc
 } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -962,7 +1093,7 @@ function getVisible() {
 
 // ── Render ─────────────────────────────────────────────────
 window.renderAll = function() {
-  renderTodo(); renderKanban(); renderCalendar(); renderSidebar(); checkAlarms();
+  renderTodo(); renderKanban(); renderCalendar(); renderSidebar(); renderHabit(); checkAlarms();
 };
 
 function renderTodo() {
@@ -1188,7 +1319,7 @@ window.closeOutside = function(e) { if(e.target===document.getElementById('overl
 window.switchTab = function(view) {
   document.querySelectorAll('.tab,.mobile-tab').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
-  const map={calendar:0,todo:1,kanban:2};
+  const map={calendar:0,todo:1,kanban:2,habit:3};
   document.querySelectorAll('.tab')[map[view]]?.classList.add('active');
   document.querySelectorAll('.mobile-tab')[map[view]]?.classList.add('active');
   document.getElementById('view-'+view).classList.add('active');
@@ -1226,6 +1357,200 @@ window.toast = function(msg, warn=false, ms=3000) {
 const d=new Date(), days=['일','월','화','수','목','금','토'];
 document.getElementById('todayLabel').textContent=
   `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')} (${days[d.getDay()]})`;
+
+// ── HABIT ──────────────────────────────────────────────────
+const HABIT_COL = "habits";
+const HABIT_CHECK_COL = "habitChecks";
+window.habits = [];
+window.habitChecks = {}; // { "habitId_YYYY-MM-DD": true }
+window.editHabitId = null;
+
+// 습관 실시간 동기화
+onSnapshot(collection(db, HABIT_COL), snap => {
+  window.habits = snap.docs.map(d=>({id:d.id,...d.data()}));
+  renderHabit();
+});
+onSnapshot(collection(db, HABIT_CHECK_COL), snap => {
+  window.habitChecks = {};
+  snap.docs.forEach(d=>{ window.habitChecks[d.id] = true; });
+  renderHabit();
+});
+
+function getTodayStr() {
+  const n=new Date();
+  return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`;
+}
+
+function getLast7Days() {
+  const days=[];
+  for(let i=6;i>=0;i--){
+    const d=new Date(); d.setDate(d.getDate()-i);
+    days.push(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`);
+  }
+  return days;
+}
+
+function getMonthDays() {
+  const n=new Date(), y=n.getFullYear(), m=n.getMonth();
+  const last=new Date(y,m+1,0).getDate();
+  const days=[];
+  for(let d=1;d<=last;d++){
+    days.push(`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`);
+  }
+  return days;
+}
+
+function calcStreak(habitId) {
+  let streak=0;
+  const d=new Date();
+  while(true){
+    const key=`${habitId}_${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    if(window.habitChecks[key]) streak++;
+    else break;
+    d.setDate(d.getDate()-1);
+  }
+  return streak;
+}
+
+function calcMonthRate(habitId) {
+  const days=getMonthDays();
+  const today=getTodayStr();
+  const past=days.filter(d=>d<=today);
+  if(!past.length) return 0;
+  const done=past.filter(d=>window.habitChecks[`${habitId}_${d}`]).length;
+  return Math.round(done/past.length*100);
+}
+
+window.toggleHabitCheck = async function(habitId, dateStr, btn) {
+  const key=`${habitId}_${dateStr}`;
+  const today=getTodayStr();
+  if(dateStr>today) return; // 미래는 체크 불가
+  try {
+    if(window.habitChecks[key]){
+      await deleteDoc(doc(db, HABIT_CHECK_COL, key));
+    } else {
+      await setDoc(doc(db, HABIT_CHECK_COL, key), {habitId, date:dateStr});
+    }
+  } catch(e){ toast('오류: '+e.message, true); }
+};
+
+function renderHabit() {
+  const el=document.getElementById('habitList');
+  if(!el) return;
+  if(!window.habits.length){
+    el.innerHTML=`<div class="empty"><div class="empty-icon">🔥</div><p>습관이 없습니다</p><small>+ 습관 추가 버튼으로 시작하세요</small></div>`;
+    return;
+  }
+  const last7=getLast7Days();
+  const today=getTodayStr();
+  const dayLabels=['일','월','화','수','목','금','토'];
+  el.innerHTML=window.habits.map(h=>{
+    const streak=calcStreak(h.id);
+    const monthRate=calcMonthRate(h.id);
+    const daysHtml=last7.map(dateStr=>{
+      const d=new Date(dateStr+'T00:00:00');
+      const label=dayLabels[d.getDay()];
+      const checked=!!window.habitChecks[`${h.id}_${dateStr}`];
+      const isToday=dateStr===today;
+      const isFuture=dateStr>today;
+      return `<div class="habit-day">
+        <div class="habit-day-label" style="${isToday?'color:var(--accent);font-weight:700':''}">${label}</div>
+        <div class="habit-day-btn ${checked?'checked':''} ${isToday?'today-btn':''} ${isFuture?'future':''}"
+          onclick="toggleHabitCheck('${h.id}','${dateStr}',this)"></div>
+        <div style="font-size:8px;color:var(--text-dim)">${dateStr.slice(8)}</div>
+      </div>`;
+    }).join('');
+    return `<div class="habit-card">
+      <div class="habit-head">
+        <div class="habit-info">
+          <div class="habit-icon">${h.icon||'✅'}</div>
+          <div>
+            <div class="habit-name">${h.name}</div>
+            ${h.note?`<div class="habit-note">${h.note}</div>`:''}
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <div class="habit-streak">
+            <span class="habit-streak-num">${streak}</span>
+            <span>🔥</span>
+          </div>
+          <button class="habit-edit-btn" onclick="openHabitModal('${h.id}')">편집</button>
+        </div>
+      </div>
+      <div class="habit-days">${daysHtml}</div>
+      <div class="habit-stats">
+        <span style="font-size:11px;color:var(--text-muted)">이번 달</span>
+        <div class="habit-month-bar"><div class="habit-month-bar-fill" style="width:${monthRate}%"></div></div>
+        <span class="habit-month-pct">${monthRate}%</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+window.openHabitModal = function(id=null) {
+  window.editHabitId = id;
+  document.getElementById('habitModalTitle').textContent = id ? '습관 편집' : '새 습관';
+  document.getElementById('hDeleteBtn').style.display = id ? 'block' : 'none';
+  if(id) {
+    const h=window.habits.find(h=>h.id===id);
+    if(!h) return;
+    document.getElementById('hName').value=h.name;
+    document.getElementById('hIcon').value=h.icon||'';
+    document.getElementById('hFreq').value=h.freq||'daily';
+    document.getElementById('hNote').value=h.note||'';
+    const custom=h.freq==='custom'&&h.days;
+    document.getElementById('hCustomDays').style.display=custom?'block':'none';
+    if(custom) document.querySelectorAll('#hCustomDays input').forEach(cb=>{ cb.checked=h.days.includes(parseInt(cb.value)); });
+  } else {
+    document.getElementById('hName').value='';
+    document.getElementById('hIcon').value='';
+    document.getElementById('hFreq').value='daily';
+    document.getElementById('hNote').value='';
+    document.getElementById('hCustomDays').style.display='none';
+  }
+  document.getElementById('habitOverlay').classList.add('open');
+  setTimeout(()=>document.getElementById('hName').focus(),100);
+};
+
+document.getElementById('hFreq').addEventListener('change', function(){
+  document.getElementById('hCustomDays').style.display=this.value==='custom'?'block':'none';
+});
+
+window.closeHabitModal = function(){ document.getElementById('habitOverlay').classList.remove('open'); };
+window.closeHabitOutside = function(e){ if(e.target===document.getElementById('habitOverlay')) closeHabitModal(); };
+
+window.saveHabit = async function() {
+  const name=document.getElementById('hName').value.trim();
+  if(!name){ toast('습관 이름을 입력하세요',true); return; }
+  const freq=document.getElementById('hFreq').value;
+  const data={
+    name,
+    icon: document.getElementById('hIcon').value.trim()||'✅',
+    freq,
+    days: freq==='custom' ? Array.from(document.querySelectorAll('#hCustomDays input:checked')).map(c=>parseInt(c.value)) : [],
+    note: document.getElementById('hNote').value.trim(),
+  };
+  try {
+    if(window.editHabitId){
+      await updateDoc(doc(db, HABIT_COL, window.editHabitId), data);
+      toast('✏️ 습관이 수정되었습니다');
+    } else {
+      await addDoc(collection(db, HABIT_COL), data);
+      toast('✅ 습관이 추가되었습니다');
+    }
+    closeHabitModal();
+  } catch(e){ toast('저장 실패: '+e.message, true); }
+};
+
+window.deleteHabit = async function() {
+  if(!window.editHabitId) return;
+  if(!confirm('습관을 삭제할까요? 체크 기록도 모두 삭제됩니다.')) return;
+  try {
+    await deleteDoc(doc(db, HABIT_COL, window.editHabitId));
+    closeHabitModal();
+    toast('🗑️ 삭제되었습니다');
+  } catch(e){ toast('삭제 실패: '+e.message, true); }
+};
 
 // ── Keyboard ───────────────────────────────────────────────
 document.addEventListener('keydown', e=>{
