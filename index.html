@@ -623,6 +623,32 @@ header {
 }
 .day-check:has(input:checked) { background: var(--accent-light); border-color: var(--accent); color: var(--accent); }
 .day-check input { display: none; }
+
+/* DAY POPUP */
+.day-task-item {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 10px 12px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: all 0.15s;
+  position: relative;
+  overflow: hidden;
+}
+.day-task-item::before {
+  content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+}
+.day-task-item.p-HIGH::before { background: var(--high); }
+.day-task-item.p-MID::before { background: var(--low); }
+.day-task-item.p-LOW::before { background: var(--low); }
+.day-task-item.p-done::before { background: var(--done); }
+.day-task-item:hover { border-color: var(--accent); background: var(--accent-light); }
+.day-task-title { font-size: 13px; font-weight: 500; }
+.day-task-title.done { text-decoration: line-through; color: var(--text-dim); }
+.day-empty { text-align:center; padding: 24px; color: var(--text-dim); font-size: 13px; }
+
 ::-webkit-scrollbar { width: 4px; height: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
@@ -871,6 +897,20 @@ header {
 </div>
 
 <div class="toast-wrap" id="toastWrap"></div>
+
+<!-- DAY POPUP -->
+<div class="overlay" id="dayOverlay" onclick="closeDayOutside(event)">
+  <div class="modal" style="width:420px">
+    <div class="modal-head">
+      <div class="modal-title" id="dayPopupTitle"></div>
+      <button class="modal-close" onclick="closeDayPopup()">✕</button>
+    </div>
+    <div id="dayPopupList"></div>
+    <div style="margin-top:16px">
+      <button class="btn btn-primary" style="width:100%" onclick="openModalForDay()">+ 이 날 업무 추가</button>
+    </div>
+  </div>
+</div>
 
 <!-- HABIT MODAL -->
 <div class="overlay" id="habitOverlay" onclick="closeHabitOutside(event)">
@@ -1207,7 +1247,7 @@ function renderCalendar() {
   for(let d=1;d<=last.getDate();d++){
     const key=`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
     const isToday=key===today, dayTasks=map[key]||[];
-    html+=`<div class="cal-cell ${isToday?'today':''}">
+    html+=`<div class="cal-cell ${isToday?'today':''}" onclick="openDayPopup('${key}')">
       <div class="cal-date">${d}</div>
       ${dayTasks.map(t=>{
         const s = t.start || t.deadline;
@@ -1357,6 +1397,70 @@ window.toast = function(msg, warn=false, ms=3000) {
 const d=new Date(), days=['일','월','화','수','목','금','토'];
 document.getElementById('todayLabel').textContent=
   `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')} (${days[d.getDay()]})`;
+
+// ── Day Popup ──────────────────────────────────────────────
+window._selectedDay = null;
+
+window.openDayPopup = function(dateStr) {
+  window._selectedDay = dateStr;
+  const [y,m,d] = dateStr.split('-').map(Number);
+  const dayLabels = ['일','월','화','수','목','금','토'];
+  const dt = new Date(y,m-1,d);
+  const label = `${m}월 ${d}일 (${dayLabels[dt.getDay()]})`;
+  document.getElementById('dayPopupTitle').textContent = label;
+
+  // 해당 날짜에 걸쳐있는 업무 필터
+  const dayTasks = window.tasks.filter(t => {
+    const start = t.start || t.deadline || null;
+    const end = t.deadline || t.start || null;
+    if (!start) return false;
+    return dateStr >= start && dateStr <= end;
+  }).sort((a,b) => {
+    const da = a.deadline || a.start || '9999';
+    const db = b.deadline || b.start || '9999';
+    return da < db ? -1 : 1;
+  });
+
+  if (!dayTasks.length) {
+    document.getElementById('dayPopupList').innerHTML =
+      `<div class="day-empty">📭 이 날 등록된 업무가 없습니다</div>`;
+  } else {
+    document.getElementById('dayPopupList').innerHTML = dayTasks.map(t => `
+      <div class="day-task-item ${t.status==='done'?'p-done':'p-'+t.priority}" onclick="openTaskFromDay('${t.id}')">
+        <div style="flex:1">
+          <div class="day-task-title ${t.status==='done'?'done':''}">${t.title}</div>
+          <div style="display:flex;gap:5px;margin-top:4px;flex-wrap:wrap">
+            <span class="badge ${prioBg(t.priority)}">${prioLabel(t.priority)}</span>
+            <span class="badge badge-cat">${t.category}</span>
+            ${t.deadline ? `<span class="badge badge-cat">📅 ${t.deadline}</span>` : ''}
+            ${t.status==='done' ? `<span class="badge badge-done">완료</span>` : ''}
+          </div>
+        </div>
+        <div style="flex-shrink:0;font-size:12px;font-weight:700;color:${ringColor(t.progress)}">${t.progress}%</div>
+      </div>`).join('');
+  }
+
+  document.getElementById('dayOverlay').classList.add('open');
+};
+
+window.openTaskFromDay = function(id) {
+  closeDayPopup();
+  setTimeout(() => editTask(id), 150);
+};
+
+window.openModalForDay = function() {
+  closeDayPopup();
+  setTimeout(() => {
+    openModal();
+    if (window._selectedDay) {
+      document.getElementById('fStart').value = window._selectedDay;
+      document.getElementById('fDeadline').value = window._selectedDay;
+    }
+  }, 150);
+};
+
+window.closeDayPopup = function() { document.getElementById('dayOverlay').classList.remove('open'); };
+window.closeDayOutside = function(e) { if(e.target===document.getElementById('dayOverlay')) closeDayPopup(); };
 
 // ── HABIT ──────────────────────────────────────────────────
 const HABIT_COL = "habits";
@@ -1554,7 +1658,7 @@ window.deleteHabit = async function() {
 
 // ── Keyboard ───────────────────────────────────────────────
 document.addEventListener('keydown', e=>{
-  if(e.key==='Escape') closeModal();
+  if(e.key==='Escape') { closeModal(); closeDayPopup(); closeHabitModal(); }
   if(e.key==='n'&&!e.target.matches('input,textarea,select')) openModal();
 });
 </script>
