@@ -941,7 +941,11 @@ window.renderAll = function() {
 function renderTodo() {
   const sort = document.getElementById('sortSel').value;
   let items = [...getVisible()];
-  if (sort==='deadline') items.sort((a,b)=>(a.deadline||'9999')<(b.deadline||'9999')?-1:1);
+  if (sort==='deadline') items.sort((a,b)=>{
+    const da = a.deadline || a.start || '9999';
+    const db = b.deadline || b.start || '9999';
+    return da < db ? -1 : 1;
+  });
   else if (sort==='priority') items.sort((a,b)=>['HIGH','MID','LOW'].indexOf(a.priority)-['HIGH','MID','LOW'].indexOf(b.priority));
   else if (sort==='progress') items.sort((a,b)=>b.progress-a.progress);
 
