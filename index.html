@@ -1213,6 +1213,7 @@ function renderKanban() {
         ${items.length ? items.map(t=>`
           <div class="k-card" onclick="editTask('${t.id}')">
             <div class="k-card-title">${t.title}</div>
+            ${t.note ? `<div style="font-size:10px;color:var(--text-dim);margin-bottom:6px">💬 ${t.note}</div>` : ''}
             <div style="display:flex;gap:4px;flex-wrap:wrap">
               <span class="badge ${prioBg(t.priority)}">${prioLabel(t.priority)}</span>
               <span class="badge badge-cat">${t.category}</span>
@@ -1435,6 +1436,7 @@ window.openDayPopup = function(dateStr) {
             ${t.deadline ? `<span class="badge badge-cat">📅 ${t.deadline}</span>` : ''}
             ${t.status==='done' ? `<span class="badge badge-done">완료</span>` : ''}
           </div>
+          ${t.note ? `<div style="font-size:11px;color:var(--text-dim);margin-top:4px">💬 ${t.note}</div>` : ''}
         </div>
         <div style="flex-shrink:0;font-size:12px;font-weight:700;color:${ringColor(t.progress)}">${t.progress}%</div>
       </div>`).join('');
