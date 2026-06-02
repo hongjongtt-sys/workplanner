@@ -906,7 +906,7 @@ window.toggleDone = async function(e, id) {
   setSyncState('syncing');
   try {
     await updateDoc(doc(db, COL, id), update);
-    toast(update.status === 'done' ? '✅ 완료! 3일 후 자동 숨김' : '⏳ 진행 중으로 변경');
+    toast(update.status === 'done' ? '✅ 완료! 24시간 후 자동 숨김' : '⏳ 진행 중으로 변경');
   } catch(e) {
     toast('오류: ' + e.message, true);
   }
@@ -914,11 +914,18 @@ window.toggleDone = async function(e, id) {
 
 // ── Purge ──────────────────────────────────────────────────
 function purgeOldDone() {
-  const today = new Date(new Date().toDateString());
+  const now = new Date();
   window.tasks.forEach(t => {
+    // 완료 후 24시간 지나면 숨김
     if (t.status === 'done' && t.doneAt) {
-      const diff = Math.floor((today - new Date(t.doneAt)) / 86400000);
-      if (diff >= 3) t._hidden = true;
+      const diff = now - new Date(t.doneAt);
+      if (diff >= 86400000) t._hidden = true;
+    }
+    // 마감일 지난 후 24시간 지나면 숨김 (완료 아닌 것만)
+    if (t.status !== 'done' && t.deadline) {
+      const deadlineEnd = new Date(t.deadline);
+      deadlineEnd.setDate(deadlineEnd.getDate() + 1); // 마감일 다음날 00:00
+      if (now >= deadlineEnd) t._hidden = true;
     }
   });
 }
