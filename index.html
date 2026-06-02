@@ -915,16 +915,17 @@ window.toggleDone = async function(e, id) {
 // ── Purge ──────────────────────────────────────────────────
 function purgeOldDone() {
   const now = new Date();
+  const today = new Date(); today.setHours(0,0,0,0);
   window.tasks.forEach(t => {
     // 완료 후 24시간 지나면 숨김
     if (t.status === 'done' && t.doneAt) {
       const diff = now - new Date(t.doneAt);
       if (diff >= 86400000) t._hidden = true;
     }
-    // 마감일 지난 후 24시간 지나면 숨김 (완료 아닌 것만)
+    // 마감일 다음날 00:00 지나면 숨김 (완료 아닌 것만)
     if (t.status !== 'done' && t.deadline) {
-      const deadlineEnd = new Date(t.deadline);
-      deadlineEnd.setDate(deadlineEnd.getDate() + 1); // 마감일 다음날 00:00
+      const [y,m,d] = t.deadline.split('-').map(Number);
+      const deadlineEnd = new Date(y, m-1, d+1); // 마감일 다음날 00:00 (로컬)
       if (now >= deadlineEnd) t._hidden = true;
     }
   });
@@ -1026,7 +1027,12 @@ function renderKanban() {
     {id:'done',label:'완료',color:'var(--low)'},
   ];
   document.getElementById('kanbanBoard').innerHTML = cols.map(col => {
-    const items = window.tasks.filter(t=>t.status===col.id&&!t._hidden);
+    const items = window.tasks.filter(t=>t.status===col.id&&!t._hidden)
+      .sort((a,b)=>{
+        const da = a.deadline || a.start || '9999';
+        const db = b.deadline || b.start || '9999';
+        return da < db ? -1 : 1;
+      });
     return `<div class="k-col">
       <div class="k-col-head" style="border-top:3px solid ${col.color}">
         <span style="color:${col.color}">${col.label}</span>
@@ -1122,10 +1128,9 @@ function renderSidebar() {
 
 // ── Alarms ─────────────────────────────────────────────────
 function checkAlarms() {
-  const today = new Date(new Date().toDateString());
   window.tasks.forEach(t=>{
     if(!t.deadline||!t.alarm||t.status==='done') return;
-    const diff=Math.ceil((new Date(t.deadline)-today)/86400000);
+    const diff = daysUntil(t.deadline);
     if(diff===parseInt(t.alarm)){
       const key=`alarm_${t.id}_${t.deadline}`;
       if(!sessionStorage.getItem(key)){
@@ -1142,7 +1147,7 @@ window.openModal = function() {
   document.getElementById('modalTitle').textContent = '새 업무';
   document.getElementById('fTitle').value='';
   document.getElementById('fPriority').value='MID';
-  document.getElementById('fCategory').value='기획';
+  document.getElementById('fCategory').value='창체활동';
   document.getElementById('fStart').value=new Date().toISOString().slice(0,10);
   document.getElementById('fDeadline').value='';
   document.getElementById('fStatus').value='todo';
