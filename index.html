@@ -935,8 +935,19 @@ function prioColor(p) { return {HIGH:'var(--high)',MID:'var(--mid)',LOW:'var(--l
 function prioBg(p) { return {HIGH:'badge-high',MID:'badge-mid',LOW:'badge-low'}[p]||'badge-cat'; }
 function prioLabel(p) { return {HIGH:'높음',MID:'중간',LOW:'낮음'}[p]||p; }
 function ringColor(v) { return v>=80?'var(--low)':v>=40?'var(--mid)':'var(--accent)'; }
-function isOverdue(t) { return t.deadline && t.status!=='done' && new Date(t.deadline)<new Date(new Date().toDateString()); }
-function daysUntil(d) { return Math.ceil((new Date(d)-new Date(new Date().toDateString()))/86400000); }
+function isOverdue(t) {
+  if (!t.deadline || t.status === 'done') return false;
+  const [y,m,d] = t.deadline.split('-').map(Number);
+  const deadline = new Date(y, m-1, d);
+  const today = new Date(); today.setHours(0,0,0,0);
+  return deadline < today;
+}
+function daysUntil(d) {
+  const [y,m,day] = d.split('-').map(Number);
+  const target = new Date(y, m-1, day);
+  const today = new Date(); today.setHours(0,0,0,0);
+  return Math.ceil((target - today) / 86400000);
+}
 
 function getVisible() {
   return window.tasks.filter(t => {
