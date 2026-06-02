@@ -326,11 +326,16 @@ header {
 .cal-nav button:hover { background: var(--surface2); }
 .cal-month-label { font-family: 'Instrument Serif', serif; font-size: 20px; }
 
+.cal-scroll-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
 .cal-grid {
   display: grid; grid-template-columns: repeat(7,1fr);
   gap: 2px; border-radius: var(--radius); overflow: hidden;
   background: var(--border); border: 1px solid var(--border);
   margin-top: 16px;
+  min-width: 560px;
 }
 .cal-label {
   background: var(--surface2);
@@ -357,9 +362,10 @@ header {
 .cal-date { font-size: 11px; font-weight: 600; color: var(--text-muted); margin-bottom: 4px; }
 .cal-cell.today .cal-date { color: var(--accent); }
 .cal-dot {
-  font-size: 9px; padding: 1px 5px;
+  font-size: 9px; padding: 2px 5px;
   border-radius: 3px; margin-bottom: 2px;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  display: block;
 }
 
 
@@ -633,7 +639,9 @@ header {
           <button onclick="changeMonth(1)">›</button>
         </div>
       </div>
-      <div class="cal-grid" id="calGrid"></div>
+      <div class="cal-scroll-wrap">
+        <div class="cal-grid" id="calGrid"></div>
+      </div>
     </div>
 
 
@@ -1046,7 +1054,7 @@ function renderCalendar() {
     const isToday=key===today, dayTasks=map[key]||[];
     html+=`<div class="cal-cell ${isToday?'today':''}">
       <div class="cal-date">${d}</div>
-      ${dayTasks.slice(0,3).map(t=>{
+      ${dayTasks.map(t=>{
         const s = t.start || t.deadline;
         const e = t.deadline || t.start;
         const isOneDay = s === e;
@@ -1055,7 +1063,6 @@ function renderCalendar() {
         const marker = isOneDay ? '● ' : isStart ? '▶ ' : isEnd ? '⏹ ' : '▬ ';
         return `<div class="cal-dot" style="background:${prioColor(t.priority)}18;color:${prioColor(t.priority)}">${marker}${t.title}</div>`;
       }).join('')}
-      ${dayTasks.length>3?`<div style="font-size:9px;color:var(--text-dim)">+${dayTasks.length-3}개</div>`:''}
     </div>`;
   }
   const rem = (first.getDay()+last.getDate())%7; if(rem>0) for(let d=1;d<=7-rem;d++) html+=`<div class="cal-cell other"><div class="cal-date">${d}</div></div>`;
