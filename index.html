@@ -801,7 +801,7 @@ header {
     <div class="view" id="view-journal">
       <div class="page-header">
         <div class="page-title">일지</div>
-        <div style="display:flex;align-items:center;gap:8px">
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
           <input type="date" class="form-input" id="journalDatePicker" style="width:auto;padding:6px 12px;font-size:12px" onchange="loadJournal(this.value)">
           <div id="journalSaveStatus" style="font-size:11px;color:var(--text-dim)"></div>
         </div>
@@ -809,6 +809,10 @@ header {
       <div class="journal-wrap">
         <div class="journal-date-label" id="journalDateLabel"></div>
         <textarea class="journal-textarea" id="journalContent" placeholder="오늘 있었던 일, 학생과의 대화, 메모 등 자유롭게 작성하세요..."></textarea>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:10px" id="journalActions">
+        <button class="btn btn-ghost" onclick="moveJournal()" id="journalMoveBtn" style="font-size:12px">📅 날짜 이동</button>
+        <button class="btn btn-danger" onclick="deleteJournal()" id="journalDeleteBtn" style="font-size:12px;display:none">🗑️ 삭제</button>
       </div>
       <!-- 이전 일지 목록 -->
       <div style="margin-top:24px">
@@ -1777,6 +1781,9 @@ window.loadJournal = function(dateStr) {
   document.getElementById('journalContent').value = existing ? existing.content : '';
   document.getElementById('journalSaveStatus').textContent = existing ? '✓ 저장됨' : '';
   document.getElementById('journalDatePicker').value = dateStr;
+  // 내용 있을 때만 삭제 버튼 표시
+  const deleteBtn = document.getElementById('journalDeleteBtn');
+  if (deleteBtn) deleteBtn.style.display = existing ? 'block' : 'none';
 };
 
 // 자동 저장 (타이핑 멈춘 후 1.5초)
@@ -1803,6 +1810,8 @@ async function saveJournal() {
       updatedAt: new Date().toISOString()
     });
     document.getElementById('journalSaveStatus').textContent = '✓ 저장됨';
+    const deleteBtn = document.getElementById('journalDeleteBtn');
+    if (deleteBtn) deleteBtn.style.display = 'block';
   } catch(e) {
     document.getElementById('journalSaveStatus').textContent = '저장 실패';
   }
@@ -1830,7 +1839,41 @@ function renderJournalRecent() {
   }).join('');
 }
 
-// 캘린더에서 일지 날짜 팝업에 표시
+window.moveJournal = async function() {
+  const content = document.getElementById('journalContent').value.trim();
+  if (!content) { toast('이동할 일지 내용이 없습니다', true); return; }
+  const newDate = prompt('이동할 날짜를 입력하세요 (예: 2026-06-04)', window.journalCurrentDate);
+  if (!newDate || !/^\d{4}-\d{2}-\d{2}$/.test(newDate)) {
+    toast('올바른 날짜 형식이 아닙니다', true); return;
+  }
+  if (newDate === window.journalCurrentDate) {
+    toast('같은 날짜입니다', true); return;
+  }
+  if (window.journals[newDate]) {
+    if (!confirm(`${newDate}에 이미 일지가 있습니다. 덮어쓸까요?`)) return;
+  }
+  try {
+    // 새 날짜에 저장
+    await setDoc(doc(db, JOURNAL_COL, newDate), { content, updatedAt: new Date().toISOString() });
+    // 기존 날짜 삭제
+    await deleteDoc(doc(db, JOURNAL_COL, window.journalCurrentDate));
+    toast(`📅 ${newDate}로 이동했습니다`);
+    loadJournal(newDate);
+    document.getElementById('journalDatePicker').value = newDate;
+  } catch(e) { toast('이동 실패: ' + e.message, true); }
+};
+
+window.deleteJournal = async function() {
+  if (!window.journals[window.journalCurrentDate]) return;
+  if (!confirm('이 날의 일지를 삭제할까요?')) return;
+  try {
+    await deleteDoc(doc(db, JOURNAL_COL, window.journalCurrentDate));
+    document.getElementById('journalContent').value = '';
+    document.getElementById('journalSaveStatus').textContent = '';
+    document.getElementById('journalDeleteBtn').style.display = 'none';
+    toast('🗑️ 일지가 삭제되었습니다');
+  } catch(e) { toast('삭제 실패: ' + e.message, true); }
+};
 window.openJournalFromDay = function(dateStr) {
   closeDayPopup();
   setTimeout(() => {
