@@ -695,6 +695,96 @@ header {
   white-space: nowrap; flex: 1;
 }
 
+/* CLASS */
+.class-tabs {
+  display: flex; gap: 6px; flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+.class-tab-btn {
+  padding: 7px 18px;
+  font-size: 13px; font-weight: 600;
+  border-radius: 20px; cursor: pointer;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-muted);
+  transition: all 0.15s;
+  font-family: 'Pretendard', sans-serif;
+}
+.class-tab-btn:hover { border-color: var(--accent); color: var(--accent); }
+.class-tab-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
+
+.class-body { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+.class-memo-wrap {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden; box-shadow: var(--shadow);
+}
+.class-memo-head {
+  padding: 10px 14px;
+  font-size: 12px; font-weight: 700;
+  background: var(--accent-light);
+  color: var(--accent);
+  border-bottom: 1px solid var(--border);
+}
+.class-memo-textarea {
+  width: 100%; min-height: 120px;
+  padding: 12px 14px;
+  font-size: 13px; line-height: 1.7;
+  color: var(--text); background: var(--surface);
+  border: none; outline: none; resize: vertical;
+  font-family: 'Pretendard', sans-serif;
+}
+
+.class-log-wrap {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden; box-shadow: var(--shadow);
+}
+.class-log-head {
+  padding: 10px 14px;
+  font-size: 12px; font-weight: 700;
+  background: var(--surface2);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.class-log-list { padding: 8px; max-height: 320px; overflow-y: auto; }
+.class-log-item {
+  display: grid; grid-template-columns: 80px 1fr 80px auto;
+  gap: 8px; align-items: center;
+  padding: 8px 10px;
+  border-radius: 8px; margin-bottom: 4px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  font-size: 12px;
+  transition: all 0.15s;
+}
+.class-log-item:hover { border-color: var(--accent); }
+.class-log-date { color: var(--text-muted); font-size: 11px; }
+.class-log-unit { font-weight: 500; }
+.class-log-page { color: var(--text-muted); font-size: 11px; }
+.class-log-del {
+  background: none; border: none; color: var(--text-dim);
+  cursor: pointer; font-size: 14px; padding: 0 4px;
+  transition: color 0.15s;
+}
+.class-log-del:hover { color: var(--high); }
+
+.class-add-form {
+  padding: 10px 12px;
+  border-top: 1px solid var(--border);
+  display: grid; grid-template-columns: 110px 1fr 90px auto;
+  gap: 6px; align-items: center;
+  background: var(--bg);
+}
+
+@media (max-width: 768px) {
+  .class-body { grid-template-columns: 1fr; }
+  .class-add-form { grid-template-columns: 1fr 1fr; grid-template-rows: auto auto; }
+}
+
 ::-webkit-scrollbar { width: 4px; height: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
@@ -730,6 +820,7 @@ header {
     <div class="tab" onclick="switchTab('kanban')">🗂 칸반</div>
     <div class="tab" onclick="switchTab('habit')">🔥 습관</div>
     <div class="tab" onclick="switchTab('journal')">📓 일지</div>
+    <div class="tab" onclick="switchTab('class')">📚 수업</div>
   </div>
   <div class="header-right">
     <div class="sync-indicator">
@@ -821,9 +912,19 @@ header {
       </div>
     </div>
 
-  </div>
+    <!-- CLASS -->
+    <div class="view" id="view-class">
+      <div class="page-header">
+        <div class="page-title">수업 관리</div>
+        <button class="btn btn-primary" onclick="openClassSetup()">⚙️ 반 설정</button>
+      </div>
+      <!-- 반 탭 -->
+      <div class="class-tabs" id="classTabs"></div>
+      <!-- 반별 내용 -->
+      <div id="classContent"></div>
+    </div>
 
-  <!-- SIDEBAR -->
+  </div>
   <div class="sidebar">
     <div class="sidebar-section">
       <div class="sidebar-label">현황</div>
@@ -848,6 +949,7 @@ header {
     <div class="mobile-tab" onclick="switchTab('kanban')"><div class="mobile-tab-icon">🗂</div>칸반</div>
     <div class="mobile-tab" onclick="switchTab('habit')"><div class="mobile-tab-icon">🔥</div>습관</div>
     <div class="mobile-tab" onclick="switchTab('journal')"><div class="mobile-tab-icon">📓</div>일지</div>
+    <div class="mobile-tab" onclick="switchTab('class')"><div class="mobile-tab-icon">📚</div>수업</div>
   </div>
 </div>
 <button class="mobile-fab" onclick="openModal()">+</button>
@@ -1435,11 +1537,12 @@ window.closeOutside = function(e) { if(e.target===document.getElementById('overl
 window.switchTab = function(view) {
   document.querySelectorAll('.tab,.mobile-tab').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
-  const map={calendar:0,todo:1,kanban:2,habit:3,journal:4};
+  const map={calendar:0,todo:1,kanban:2,habit:3,journal:4,class:5};
   document.querySelectorAll('.tab')[map[view]]?.classList.add('active');
   document.querySelectorAll('.mobile-tab')[map[view]]?.classList.add('active');
   document.getElementById('view-'+view).classList.add('active');
   if(view==='journal') initJournal();
+  else if(view==='class') initClass();
   else renderAll();
 };
 
@@ -1882,6 +1985,168 @@ window.openJournalFromDay = function(dateStr) {
     document.getElementById('journalDatePicker').value = dateStr;
   }, 150);
 };
+
+// ── CLASS ──────────────────────────────────────────────────
+const CLASS_COL = "classes";       // 반 목록
+const CLASS_LOG_COL = "classLogs"; // 진도 기록
+const CLASS_MEMO_COL = "classMemos"; // 수업 메모
+
+window.classRooms = [];   // [{id, name}]
+window.classLogs = [];    // [{id, classId, date, unit, page}]
+window.classMemos = {};   // { classId: content }
+window.currentClassId = null;
+let classMemoTimer = {};
+
+// 실시간 동기화
+onSnapshot(collection(db, CLASS_COL), snap => {
+  window.classRooms = snap.docs.map(d=>({id:d.id,...d.data()}))
+    .sort((a,b)=>a.order-b.order||a.name.localeCompare(b.name));
+  if(!window.currentClassId && window.classRooms.length)
+    window.currentClassId = window.classRooms[0].id;
+  renderClass();
+});
+onSnapshot(collection(db, CLASS_LOG_COL), snap => {
+  window.classLogs = snap.docs.map(d=>({id:d.id,...d.data()}));
+  renderClass();
+});
+onSnapshot(collection(db, CLASS_MEMO_COL), snap => {
+  window.classMemos = {};
+  snap.docs.forEach(d=>{ window.classMemos[d.id] = d.data().content||''; });
+  renderClass();
+});
+
+function initClass() { renderClass(); }
+
+function renderClass() {
+  const tabsEl = document.getElementById('classTabs');
+  const contentEl = document.getElementById('classContent');
+  if(!tabsEl||!contentEl) return;
+
+  if(!window.classRooms.length) {
+    tabsEl.innerHTML = '';
+    contentEl.innerHTML = `<div class="empty"><div class="empty-icon">📚</div><p>반이 없습니다</p><small>⚙️ 반 설정 버튼으로 반을 추가하세요</small></div>`;
+    return;
+  }
+
+  // 반 탭
+  tabsEl.innerHTML = window.classRooms.map(c=>`
+    <button class="class-tab-btn ${c.id===window.currentClassId?'active':''}"
+      onclick="selectClass('${c.id}')">${c.name}</button>
+  `).join('');
+
+  if(!window.currentClassId) return;
+  const cls = window.classRooms.find(c=>c.id===window.currentClassId);
+  if(!cls) return;
+
+  // 해당 반 진도 기록
+  const logs = window.classLogs
+    .filter(l=>l.classId===window.currentClassId)
+    .sort((a,b)=>b.date<a.date?-1:1);
+
+  const memo = window.classMemos[window.currentClassId]||'';
+
+  contentEl.innerHTML = `
+    <div class="class-body">
+      <!-- 수업 메모 -->
+      <div class="class-memo-wrap">
+        <div class="class-memo-head">📝 ${cls.name} 수업 메모</div>
+        <textarea class="class-memo-textarea" id="classMemo_${cls.id}"
+          placeholder="수업 관련 메모, 특이사항, 숙제 등..."
+          oninput="autoSaveClassMemo('${cls.id}')">${memo}</textarea>
+        <div style="padding:4px 14px 8px;font-size:10px;color:var(--text-dim)" id="memoStatus_${cls.id}"></div>
+      </div>
+
+      <!-- 진도 기록 -->
+      <div class="class-log-wrap">
+        <div class="class-log-head">
+          <span>📖 진도 기록</span>
+          <span style="font-size:10px;color:var(--text-muted)">총 ${logs.length}차시</span>
+        </div>
+        <div class="class-add-form">
+          <input type="date" class="form-input" id="logDate_${cls.id}" style="padding:6px 8px;font-size:12px" value="${getTodayStr()}">
+          <input type="text" class="form-input" id="logUnit_${cls.id}" style="padding:6px 8px;font-size:12px" placeholder="단원명 (예: 3단원 이차방정식)">
+          <input type="text" class="form-input" id="logPage_${cls.id}" style="padding:6px 8px;font-size:12px" placeholder="쪽수/범위">
+          <button class="btn btn-primary" style="padding:6px 12px;font-size:12px;white-space:nowrap" onclick="addClassLog('${cls.id}')">추가</button>
+        </div>
+        <div class="class-log-list">
+          ${logs.length ? logs.map(l=>`
+            <div class="class-log-item">
+              <div class="class-log-date">${l.date}</div>
+              <div class="class-log-unit">${l.unit}</div>
+              <div class="class-log-page">${l.page||''}</div>
+              <button class="class-log-del" onclick="deleteClassLog('${l.id}')">✕</button>
+            </div>`).join('') :
+            `<div style="text-align:center;padding:20px;color:var(--text-dim);font-size:12px">진도 기록이 없습니다</div>`
+          }
+        </div>
+      </div>
+    </div>`;
+}
+
+window.selectClass = function(id) {
+  window.currentClassId = id;
+  renderClass();
+};
+
+window.autoSaveClassMemo = function(classId) {
+  const status = document.getElementById(`memoStatus_${classId}`);
+  if(status) status.textContent = '저장 중...';
+  clearTimeout(classMemoTimer[classId]);
+  classMemoTimer[classId] = setTimeout(async ()=>{
+    const content = document.getElementById(`classMemo_${classId}`)?.value||'';
+    try {
+      await setDoc(doc(db, CLASS_MEMO_COL, classId), { content });
+      if(status) status.textContent = '✓ 저장됨';
+    } catch(e) { if(status) status.textContent = '저장 실패'; }
+  }, 1500);
+};
+
+window.addClassLog = async function(classId) {
+  const date = document.getElementById(`logDate_${classId}`).value;
+  const unit = document.getElementById(`logUnit_${classId}`).value.trim();
+  const page = document.getElementById(`logPage_${classId}`).value.trim();
+  if(!date||!unit) { toast('날짜와 단원명을 입력하세요', true); return; }
+  try {
+    await addDoc(collection(db, CLASS_LOG_COL), { classId, date, unit, page, createdAt: serverTimestamp() });
+    document.getElementById(`logUnit_${classId}`).value='';
+    document.getElementById(`logPage_${classId}`).value='';
+    toast('✅ 진도가 기록되었습니다');
+  } catch(e) { toast('저장 실패: '+e.message, true); }
+};
+
+window.deleteClassLog = async function(id) {
+  if(!confirm('이 진도 기록을 삭제할까요?')) return;
+  try {
+    await deleteDoc(doc(db, CLASS_LOG_COL, id));
+    toast('🗑️ 삭제되었습니다');
+  } catch(e) { toast('삭제 실패: '+e.message, true); }
+};
+
+window.openClassSetup = function() {
+  const current = window.classRooms.map(c=>c.name).join('\n');
+  const input = prompt(
+    '반 이름을 한 줄에 하나씩 입력하세요\n(예: 1-1\n1-2\n2-3)',
+    current
+  );
+  if(input===null) return;
+  const names = input.split('\n').map(s=>s.trim()).filter(Boolean);
+  if(!names.length) { toast('반 이름을 입력하세요', true); return; }
+  saveClassRooms(names);
+};
+
+async function saveClassRooms(names) {
+  try {
+    // 기존 반 삭제
+    for(const c of window.classRooms) {
+      await deleteDoc(doc(db, CLASS_COL, c.id));
+    }
+    // 새 반 추가
+    for(let i=0;i<names.length;i++) {
+      await addDoc(collection(db, CLASS_COL), { name: names[i], order: i });
+    }
+    toast('✅ 반 설정이 저장되었습니다');
+  } catch(e) { toast('저장 실패: '+e.message, true); }
+}
 
 // ── Keyboard ───────────────────────────────────────────────
 document.addEventListener('keydown', e=>{
