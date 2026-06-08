@@ -2030,8 +2030,16 @@ function renderClass() {
 
   // 반 탭
   tabsEl.innerHTML = window.classRooms.map(c=>`
-    <button class="class-tab-btn ${c.id===window.currentClassId?'active':''}"
-      onclick="selectClass('${c.id}')">${c.name}</button>
+    <div style="display:flex;align-items:center;gap:2px">
+      <button class="class-tab-btn ${c.id===window.currentClassId?'active':''}"
+        onclick="selectClass('${c.id}')">${c.name}</button>
+      ${c.id===window.currentClassId ? `
+        <button title="이름 변경" onclick="renameClass('${c.id}','${c.name}')"
+          style="background:none;border:none;cursor:pointer;font-size:13px;color:var(--text-dim);padding:2px 4px" >✏️</button>
+        <button title="반 삭제" onclick="deleteClass('${c.id}','${c.name}')"
+          style="background:none;border:none;cursor:pointer;font-size:13px;color:var(--text-dim);padding:2px 4px">🗑️</button>
+      ` : ''}
+    </div>
   `).join('');
 
   if(!window.currentClassId) return;
@@ -2123,30 +2131,53 @@ window.deleteClassLog = async function(id) {
 };
 
 window.openClassSetup = function() {
-  const current = window.classRooms.map(c=>c.name).join('\n');
-  const input = prompt(
-    '반 이름을 한 줄에 하나씩 입력하세요\n(예: 1-1\n1-2\n2-3)',
-    current
-  );
+  const current = window.classRooms.map(c=>c.name).join(', ');
+  const msg = window.classRooms.length
+    ? `현재 반: ${current}\n\n추가할 반 이름을 입력하세요 (여러 개는 쉼표로 구분)\n이름을 변경하거나 삭제하려면 편집 버튼을 누르세요`
+    : '반 이름을 입력하세요 (여러 개는 쉼표로 구분)\n예: 1-1, 1-2, 2-3';
+
+  const input = prompt(msg, '');
   if(input===null) return;
-  const names = input.split('\n').map(s=>s.trim()).filter(Boolean);
+  const names = input.split(',').map(s=>s.trim()).filter(Boolean);
   if(!names.length) { toast('반 이름을 입력하세요', true); return; }
-  saveClassRooms(names);
+
+  // 기존 반 이름과 중복 제거 후 추가만
+  const existing = window.classRooms.map(c=>c.name);
+  const toAdd = names.filter(n=>!existing.includes(n));
+  if(!toAdd.length) { toast('이미 있는 반입니다', true); return; }
+  addClassRooms(toAdd);
 };
 
-async function saveClassRooms(names) {
+async function addClassRooms(names) {
   try {
-    // 기존 반 삭제
-    for(const c of window.classRooms) {
-      await deleteDoc(doc(db, CLASS_COL, c.id));
+    for(let i=0;i<names.length;i++){
+      await addDoc(collection(db, CLASS_COL), { name: names[i], order: window.classRooms.length+i });
     }
-    // 새 반 추가
-    for(let i=0;i<names.length;i++) {
-      await addDoc(collection(db, CLASS_COL), { name: names[i], order: i });
-    }
-    toast('✅ 반 설정이 저장되었습니다');
+    toast(`✅ ${names.join(', ')} 반이 추가되었습니다`);
   } catch(e) { toast('저장 실패: '+e.message, true); }
 }
+
+window.deleteClass = async function(id, name) {
+  if(!confirm(`'${name}' 반을 삭제할까요?\n진도 기록과 메모도 함께 삭제됩니다.`)) return;
+  try {
+    await deleteDoc(doc(db, CLASS_COL, id));
+    await deleteDoc(doc(db, CLASS_MEMO_COL, id));
+    // 해당 반 진도 기록 삭제
+    const logs = window.classLogs.filter(l=>l.classId===id);
+    for(const l of logs) await deleteDoc(doc(db, CLASS_LOG_COL, l.id));
+    if(window.currentClassId===id) window.currentClassId = null;
+    toast('🗑️ 삭제되었습니다');
+  } catch(e) { toast('삭제 실패: '+e.message, true); }
+};
+
+window.renameClass = async function(id, currentName) {
+  const newName = prompt('새 반 이름을 입력하세요', currentName);
+  if(!newName||newName.trim()===currentName) return;
+  try {
+    await updateDoc(doc(db, CLASS_COL, id), { name: newName.trim() });
+    toast('✏️ 반 이름이 변경되었습니다');
+  } catch(e) { toast('변경 실패: '+e.message, true); }
+};
 
 // ── Keyboard ───────────────────────────────────────────────
 document.addEventListener('keydown', e=>{
