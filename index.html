@@ -895,6 +895,7 @@ header {
         <div class="page-title">일지</div>
         <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
           <input type="date" class="form-input" id="journalDatePicker" style="width:auto;padding:6px 12px;font-size:12px" onchange="loadJournal(this.value)">
+          <button class="btn btn-ghost" style="font-size:12px;padding:6px 12px" onclick="goJournalToday()">오늘</button>
           <div id="journalSaveStatus" style="font-size:11px;color:var(--text-dim)"></div>
         </div>
       </div>
@@ -1878,7 +1879,11 @@ function initJournal() {
   loadJournal(window.journalCurrentDate);
 }
 
-window.loadJournal = function(dateStr) {
+window.goJournalToday = function() {
+  const today = getTodayStr();
+  loadJournal(today);
+  document.getElementById('journalDatePicker').value = today;
+};
   window.journalCurrentDate = dateStr;
   const [y,m,d] = dateStr.split('-').map(Number);
   const dayLabels=['일','월','화','수','목','금','토'];
