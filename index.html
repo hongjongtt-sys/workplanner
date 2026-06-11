@@ -1407,7 +1407,8 @@ function renderCalendar() {
   const y = window.calDate.getFullYear(), m = window.calDate.getMonth();
   document.getElementById('calMonthLabel').textContent = `${y}년 ${m+1}월`;
   const first = new Date(y,m,1), last = new Date(y,m+1,0);
-  const today = new Date().toISOString().slice(0,10);
+  const todayLocal = new Date();
+  const today = `${todayLocal.getFullYear()}-${String(todayLocal.getMonth()+1).padStart(2,'0')}-${String(todayLocal.getDate()).padStart(2,'0')}`;
   const map = {};
   window.tasks.forEach(t=>{
     const start = t.start || t.deadline || null;
