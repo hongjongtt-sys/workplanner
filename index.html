@@ -855,7 +855,7 @@ header {
         <button class="filter-chip" onclick="setFilter('MID',this)">🟡 중간</button>
         <button class="filter-chip" onclick="setFilter('LOW',this)">🟢 낮음</button>
         <button class="filter-chip" onclick="setFilter('ongoing',this)">⏳ 진행중</button>
-        <button class="filter-chip" onclick="setFilter('done',this)">✅ 완료</button>
+        <button class="filter-chip" onclick="setFilter('done',this)">✅ 완료 · 초과</button>
       </div>
       <div class="todo-list" id="todoList"></div>
     </div>
@@ -1300,7 +1300,8 @@ function daysUntil(d) {
 
 function getVisible() {
   return window.tasks.filter(t => {
-    if (currentFilter === 'done') return t.status === 'done';
+    // 완료 필터: hidden 포함 전부 표시 (마감초과 완료 체크 가능하도록)
+    if (currentFilter === 'done') return t.status === 'done' || t._hidden;
     if (t._hidden) return false;
     if (currentFilter === 'all') return true;
     if (currentFilter === 'ongoing') return t.status !== 'done';
@@ -1447,21 +1448,23 @@ function renderCalendar() {
 
 
 function renderSidebar() {
-  const total=window.tasks.length, done=window.tasks.filter(t=>t.status==='done').length;
-  const ongoing=window.tasks.filter(t=>t.status==='inprogress').length;
-  const overdue=window.tasks.filter(t=>isOverdue(t)).length;
+  const visible = window.tasks.filter(t=>!t._hidden);
+  const total=visible.length;
+  const done=visible.filter(t=>t.status==='done').length;
+  const ongoing=visible.filter(t=>t.status==='inprogress').length;
+  const overdue=visible.filter(t=>isOverdue(t)).length;
   document.getElementById('statsRow').innerHTML=`
     <div class="stat-box"><div class="stat-num" style="color:var(--accent)">${total}</div><div class="stat-lbl">전체</div></div>
     <div class="stat-box"><div class="stat-num" style="color:var(--low)">${done}</div><div class="stat-lbl">완료</div></div>
     <div class="stat-box"><div class="stat-num" style="color:var(--accent)">${ongoing}</div><div class="stat-lbl">진행 중</div></div>
     <div class="stat-box"><div class="stat-num" style="color:var(--high)">${overdue}</div><div class="stat-lbl">마감 초과</div></div>`;
 
-  const avg=total?Math.round(window.tasks.reduce((s,t)=>s+t.progress,0)/total):0;
+  const avg=total?Math.round(visible.reduce((s,t)=>s+t.progress,0)/total):0;
   document.getElementById('overallWrap').innerHTML=`
     <div class="overall-bar"><div class="overall-bar-fill" style="width:${avg}%;background:${ringColor(avg)}"></div></div>
     <div class="overall-info"><span>${done}/${total} 완료</span><span style="font-weight:700;color:${ringColor(avg)}">${avg}%</span></div>`;
 
-  const upcoming=window.tasks.filter(t=>t.deadline&&t.status!=='done'&&daysUntil(t.deadline)<=5)
+  const upcoming=visible.filter(t=>t.deadline&&t.status!=='done'&&daysUntil(t.deadline)<=5)
     .sort((a,b)=>a.deadline<b.deadline?-1:1).slice(0,5);
   document.getElementById('upcomingWrap').innerHTML=upcoming.length?upcoming.map(t=>{
     const d=daysUntil(t.deadline);
