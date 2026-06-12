@@ -1884,6 +1884,8 @@ window.goJournalToday = function() {
   loadJournal(today);
   document.getElementById('journalDatePicker').value = today;
 };
+
+window.loadJournal = function(dateStr) {
   window.journalCurrentDate = dateStr;
   const [y,m,d] = dateStr.split('-').map(Number);
   const dayLabels=['일','월','화','수','목','금','토'];
