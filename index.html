@@ -802,6 +802,88 @@ header {
   .header-right .btn { display: none; }
   .form-row { grid-template-columns: 1fr; }
 }
+
+/* ── WORKSPACE (Notion-style) ───────────────────────────────── */
+.ws-layout { display:grid; grid-template-columns:230px 1fr; gap:16px; min-height:calc(100vh - 160px); }
+.ws-sidebar { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:14px 8px; overflow-y:auto; box-shadow:var(--shadow); }
+.ws-sidebar-section { margin-bottom:6px; }
+.ws-section-label { font-size:10px; font-weight:700; letter-spacing:1px; color:var(--text-dim); text-transform:uppercase; padding:8px 10px 6px; }
+.ws-tree-row { display:flex; align-items:center; gap:4px; padding:6px 8px; border-radius:8px; cursor:pointer; font-size:13px; transition:background .12s; user-select:none; }
+.ws-tree-row:hover { background:var(--surface2); }
+.ws-tree-row.active { background:var(--accent-light); color:var(--accent); font-weight:600; }
+.ws-toggle { width:16px; text-align:center; font-size:10px; color:var(--text-dim); flex-shrink:0; cursor:pointer; }
+.ws-toggle.empty { visibility:hidden; }
+.ws-row-icon { flex-shrink:0; font-size:14px; }
+.ws-row-title { flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.ws-row-actions { display:none; gap:2px; flex-shrink:0; }
+.ws-tree-row:hover .ws-row-actions { display:flex; }
+.ws-row-btn { width:20px; height:20px; border:none; background:transparent; border-radius:5px; cursor:pointer; font-size:12px; color:var(--text-dim); display:flex; align-items:center; justify-content:center; }
+.ws-row-btn:hover { background:var(--border); color:var(--text); }
+.ws-year-nav { display:flex; align-items:center; justify-content:space-between; padding:4px 10px 8px; font-size:12px; color:var(--text-muted); font-weight:600; }
+.ws-year-nav button { border:none; background:var(--surface2); border-radius:6px; width:20px; height:20px; cursor:pointer; font-size:12px; }
+.ws-new-page-btn { width:100%; margin-top:8px; padding:8px 10px; font-size:12px; font-weight:600; color:var(--text-muted); background:transparent; border:1px dashed var(--border2); border-radius:8px; cursor:pointer; font-family:'Pretendard',sans-serif; }
+.ws-new-page-btn:hover { color:var(--accent); border-color:var(--accent); background:var(--accent-light); }
+
+.ws-content { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:24px 28px; overflow-y:auto; box-shadow:var(--shadow); }
+.ws-breadcrumb { font-size:12px; color:var(--text-dim); margin-bottom:14px; display:flex; gap:6px; flex-wrap:wrap; }
+.ws-breadcrumb a { color:var(--text-muted); cursor:pointer; text-decoration:none; }
+.ws-breadcrumb a:hover { color:var(--accent); }
+.ws-page-title-row { display:flex; align-items:center; gap:10px; margin-bottom:6px; }
+.ws-page-icon-big { font-size:28px; }
+.ws-title-input { font-family:'Instrument Serif',serif; font-size:26px; border:none; outline:none; background:transparent; color:var(--text); flex:1; min-width:0; }
+.ws-page-title { font-family:'Instrument Serif',serif; font-size:24px; margin-bottom:4px; }
+.ws-meta-row { font-size:11px; color:var(--text-dim); margin-bottom:18px; display:flex; gap:10px; align-items:center; }
+.ws-toolbar { display:flex; gap:6px; margin-bottom:16px; flex-wrap:wrap; }
+.ws-btn { padding:6px 14px; font-size:12px; font-weight:600; border-radius:8px; cursor:pointer; border:1px solid var(--border); background:var(--surface); color:var(--text-muted); font-family:'Pretendard',sans-serif; transition:all .12s; }
+.ws-btn:hover { border-color:var(--accent); color:var(--accent); background:var(--accent-light); }
+.ws-btn.active { background:var(--accent); color:#fff; border-color:var(--accent); }
+.ws-btn-danger:hover { border-color:var(--high); color:var(--high); background:var(--high-bg); }
+
+.ws-editor { width:100%; min-height:300px; border:1px solid var(--border); border-radius:12px; padding:16px; font-size:14px; line-height:1.8; font-family:'Pretendard',sans-serif; outline:none; resize:vertical; background:var(--surface); }
+.ws-editor:focus { border-color:var(--accent); box-shadow:0 0 0 3px rgba(37,99,235,.08); }
+.ws-preview { min-height:300px; border:1px solid transparent; border-radius:12px; padding:16px 4px; font-size:14px; line-height:1.9; white-space:pre-wrap; word-break:break-word; }
+.ws-link { color:var(--accent); background:var(--accent-light); padding:1px 6px; border-radius:5px; cursor:pointer; text-decoration:none; font-weight:600; white-space:nowrap; }
+.ws-link:hover { background:var(--accent); color:#fff; }
+.ws-link-new { color:var(--text-muted); background:var(--surface2); }
+.ws-link-new:hover { background:var(--border2); color:var(--text); }
+
+.ws-children-list { display:flex; gap:8px; flex-wrap:wrap; margin:14px 0; }
+.ws-child-chip { display:flex; align-items:center; gap:6px; padding:8px 12px; border-radius:10px; background:var(--surface2); border:1px solid var(--border); cursor:pointer; font-size:13px; transition:all .12s; }
+.ws-child-chip:hover { border-color:var(--accent); background:var(--accent-light); }
+
+.ws-backlinks { margin-top:26px; padding-top:16px; border-top:1px solid var(--border); }
+.ws-backlinks-label { font-size:11px; font-weight:700; letter-spacing:.5px; color:var(--text-dim); text-transform:uppercase; margin-bottom:10px; }
+.ws-backlink-item { display:flex; align-items:center; gap:8px; padding:9px 12px; background:var(--surface2); border:1px solid var(--border); border-radius:9px; margin-bottom:6px; cursor:pointer; font-size:12px; }
+.ws-backlink-item:hover { border-color:var(--accent); background:var(--accent-light); }
+.ws-backlink-snippet { color:var(--text-muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1; }
+
+.ws-cal-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; flex-wrap:wrap; gap:8px; }
+.ws-cal-nav { display:flex; align-items:center; gap:8px; }
+.ws-cal-nav button { width:26px; height:26px; border:1px solid var(--border); background:var(--surface); border-radius:6px; cursor:pointer; }
+.ws-cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:2px; background:var(--border); border:1px solid var(--border); border-radius:12px; overflow:hidden; }
+.ws-cal-label { background:var(--surface2); text-align:center; padding:8px; font-size:11px; font-weight:700; color:var(--text-muted); }
+.ws-cal-cell { background:var(--surface); min-height:74px; padding:6px; cursor:pointer; transition:background .12s; }
+.ws-cal-cell:hover { background:var(--accent-light); }
+.ws-cal-cell.other { opacity:.35; }
+.ws-cal-cell.today { background:#fffbe8; }
+.ws-cal-date { font-size:12px; font-weight:600; color:var(--text-muted); margin-bottom:4px; }
+.ws-cal-dots { display:flex; gap:3px; flex-wrap:wrap; }
+.ws-cal-dot { width:6px; height:6px; border-radius:50%; }
+
+.ws-week-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:10px; }
+.ws-week-col { background:var(--surface); border:1px solid var(--border); border-radius:10px; overflow:hidden; display:flex; flex-direction:column; min-height:200px; }
+.ws-week-col-head { padding:8px 10px; font-size:11px; font-weight:700; background:var(--surface2); border-bottom:1px solid var(--border); display:flex; justify-content:space-between; cursor:pointer; }
+.ws-week-col-head:hover { color:var(--accent); }
+.ws-week-col textarea { flex:1; border:none; outline:none; resize:none; padding:8px; font-size:12px; line-height:1.6; font-family:'Pretendard',sans-serif; background:transparent; }
+
+.ws-empty { text-align:center; padding:60px 20px; color:var(--text-dim); }
+.ws-empty-icon { font-size:36px; margin-bottom:10px; }
+
+@media (max-width: 860px) {
+  .ws-layout { grid-template-columns:1fr; }
+  .ws-sidebar { max-height:220px; }
+  .ws-week-grid { grid-template-columns:repeat(2,1fr); }
+}
 </style>
 </head>
 <body>
@@ -822,6 +904,7 @@ header {
     <div class="tab" onclick="switchTab('habit')">🔥 습관</div>
     <div class="tab" onclick="switchTab('journal')">📓 일지</div>
     <div class="tab" onclick="switchTab('class')">📚 수업</div>
+    <div class="tab" onclick="switchTab('workspace')">📔 워크스페이스</div>
   </div>
   <div class="header-right">
     <div class="sync-indicator">
@@ -926,6 +1009,15 @@ header {
       <div id="classContent"></div>
     </div>
 
+    <!-- WORKSPACE (Notion-style) -->
+    <div class="view" id="view-workspace">
+      <div class="page-header"><div class="page-title">워크스페이스</div></div>
+      <div class="ws-layout">
+        <div class="ws-sidebar" id="wsSidebar"></div>
+        <div class="ws-content" id="wsContent"></div>
+      </div>
+    </div>
+
   </div>
   <div class="sidebar">
     <div class="sidebar-section">
@@ -952,6 +1044,7 @@ header {
     <div class="mobile-tab" onclick="switchTab('habit')"><div class="mobile-tab-icon">🔥</div>습관</div>
     <div class="mobile-tab" onclick="switchTab('journal')"><div class="mobile-tab-icon">📓</div>일지</div>
     <div class="mobile-tab" onclick="switchTab('class')"><div class="mobile-tab-icon">📚</div>수업</div>
+    <div class="mobile-tab" onclick="switchTab('workspace')"><div class="mobile-tab-icon">📔</div>워크</div>
   </div>
 </div>
 <button class="mobile-fab" onclick="openModal()">+</button>
@@ -1266,15 +1359,13 @@ function purgeOldDone() {
   const now = new Date();
   const today = new Date(); today.setHours(0,0,0,0);
   window.tasks.forEach(t => {
-    // 완료 후 24시간 지나면 숨김
     if (t.status === 'done' && t.doneAt) {
       const diff = now - new Date(t.doneAt);
       if (diff >= 86400000) t._hidden = true;
     }
-    // 마감일 다음날 00:00 지나면 숨김 (완료 아닌 것만)
     if (t.status !== 'done' && t.deadline) {
       const [y,m,d] = t.deadline.split('-').map(Number);
-      const deadlineEnd = new Date(y, m-1, d+1); // 마감일 다음날 00:00 (로컬)
+      const deadlineEnd = new Date(y, m-1, d+1);
       if (now >= deadlineEnd) t._hidden = true;
     }
   });
@@ -1301,7 +1392,6 @@ function daysUntil(d) {
 
 function getVisible() {
   return window.tasks.filter(t => {
-    // 완료 필터: hidden 포함 전부 표시 (마감초과 완료 체크 가능하도록)
     if (currentFilter === 'done') return t.status === 'done' || t._hidden;
     if (t._hidden) return false;
     if (currentFilter === 'all') return true;
@@ -1313,6 +1403,7 @@ function getVisible() {
 // ── Render ─────────────────────────────────────────────────
 window.renderAll = function() {
   renderTodo(); renderKanban(); renderCalendar(); renderSidebar(); renderHabit(); checkAlarms();
+  if (window.renderWs) window.renderWs();
 };
 
 function renderTodo() {
@@ -1446,8 +1537,6 @@ function renderCalendar() {
   document.getElementById('calGrid').innerHTML = html;
 }
 
-
-
 function renderSidebar() {
   const visible = window.tasks.filter(t=>!t._hidden);
   const total=visible.length;
@@ -1543,12 +1632,13 @@ window.closeOutside = function(e) { if(e.target===document.getElementById('overl
 window.switchTab = function(view) {
   document.querySelectorAll('.tab,.mobile-tab').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
-  const map={calendar:0,todo:1,kanban:2,habit:3,journal:4,class:5};
+  const map={calendar:0,todo:1,kanban:2,habit:3,journal:4,class:5,workspace:6};
   document.querySelectorAll('.tab')[map[view]]?.classList.add('active');
   document.querySelectorAll('.mobile-tab')[map[view]]?.classList.add('active');
   document.getElementById('view-'+view).classList.add('active');
   if(view==='journal') initJournal();
   else if(view==='class') initClass();
+  else if(view==='workspace') { if(window.renderWs) window.renderWs(); }
   else renderAll();
 };
 
@@ -1595,7 +1685,6 @@ window.openDayPopup = function(dateStr) {
   const label = `${m}월 ${d}일 (${dayLabels[dt.getDay()]})`;
   document.getElementById('dayPopupTitle').textContent = label;
 
-  // 해당 날짜에 걸쳐있는 업무 필터
   const dayTasks = window.tasks.filter(t => {
     const start = t.start || t.deadline || null;
     const end = t.deadline || t.start || null;
@@ -1627,7 +1716,6 @@ window.openDayPopup = function(dateStr) {
       </div>`).join('');
   }
 
-  // 일지 미리보기
   const journalData = window.journals && window.journals[dateStr];
   const journalPreviewEl = document.getElementById('dayJournalPreview');
   if (journalData) {
@@ -1669,10 +1757,9 @@ window.closeDayOutside = function(e) { if(e.target===document.getElementById('da
 const HABIT_COL = "habits";
 const HABIT_CHECK_COL = "habitChecks";
 window.habits = [];
-window.habitChecks = {}; // { "habitId_YYYY-MM-DD": true }
+window.habitChecks = {};
 window.editHabitId = null;
 
-// 습관 실시간 동기화
 onSnapshot(collection(db, HABIT_COL), snap => {
   window.habits = snap.docs.map(d=>({id:d.id,...d.data()}));
   renderHabit();
@@ -1731,7 +1818,7 @@ function calcMonthRate(habitId) {
 window.toggleHabitCheck = async function(habitId, dateStr, btn) {
   const key=`${habitId}_${dateStr}`;
   const today=getTodayStr();
-  if(dateStr>today) return; // 미래는 체크 불가
+  if(dateStr>today) return;
   try {
     if(window.habitChecks[key]){
       await deleteDoc(doc(db, HABIT_CHECK_COL, key));
@@ -1861,16 +1948,16 @@ window.deleteHabit = async function() {
 
 // ── JOURNAL ────────────────────────────────────────────────
 const JOURNAL_COL = "journals";
-window.journals = {}; // { "YYYY-MM-DD": { content, updatedAt } }
+window.journals = {};
 window.journalCurrentDate = getTodayStr();
 let journalSaveTimer = null;
 
-// 일지 실시간 동기화
 onSnapshot(collection(db, JOURNAL_COL), snap => {
   window.journals = {};
   snap.docs.forEach(d => { window.journals[d.id] = d.data(); });
-  renderCalendar(); // 캘린더에 📓 표시 업데이트
+  renderCalendar();
   renderJournalRecent();
+  if (window.renderWs) window.renderWs();
 });
 
 function initJournal() {
@@ -1896,12 +1983,10 @@ window.loadJournal = function(dateStr) {
   document.getElementById('journalContent').value = existing ? existing.content : '';
   document.getElementById('journalSaveStatus').textContent = existing ? '✓ 저장됨' : '';
   document.getElementById('journalDatePicker').value = dateStr;
-  // 내용 있을 때만 삭제 버튼 표시
   const deleteBtn = document.getElementById('journalDeleteBtn');
   if (deleteBtn) deleteBtn.style.display = existing ? 'block' : 'none';
 };
 
-// 자동 저장 (타이핑 멈춘 후 1.5초)
 document.getElementById('journalContent').addEventListener('input', function() {
   document.getElementById('journalSaveStatus').textContent = '저장 중...';
   clearTimeout(journalSaveTimer);
@@ -1912,7 +1997,6 @@ async function saveJournal() {
   const content = document.getElementById('journalContent').value;
   const dateStr = window.journalCurrentDate;
   if (!content.trim()) {
-    // 내용 비우면 삭제
     try {
       await deleteDoc(doc(db, JOURNAL_COL, dateStr));
       document.getElementById('journalSaveStatus').textContent = '';
@@ -1968,9 +2052,7 @@ window.moveJournal = async function() {
     if (!confirm(`${newDate}에 이미 일지가 있습니다. 덮어쓸까요?`)) return;
   }
   try {
-    // 새 날짜에 저장
     await setDoc(doc(db, JOURNAL_COL, newDate), { content, updatedAt: new Date().toISOString() });
-    // 기존 날짜 삭제
     await deleteDoc(doc(db, JOURNAL_COL, window.journalCurrentDate));
     toast(`📅 ${newDate}로 이동했습니다`);
     loadJournal(newDate);
@@ -1999,17 +2081,16 @@ window.openJournalFromDay = function(dateStr) {
 };
 
 // ── CLASS ──────────────────────────────────────────────────
-const CLASS_COL = "classes";       // 반 목록
-const CLASS_LOG_COL = "classLogs"; // 진도 기록
-const CLASS_MEMO_COL = "classMemos"; // 수업 메모
+const CLASS_COL = "classes";
+const CLASS_LOG_COL = "classLogs";
+const CLASS_MEMO_COL = "classMemos";
 
-window.classRooms = [];   // [{id, name}]
-window.classLogs = [];    // [{id, classId, date, unit, page}]
-window.classMemos = {};   // { classId: content }
+window.classRooms = [];
+window.classLogs = [];
+window.classMemos = {};
 window.currentClassId = null;
 let classMemoTimer = {};
 
-// 실시간 동기화
 onSnapshot(collection(db, CLASS_COL), snap => {
   window.classRooms = snap.docs.map(d=>({id:d.id,...d.data()}))
     .sort((a,b)=>a.order-b.order||a.name.localeCompare(b.name));
@@ -2040,7 +2121,6 @@ function renderClass() {
     return;
   }
 
-  // 반 탭
   tabsEl.innerHTML = window.classRooms.map(c=>`
     <div style="display:flex;align-items:center;gap:2px">
       <button class="class-tab-btn ${c.id===window.currentClassId?'active':''}"
@@ -2058,7 +2138,6 @@ function renderClass() {
   const cls = window.classRooms.find(c=>c.id===window.currentClassId);
   if(!cls) return;
 
-  // 해당 반 진도 기록
   const logs = window.classLogs
     .filter(l=>l.classId===window.currentClassId)
     .sort((a,b)=>b.date<a.date?-1:1);
@@ -2067,7 +2146,6 @@ function renderClass() {
 
   contentEl.innerHTML = `
     <div class="class-body">
-      <!-- 수업 메모 -->
       <div class="class-memo-wrap">
         <div class="class-memo-head">📝 ${cls.name} 수업 메모</div>
         <textarea class="class-memo-textarea" id="classMemo_${cls.id}"
@@ -2076,7 +2154,6 @@ function renderClass() {
         <div style="padding:4px 14px 8px;font-size:10px;color:var(--text-dim)" id="memoStatus_${cls.id}"></div>
       </div>
 
-      <!-- 진도 기록 -->
       <div class="class-log-wrap">
         <div class="class-log-head">
           <span>📖 진도 기록</span>
@@ -2174,7 +2251,6 @@ window.openClassSetup = function() {
   const names = input.split(',').map(s=>s.trim()).filter(Boolean);
   if(!names.length) { toast('반 이름을 입력하세요', true); return; }
 
-  // 기존 반 이름과 중복 제거 후 추가만
   const existing = window.classRooms.map(c=>c.name);
   const toAdd = names.filter(n=>!existing.includes(n));
   if(!toAdd.length) { toast('이미 있는 반입니다', true); return; }
@@ -2195,7 +2271,6 @@ window.deleteClass = async function(id, name) {
   try {
     await deleteDoc(doc(db, CLASS_COL, id));
     await deleteDoc(doc(db, CLASS_MEMO_COL, id));
-    // 해당 반 진도 기록 삭제
     const logs = window.classLogs.filter(l=>l.classId===id);
     for(const l of logs) await deleteDoc(doc(db, CLASS_LOG_COL, l.id));
     if(window.currentClassId===id) window.currentClassId = null;
@@ -2211,6 +2286,411 @@ window.renameClass = async function(id, currentName) {
     toast('✏️ 반 이름이 변경되었습니다');
   } catch(e) { toast('변경 실패: '+e.message, true); }
 };
+
+// ── WORKSPACE (Notion-style) ─────────────────────────────────
+const PAGES_COL = "notionPages";
+window.notionPages = [];
+window.expandedIds = new Set(['root-schedule']);
+window.wsYear = new Date().getFullYear();
+window.wsPage = { type:'welcome' };
+window.wsEditing = false;
+window._wsPageSaveTimer = null;
+window._weekSaveTimers = {};
+
+onSnapshot(collection(db, PAGES_COL), snap => {
+  window.notionPages = snap.docs.map(d=>({id:d.id,...d.data()}));
+  if (window.renderWs) window.renderWs();
+}, err => { toast('페이지 동기화 오류: '+err.message, true); });
+
+function esc(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function pad2(n){ return String(n).padStart(2,'0'); }
+function dateKeyWs(y,m,dd){ return `${y}-${pad2(m)}-${pad2(dd)}`; }
+function isDateStr(s){ return /^\d{4}-\d{2}-\d{2}$/.test((s||'').trim()); }
+function findPageByTitle(title){
+  const t=(title||'').trim().toLowerCase();
+  return window.notionPages.find(p=>(p.title||'').trim().toLowerCase()===t);
+}
+function childrenOf(parentId){
+  return window.notionPages
+    .filter(p=>(p.parentId||null)===(parentId||null))
+    .sort((a,b)=>(a.order||0)-(b.order||0) || (a.title||'').localeCompare(b.title||''));
+}
+
+window.renderWs = function(){
+  const sidebarEl = document.getElementById('wsSidebar');
+  const contentEl = document.getElementById('wsContent');
+  if(!sidebarEl || !contentEl) return;
+  renderWsSidebar();
+  const p = window.wsPage;
+  if(p.type==='welcome') contentEl.innerHTML = renderWsWelcome();
+  else if(p.type==='month') contentEl.innerHTML = renderWsMonthView(p.year, p.month);
+  else if(p.type==='week') contentEl.innerHTML = renderWsWeekView(p.weekStart);
+  else if(p.type==='daily') contentEl.innerHTML = renderWsDailyView(p.date);
+  else if(p.type==='page') contentEl.innerHTML = renderWsPageView(p.id);
+};
+
+function renderWsSidebar(){
+  const el = document.getElementById('wsSidebar');
+  const months = ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
+  const scheduleExpanded = window.expandedIds.has('root-schedule');
+
+  let html = `<div class="ws-sidebar-section">
+    <div class="ws-tree-row ${window.wsPage.type==='welcome'?'active':''}" onclick="openWsWelcome()">
+      <span class="ws-toggle empty"></span><span class="ws-row-icon">🏠</span><span class="ws-row-title">홈</span>
+    </div>
+  </div>`;
+
+  html += `<div class="ws-sidebar-section">
+    <div class="ws-tree-row" onclick="toggleWsExpand('root-schedule')">
+      <span class="ws-toggle">${scheduleExpanded?'▾':'▸'}</span>
+      <span class="ws-row-icon">📅</span><span class="ws-row-title">학사일정</span>
+    </div>`;
+  if(scheduleExpanded){
+    html += `<div class="ws-children" style="padding-left:14px">
+      <div class="ws-year-nav">
+        <button onclick="event.stopPropagation();changeWsYear(-1)">‹</button>
+        <span>${window.wsYear}년</span>
+        <button onclick="event.stopPropagation();changeWsYear(1)">›</button>
+      </div>`;
+    months.forEach((mm,i)=>{
+      const active = window.wsPage.type==='month' && window.wsPage.year===window.wsYear && window.wsPage.month===i+1;
+      html += `<div class="ws-tree-row ${active?'active':''}" onclick="openWsMonth(${window.wsYear},${i+1})">
+        <span class="ws-toggle empty"></span><span class="ws-row-icon">🗓️</span><span class="ws-row-title">${mm}</span>
+      </div>`;
+    });
+    html += `</div>`;
+  }
+  html += `</div>`;
+
+  html += `<div class="ws-sidebar-section">
+    <div class="ws-section-label">페이지</div>
+    <div id="wsPageTree"></div>
+    <button class="ws-new-page-btn" onclick="createWsPage(null)">+ 새 페이지</button>
+  </div>`;
+
+  el.innerHTML = html;
+  document.getElementById('wsPageTree').innerHTML = renderWsTreeLevel(null, 0);
+}
+
+function renderWsTreeLevel(parentId, depth){
+  const kids = childrenOf(parentId);
+  if(!kids.length) return '';
+  return kids.map(p=>{
+    const hasKids = childrenOf(p.id).length>0;
+    const expanded = window.expandedIds.has(p.id);
+    const active = window.wsPage.type==='page' && window.wsPage.id===p.id;
+    return `<div>
+      <div class="ws-tree-row ${active?'active':''}" style="padding-left:${8+depth*14}px" onclick="openWsPage('${p.id}')">
+        <span class="ws-toggle ${hasKids?'':'empty'}" onclick="event.stopPropagation();toggleWsExpand('${p.id}')">${hasKids?(expanded?'▾':'▸'):''}</span>
+        <span class="ws-row-icon">${p.icon||'📄'}</span>
+        <span class="ws-row-title">${esc(p.title||'제목 없음')}</span>
+        <span class="ws-row-actions">
+          <button class="ws-row-btn" title="하위 페이지 추가" onclick="event.stopPropagation();createWsPage('${p.id}')">+</button>
+        </span>
+      </div>
+      ${expanded?`<div class="ws-children">${renderWsTreeLevel(p.id, depth+1)}</div>`:''}
+    </div>`;
+  }).join('');
+}
+
+window.toggleWsExpand = function(id){
+  if(window.expandedIds.has(id)) window.expandedIds.delete(id); else window.expandedIds.add(id);
+  renderWs();
+};
+window.changeWsYear = function(dlt){ window.wsYear += dlt; renderWs(); };
+
+function parseWsContent(text){
+  let out = esc(text||'');
+  out = out.replace(/\[\[([^\]]+)\]\]/g, (m, raw)=>{
+    const title = raw.trim();
+    if(isDateStr(title)){
+      return `<a class="ws-link" onclick="openWsDaily('${title}')">📅 ${title}</a>`;
+    }
+    const p = findPageByTitle(title);
+    if(p){
+      return `<a class="ws-link" onclick="openWsPage('${p.id}')">${p.icon||'📄'} ${esc(p.title)}</a>`;
+    }
+    return `<a class="ws-link ws-link-new" onclick="createWsPageFromLink('${esc(title).replace(/'/g,"\\'")}')">➕ ${esc(title)}</a>`;
+  });
+  return out.replace(/\n/g,'<br>');
+}
+
+function wsBacklinksFor(key, isDate){
+  const results = [];
+  window.notionPages.forEach(p=>{
+    const content = p.content||'';
+    const re = /\[\[([^\]]+)\]\]/g; let m;
+    while((m=re.exec(content))){
+      const raw = m[1].trim();
+      if(isDate ? raw===key : raw.toLowerCase()===key.toLowerCase()){
+        const idx = m.index;
+        const snippet = content.slice(Math.max(0,idx-30), idx+30).replace(/\n/g,' ');
+        results.push({page:p, snippet});
+        break;
+      }
+    }
+  });
+  return results;
+}
+
+function renderWsBacklinksHtml(key, isDate){
+  const links = wsBacklinksFor(key, isDate);
+  if(!links.length) return '';
+  return `<div class="ws-backlinks">
+    <div class="ws-backlinks-label">🔗 이 페이지를 참조하는 곳 (${links.length})</div>
+    ${links.map(l=>`<div class="ws-backlink-item" onclick="openWsPage('${l.page.id}')">
+      <span>${l.page.icon||'📄'}</span><b>${esc(l.page.title)}</b>
+      <span class="ws-backlink-snippet">… ${esc(l.snippet)} …</span>
+    </div>`).join('')}
+  </div>`;
+}
+
+function renderWsWelcome(){
+  return `<div class="ws-empty">
+    <div class="ws-empty-icon">📔</div>
+    <p style="font-size:15px;font-weight:600;margin-bottom:6px">워크스페이스에 오신 걸 환영합니다</p>
+    <p style="font-size:12px;line-height:1.7">왼쪽에서 학사일정(월별 달력)을 열어보거나,<br>새 페이지를 만들어 자유롭게 기록해보세요.<br><br>
+    페이지 안에서 <code>[[페이지 제목]]</code> 또는 <code>[[2026-05-15]]</code> 처럼 쓰면<br>다른 페이지나 날짜로 연결되는 링크가 만들어져요.</p>
+  </div>`;
+}
+window.openWsWelcome = function(){ window.wsPage={type:'welcome'}; renderWs(); };
+
+window.openWsMonth = function(year, month){ window.wsPage={type:'month', year, month}; renderWs(); };
+
+function renderWsMonthView(year, month){
+  const first = new Date(year, month-1, 1);
+  const last = new Date(year, month, 0);
+  const days = ['일','월','화','수','목','금','토'];
+  const today = getTodayStr();
+  let cells = '';
+  const prevLast = new Date(year, month-1, 0).getDate();
+  for(let i=first.getDay()-1;i>=0;i--) cells += `<div class="ws-cal-cell other"><div class="ws-cal-date">${prevLast-i}</div></div>`;
+  for(let dd=1; dd<=last.getDate(); dd++){
+    const key = dateKeyWs(year, month, dd);
+    const isToday = key===today;
+    const dayTasks = (window.tasks||[]).filter(t=>{
+      const s=t.start||t.deadline, e=t.deadline||t.start;
+      return s && key>=s && key<=e;
+    });
+    const hasJournal = window.journals && window.journals[key];
+    let dots = dayTasks.slice(0,4).map(t=>{
+      const c = t.priority==='HIGH'?'var(--high)':t.priority==='LOW'?'var(--low)':'var(--mid)';
+      return `<span class="ws-cal-dot" style="background:${c}"></span>`;
+    }).join('');
+    if(hasJournal) dots += `<span class="ws-cal-dot" style="background:#a16207"></span>`;
+    cells += `<div class="ws-cal-cell ${isToday?'today':''}" onclick="openWsDaily('${key}')">
+      <div class="ws-cal-date">${dd}</div>
+      <div class="ws-cal-dots">${dots}</div>
+    </div>`;
+  }
+  const rem = (first.getDay()+last.getDate())%7;
+  if(rem>0) for(let dd=1; dd<=7-rem; dd++) cells += `<div class="ws-cal-cell other"><div class="ws-cal-date">${dd}</div></div>`;
+
+  return `<div class="ws-breadcrumb"><a onclick="openWsWelcome()">홈</a> / <a onclick="toggleWsExpand('root-schedule');renderWs()">학사일정</a> / ${month}월</div>
+  <div class="ws-cal-head">
+    <div class="ws-page-title">${year}년 ${month}월</div>
+    <div style="display:flex;gap:8px">
+      <button class="ws-btn" onclick="openWsWeek(wsMonday('${dateKeyWs(year,month,1)}'))">📋 주간 보기</button>
+      <div class="ws-cal-nav">
+        <button onclick="wsMonthNav(-1)">‹</button><button onclick="wsMonthNav(1)">›</button>
+      </div>
+    </div>
+  </div>
+  <div class="ws-cal-grid">
+    ${days.map(dl=>`<div class="ws-cal-label">${dl}</div>`).join('')}
+    ${cells}
+  </div>
+  <p style="font-size:11px;color:var(--text-dim);margin-top:12px">날짜를 클릭하면 해당 일의 기록(일지)을 열 수 있어요. 점은 업무 우선순위 및 일지 작성 여부를 나타냅니다.</p>`;
+}
+window.wsMonthNav = function(delta){
+  let {year,month} = window.wsPage;
+  month += delta;
+  if(month<1){month=12;year--;} if(month>12){month=1;year++;}
+  window.wsYear = year;
+  openWsMonth(year, month);
+};
+window.wsMonday = function(key){
+  const [y,m,dd] = key.split('-').map(Number);
+  const dt = new Date(y,m-1,dd);
+  const day = dt.getDay();
+  const diff = day===0?-6:1-day;
+  dt.setDate(dt.getDate()+diff);
+  return dateKeyWs(dt.getFullYear(), dt.getMonth()+1, dt.getDate());
+};
+
+window.openWsWeek = function(weekStart){ window.wsPage={type:'week', weekStart}; renderWs(); };
+
+function renderWsWeekView(weekStart){
+  const [y,m,dd] = weekStart.split('-').map(Number);
+  const start = new Date(y,m-1,dd);
+  const dayLabels = ['월','화','수','목','금','토','일'];
+  let cols = '';
+  for(let i=0;i<7;i++){
+    const dt = new Date(start); dt.setDate(start.getDate()+i);
+    const key = dateKeyWs(dt.getFullYear(), dt.getMonth()+1, dt.getDate());
+    const val = (window.journals[key]&&window.journals[key].content) || '';
+    cols += `<div class="ws-week-col">
+      <div class="ws-week-col-head" onclick="openWsDaily('${key}')">
+        <span>${dayLabels[i]} ${dt.getMonth()+1}/${dt.getDate()}</span><span>↗</span>
+      </div>
+      <textarea placeholder="메모..." oninput="wsWeekInput('${key}', this.value)">${esc(val)}</textarea>
+    </div>`;
+  }
+  const endDt = new Date(start); endDt.setDate(start.getDate()+6);
+  return `<div class="ws-breadcrumb"><a onclick="openWsWelcome()">홈</a> / <a onclick="toggleWsExpand('root-schedule');renderWs()">학사일정</a> / 주간</div>
+  <div class="ws-cal-head">
+    <div class="ws-page-title">${start.getMonth()+1}/${start.getDate()} ~ ${endDt.getMonth()+1}/${endDt.getDate()}</div>
+    <div class="ws-cal-nav">
+      <button onclick="wsWeekNav(-7)">‹ 이전주</button><button onclick="wsWeekNav(7)">다음주 ›</button>
+    </div>
+  </div>
+  <div class="ws-week-grid">${cols}</div>`;
+}
+window.wsWeekNav = function(deltaDays){
+  const [y,m,dd] = window.wsPage.weekStart.split('-').map(Number);
+  const dt = new Date(y,m-1,dd); dt.setDate(dt.getDate()+deltaDays);
+  openWsWeek(dateKeyWs(dt.getFullYear(), dt.getMonth()+1, dt.getDate()));
+};
+window.wsWeekInput = function(key, val){
+  clearTimeout(window._weekSaveTimers[key]);
+  window._weekSaveTimers[key] = setTimeout(async ()=>{
+    try{
+      if(val.trim()) await setDoc(doc(db,JOURNAL_COL,key), {content:val, updatedAt:new Date().toISOString()});
+      else await deleteDoc(doc(db,JOURNAL_COL,key));
+    }catch(e){ toast('저장 실패: '+e.message, true); }
+  }, 1200);
+};
+
+window.openWsDaily = function(date){ window.wsPage={type:'daily', date}; renderWs(); };
+
+function renderWsDailyView(dateStr){
+  const [y,m,dd] = dateStr.split('-').map(Number);
+  const dayLabels=['일','월','화','수','목','금','토'];
+  const dt = new Date(y,m-1,dd);
+  const existing = window.journals[dateStr];
+  const dayTasks = (window.tasks||[]).filter(t=>{
+    const s=t.start||t.deadline, e=t.deadline||t.start;
+    return s && dateStr>=s && dateStr<=e;
+  });
+  return `<div class="ws-breadcrumb"><a onclick="openWsWelcome()">홈</a> / <a onclick="toggleWsExpand('root-schedule');renderWs()">학사일정</a> / <a onclick="openWsMonth(${y},${m})">${m}월</a> / ${dd}일</div>
+  <div class="ws-page-title">${y}년 ${m}월 ${dd}일 (${dayLabels[dt.getDay()]})</div>
+  <div class="ws-meta-row"><span id="wsDailyStatus">${existing?'✓ 저장됨':'새 기록'}</span></div>
+  ${dayTasks.length?`<div class="ws-children-list">${dayTasks.map(t=>`<div class="ws-child-chip">📌 ${esc(t.title)}</div>`).join('')}</div>`:''}
+  <textarea class="ws-editor" id="wsDailyEditor" placeholder="오늘의 기록을 남겨보세요. [[페이지 제목]] 또는 [[2026-05-15]] 형식으로 다른 페이지나 날짜를 연결할 수 있어요."
+    oninput="wsDailyInput('${dateStr}', this.value)">${esc(existing?existing.content:'')}</textarea>
+  ${renderWsBacklinksHtml(dateStr, true)}`;
+}
+window.wsDailyInput = function(dateStr, val){
+  const statusEl = document.getElementById('wsDailyStatus');
+  if(statusEl) statusEl.textContent = '저장 중...';
+  clearTimeout(window._wsJournalSaveTimer);
+  window._wsJournalSaveTimer = setTimeout(async ()=>{
+    try{
+      if(val.trim()){
+        await setDoc(doc(db,JOURNAL_COL,dateStr), {content:val, updatedAt:new Date().toISOString()});
+        if(statusEl) statusEl.textContent = '✓ 저장됨';
+      } else {
+        await deleteDoc(doc(db,JOURNAL_COL,dateStr));
+        if(statusEl) statusEl.textContent = '새 기록';
+      }
+    }catch(e){ if(statusEl) statusEl.textContent='저장 실패'; }
+  }, 1200);
+};
+
+window.openWsPage = function(id){ window.wsPage={type:'page', id}; window.wsEditing=false; renderWs(); };
+
+function wsBreadcrumbChain(id){
+  const chain = [];
+  let cur = window.notionPages.find(p=>p.id===id);
+  while(cur){
+    chain.unshift(cur);
+    cur = cur.parentId ? window.notionPages.find(p=>p.id===cur.parentId) : null;
+  }
+  return chain;
+}
+
+function renderWsPageView(id){
+  const p = window.notionPages.find(x=>x.id===id);
+  if(!p) return `<div class="ws-empty"><div class="ws-empty-icon">🙈</div><p>페이지를 찾을 수 없습니다</p></div>`;
+  const chain = wsBreadcrumbChain(id);
+  const crumbs = `<a onclick="openWsWelcome()">홈</a>` + chain.map(c=>` / <a onclick="openWsPage('${c.id}')">${esc(c.title)}</a>`).join('');
+  const kids = childrenOf(id);
+  return `<div class="ws-breadcrumb">${crumbs}</div>
+  <div class="ws-page-title-row">
+    <span class="ws-page-icon-big">${p.icon||'📄'}</span>
+    <input class="ws-title-input" value="${esc(p.title||'')}" onchange="renameWsPage('${id}', this.value)" placeholder="제목 없음">
+  </div>
+  <div class="ws-toolbar">
+    <button class="ws-btn ${window.wsEditing?'active':''}" onclick="wsSetEditing(true)">✏️ 편집</button>
+    <button class="ws-btn ${!window.wsEditing?'active':''}" onclick="wsSetEditing(false)">👁 보기</button>
+    <button class="ws-btn" onclick="createWsPage('${id}')">+ 하위 페이지</button>
+    <button class="ws-btn ws-btn-danger" onclick="deleteWsPage('${id}')">🗑 삭제</button>
+  </div>
+  ${kids.length?`<div class="ws-children-list">${kids.map(k=>`<div class="ws-child-chip" onclick="openWsPage('${k.id}')">${k.icon||'📄'} ${esc(k.title)}</div>`).join('')}</div>`:''}
+  ${window.wsEditing
+    ? `<textarea class="ws-editor" id="wsPageEditor" placeholder="내용을 입력하세요. [[다른 페이지 제목]] 또는 [[2026-05-15]] 로 연결할 수 있어요." oninput="wsPageInput('${id}', this.value)">${esc(p.content||'')}</textarea>`
+    : `<div class="ws-preview" onclick="wsSetEditing(true)">${p.content?parseWsContent(p.content):'<span style="color:var(--text-dim)">내용이 없습니다. 클릭해서 작성해보세요.</span>'}</div>`
+  }
+  ${renderWsBacklinksHtml(p.title||'', false)}`;
+}
+window.wsSetEditing = function(v){ window.wsEditing=v; renderWs();
+  if(v) setTimeout(()=>document.getElementById('wsPageEditor')?.focus(), 50);
+};
+window.wsPageInput = function(id, val){
+  clearTimeout(window._wsPageSaveTimer);
+  window._wsPageSaveTimer = setTimeout(async ()=>{
+    try{ await updateDoc(doc(db,PAGES_COL,id), {content:val, updatedAt:new Date().toISOString()}); }
+    catch(e){ toast('저장 실패: '+e.message, true); }
+  }, 900);
+};
+
+window.createWsPage = async function(parentId){
+  const title = prompt(parentId?'하위 페이지 제목을 입력하세요':'새 페이지 제목을 입력하세요','');
+  if(title===null) return;
+  const t = title.trim() || '제목 없음';
+  try{
+    const ref = await addDoc(collection(db,PAGES_COL), {
+      title:t, icon:'📄', parentId: parentId||null, content:'', order: Date.now(), createdAt: serverTimestamp()
+    });
+    if(parentId) window.expandedIds.add(parentId);
+    window.wsPage = {type:'page', id: ref.id};
+    window.wsEditing = true;
+    toast('✅ 페이지가 생성되었습니다');
+  }catch(e){ toast('생성 실패: '+e.message, true); }
+};
+window.createWsPageFromLink = async function(title){
+  const existing = findPageByTitle(title);
+  if(existing){ openWsPage(existing.id); return; }
+  try{
+    const ref = await addDoc(collection(db,PAGES_COL), {
+      title, icon:'📄', parentId:null, content:'', order:Date.now(), createdAt: serverTimestamp()
+    });
+    window.wsPage = {type:'page', id: ref.id};
+    window.wsEditing = true;
+    toast('✅ "'+title+'" 페이지가 생성되었습니다');
+  }catch(e){ toast('생성 실패: '+e.message, true); }
+};
+window.renameWsPage = async function(id, newTitle){
+  const t = newTitle.trim() || '제목 없음';
+  try{ await updateDoc(doc(db,PAGES_COL,id), {title:t}); }
+  catch(e){ toast('수정 실패: '+e.message, true); }
+};
+window.deleteWsPage = async function(id){
+  const p = window.notionPages.find(x=>x.id===id);
+  const kids = childrenOf(id);
+  if(!confirm(`'${p?p.title:'이 페이지'}'${kids.length?` (하위 페이지 ${kids.length}개 포함)`:''}를 삭제할까요?`)) return;
+  try{
+    for(const k of kids) await deleteWsPageCascade(k.id);
+    await deleteDoc(doc(db,PAGES_COL,id));
+    window.wsPage = {type:'welcome'};
+    toast('🗑️ 삭제되었습니다');
+  }catch(e){ toast('삭제 실패: '+e.message, true); }
+};
+async function deleteWsPageCascade(id){
+  const kids = childrenOf(id);
+  for(const k of kids) await deleteWsPageCascade(k.id);
+  await deleteDoc(doc(db,PAGES_COL,id));
+}
 
 // ── Keyboard ───────────────────────────────────────────────
 document.addEventListener('keydown', e=>{
