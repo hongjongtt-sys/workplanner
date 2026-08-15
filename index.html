@@ -748,6 +748,37 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:0
   </div>
 </div>
 
+<!-- CHECK ITEM MODAL -->
+<div class="overlay" id="ckOverlay" onclick="closeCkOutside(event)">
+  <div class="modal" style="width:400px">
+    <div class="modal-head">
+      <div class="modal-title" id="ckModalTitle">제출물 추가</div>
+      <button class="modal-close" onclick="closeCkModal()">✕</button>
+    </div>
+    <div class="form-group">
+      <label class="form-label">제출물 이름 *</label>
+      <input type="text" class="form-input" id="ckName" placeholder="예: 개인정보 동의서">
+    </div>
+    <div class="form-group">
+      <label class="form-label">마감일</label>
+      <input type="date" class="form-input" id="ckDue">
+      <div style="display:flex;gap:5px;margin-top:7px;flex-wrap:wrap">
+        <button class="stu-chip" onclick="ckSetDue(0)">오늘</button>
+        <button class="stu-chip" onclick="ckSetDue(1)">내일</button>
+        <button class="stu-chip" onclick="ckSetDue(7)">일주일 뒤</button>
+        <button class="stu-chip" onclick="ckSetDue(null)">없음</button>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-danger" id="ckDeleteBtn" onclick="deleteCheckItemFromModal()" style="display:none">삭제</button>
+      <div class="modal-actions-right">
+        <button class="btn btn-ghost" onclick="closeCkModal()">취소</button>
+        <button class="btn btn-primary" onclick="saveCheckItem()">저장</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="toast-wrap" id="toastWrap"></div>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
@@ -2141,28 +2172,53 @@ window.ckToggleAll = async function(itemId){
     toast(makeAll?'✅ 전체 체크되었습니다':'전체 체크가 해제되었습니다');
   }catch(e){ toast('오류: '+e.message, true); }
 };
-window.addCheckItem = async function(){
-  const name=prompt('제출물 이름을 입력하세요 (예: 개인정보 동의서)','');
-  if(name===null) return;
-  if(!name.trim()){ toast('이름을 입력하세요', true); return; }
-  const due=prompt('마감일을 입력하세요 (예: 2026-09-05)\n없으면 비워두세요','');
-  if(due===null) return;
-  const d=due.trim();
-  if(d && !/^\d{4}-\d{2}-\d{2}$/.test(d)){ toast('날짜 형식이 올바르지 않습니다', true); return; }
-  try{
-    await addDoc(collection(db,CK_ITEM_COL), {name:name.trim(), due:d, order:Date.now()});
-    toast('✅ 제출물이 추가되었습니다');
-  }catch(e){ toast('추가 실패: '+e.message, true); }
+window.ckEditId = null;
+window.addCheckItem = function(){
+  window.ckEditId=null;
+  document.getElementById('ckModalTitle').textContent='제출물 추가';
+  document.getElementById('ckName').value='';
+  document.getElementById('ckDue').value='';
+  document.getElementById('ckDeleteBtn').style.display='none';
+  document.getElementById('ckOverlay').classList.add('open');
+  setTimeout(()=>document.getElementById('ckName').focus(),100);
 };
-window.editCheckItem = async function(id){
+window.editCheckItem = function(id){
   const it=window.checkItems.find(x=>x.id===id); if(!it) return;
-  const name=prompt('제출물 이름', it.name); if(name===null) return;
-  if(!name.trim()){ toast('이름을 입력하세요', true); return; }
-  const due=prompt('마감일 (예: 2026-09-05, 없으면 비움)', it.due||''); if(due===null) return;
-  const d=due.trim();
-  if(d && !/^\d{4}-\d{2}-\d{2}$/.test(d)){ toast('날짜 형식이 올바르지 않습니다', true); return; }
-  try{ await updateDoc(doc(db,CK_ITEM_COL,id), {name:name.trim(), due:d}); toast('✏️ 수정되었습니다'); }
-  catch(e){ toast('수정 실패: '+e.message, true); }
+  window.ckEditId=id;
+  document.getElementById('ckModalTitle').textContent='제출물 수정';
+  document.getElementById('ckName').value=it.name||'';
+  document.getElementById('ckDue').value=it.due||'';
+  document.getElementById('ckDeleteBtn').style.display='block';
+  document.getElementById('ckOverlay').classList.add('open');
+  setTimeout(()=>document.getElementById('ckName').focus(),100);
+};
+window.ckSetDue = function(days){
+  const el=document.getElementById('ckDue');
+  if(days===null){ el.value=''; return; }
+  const d=new Date(); d.setDate(d.getDate()+days);
+  el.value=dk(d.getFullYear(), d.getMonth()+1, d.getDate());
+};
+window.closeCkModal = function(){ document.getElementById('ckOverlay').classList.remove('open'); };
+window.closeCkOutside = function(e){ if(e.target===document.getElementById('ckOverlay')) closeCkModal(); };
+window.saveCheckItem = async function(){
+  const name=document.getElementById('ckName').value.trim();
+  const due=document.getElementById('ckDue').value;
+  if(!name){ toast('제출물 이름을 입력하세요', true); return; }
+  try{
+    if(window.ckEditId){
+      await updateDoc(doc(db,CK_ITEM_COL,window.ckEditId), {name, due});
+      toast('✏️ 수정되었습니다');
+    } else {
+      await addDoc(collection(db,CK_ITEM_COL), {name, due, order:Date.now()});
+      toast('✅ 제출물이 추가되었습니다');
+    }
+    closeCkModal();
+  }catch(e){ toast('저장 실패: '+e.message, true); }
+};
+window.deleteCheckItemFromModal = async function(){
+  if(!window.ckEditId) return;
+  await deleteCheckItem(window.ckEditId);
+  closeCkModal();
 };
 window.deleteCheckItem = async function(id){
   const it=window.checkItems.find(x=>x.id===id);
@@ -2255,7 +2311,7 @@ window.deleteLink = async function(id){
 })();
 
 document.addEventListener('keydown', e=>{
-  if(e.key==='Escape'){ closeModal(); closeLinksModal(); closeTtModal(); closeStatModal(); closeTtZoom(); closeMissingModal(); }
+  if(e.key==='Escape'){ closeModal(); closeLinksModal(); closeTtModal(); closeStatModal(); closeTtZoom(); closeMissingModal(); closeCkModal(); }
   if(e.key==='n'&&!e.target.matches('input,textarea,select')) openModal();
 });
 </script>
