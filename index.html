@@ -121,7 +121,6 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:0
 .mini-check:hover{border-color:var(--done)}
 .mini-check.checked{background:var(--done);border-color:var(--done);color:#fff}
 
-.dclass-name{font-weight:600;color:var(--accent)}
 .dclass-del{background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:13px;padding:0 3px}
 .dclass-del:hover{color:var(--high)}
 
@@ -249,10 +248,10 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:0
 
 /* DAILY LESSON */
 .lesson-row{display:grid;grid-template-columns:52px 1.1fr 2.4fr auto;gap:8px;align-items:center;padding:7px 9px;border-radius:9px;margin-bottom:5px;background:var(--surface2);border:1px solid var(--border);font-size:12px}
+.extra-row{display:grid;grid-template-columns:78px 1fr auto;gap:7px;align-items:center}
+.extra-item{display:grid;grid-template-columns:62px 1fr auto;gap:8px;align-items:center;padding:7px 9px;border-radius:8px;margin-bottom:5px;background:#fffbeb;border:1px solid #fde68a;font-size:12px}
 .btn-linklike{background:none;border:none;color:var(--accent);font-size:12px;font-weight:600;cursor:pointer;font-family:'Pretendard',sans-serif;padding:2px 0}
 .btn-linklike:hover{text-decoration:underline}
-.dclass-row{display:grid;grid-template-columns:112px 1fr auto;gap:7px;align-items:center;margin-bottom:6px}
-.dclass-item{display:grid;grid-template-columns:112px 1fr auto;gap:7px;align-items:center;padding:7px 9px;border-radius:8px;margin-bottom:5px;background:var(--surface2);border:1px solid var(--border);font-size:12px}
 .class-add-form{padding:10px 12px;border-top:1px solid var(--border);display:grid;grid-template-columns:126px 1fr auto;gap:6px;align-items:center;background:var(--bg)}
 .class-log-item{display:grid;grid-template-columns:82px 1fr auto;gap:8px;align-items:center;padding:8px 10px;border-radius:8px;margin-bottom:4px;background:var(--surface2);border:1px solid var(--border);font-size:12px}
 .lesson-row.saved{background:var(--low-bg);border-color:#bbf7d0}
@@ -347,7 +346,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:0
   .header-right .btn{display:none}
   .form-row{grid-template-columns:1fr}
   .class-add-form{grid-template-columns:1fr 1fr}
-  .dclass-row{grid-template-columns:1fr 1fr}
+  .extra-row{grid-template-columns:60px 1fr}
 }
 </style>
 </head>
@@ -720,6 +719,7 @@ const LINK_COL = "quickLinks";
 const STU_COL = "students";
 const STU_NOTE_COL = "studentNotes";
 const HOLIDAY_COL = "holidays";
+const EXTRA_COL = "extraLessons";
 
 window.tasks = [];
 window.journals = {};
@@ -730,6 +730,7 @@ window.timetables = {};
 window.ttImages = {};
 window.quickLinks = [];
 window.students = [];
+window.extraLessons = [];
 window.studentNotes = {};
 window.currentStudentId = null;
 window.editId = null;
@@ -821,6 +822,10 @@ onSnapshot(collection(db,HOLIDAY_COL), snap=>{
   snap.docs.forEach(d=>{ window.customHolidays[d.id]=d.data(); });
   renderCalendar();
   if(isActive('daily')) loadDaily(window.dailyDate);
+});
+onSnapshot(collection(db,EXTRA_COL), snap=>{
+  window.extraLessons = snap.docs.map(d=>({id:d.id,...d.data()}));
+  if(isActive('daily')) renderDailyClass();
 });
 
 function isActive(v){ return document.getElementById('view-'+v)?.classList.contains('active'); }
@@ -1098,33 +1103,28 @@ function renderDailyClass(){
       <span style="font-size:11px">[시간표] 탭에서 학년·반·과목을 입력하면 자동으로 표시됩니다</span></div>`;
   }
 
-  const extra=logs.filter(l=>!l.period);
-  if(extra.length){
-    html += `<div style="font-size:11px;color:var(--text-dim);margin:12px 0 6px">직접 추가한 기록</div>`;
-    html += extra.map(l=>{
-      const cls=window.classRooms.find(c=>c.id===l.classId);
-      const val=[l.unit,l.page].filter(Boolean).join(' ');
-      return `<div class="dclass-item">
-        <div class="dclass-name">${esc(cls?cls.name:'?')}</div>
-        <div>${esc(val)}</div>
-        <button class="dclass-del" onclick="deleteClassLog('${l.id}')">✕</button>
-      </div>`;
-    }).join('');
+  const extras=window.extraLessons.filter(l=>l.date===window.dailyDate)
+    .sort((a,b)=>(parseInt(a.period)||99)-(parseInt(b.period)||99));
+  if(extras.length){
+    html += `<div style="font-size:11px;color:var(--text-dim);margin:12px 0 6px">보강 · 대체수업</div>`;
+    html += extras.map(l=>`<div class="extra-item">
+        <div class="lesson-period">${esc(String(l.period||'-'))}${l.period?'교시':''}</div>
+        <div>${esc(l.title)}</div>
+        <button class="dclass-del" onclick="deleteExtraLesson('${l.id}')">✕</button>
+      </div>`).join('');
   }
 
-  if(window.classRooms.length){
-    const opts=window.classRooms.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('');
-    html += `<div style="margin-top:10px">
-      <button class="btn-linklike" id="extraToggle" onclick="toggleExtraLesson()">＋ 직접 추가 (보강·대체수업 등)</button>
-      <div id="extraForm" style="display:none;margin-top:8px;padding-top:9px;border-top:1px dashed var(--border)">
-        <div class="dclass-row">
-          <select class="form-select" id="dcClass" style="padding:6px 8px;font-size:12px">${opts}</select>
-          <input type="text" class="form-input" id="dcUnit" style="padding:6px 8px;font-size:12px" placeholder="진도 내용">
-          <button class="btn btn-primary btn-sm" style="white-space:nowrap" onclick="addDailyClassLog()">추가</button>
-        </div>
+  html += `<div style="margin-top:10px">
+    <button class="btn-linklike" id="extraToggle" onclick="toggleExtraLesson()">＋ 보강 · 대체수업 추가</button>
+    <div id="extraForm" style="display:none;margin-top:8px;padding-top:9px;border-top:1px dashed var(--border)">
+      <div class="extra-row">
+        <input type="text" class="form-input" id="exPeriod" style="padding:6px 8px;font-size:12px" placeholder="교시">
+        <input type="text" class="form-input" id="exTitle" style="padding:6px 8px;font-size:12px" placeholder="수업명 (예: 1-4 보강, 3학년 자습감독)">
+        <button class="btn btn-primary btn-sm" style="white-space:nowrap" onclick="addExtraLesson()">추가</button>
       </div>
-    </div>`;
-  }
+      <div style="font-size:10px;color:var(--text-dim);margin-top:5px">※ 이 날짜에만 표시되며 수업 진도 기록에는 반영되지 않습니다</div>
+    </div>
+  </div>`;
   el.innerHTML=html;
 }
 window.toggleExtraLesson = function(){
@@ -1132,8 +1132,24 @@ window.toggleExtraLesson = function(){
   if(!f) return;
   const open=f.style.display!=='none';
   f.style.display=open?'none':'block';
-  b.textContent=open?'＋ 직접 추가 (보강·대체수업 등)':'− 닫기';
-  if(!open) setTimeout(()=>document.getElementById('dcUnit')?.focus(),50);
+  b.textContent=open?'＋ 보강 · 대체수업 추가':'− 닫기';
+  if(!open) setTimeout(()=>document.getElementById('exPeriod')?.focus(),50);
+};
+window.addExtraLesson = async function(){
+  const period=document.getElementById('exPeriod').value.trim();
+  const title=document.getElementById('exTitle').value.trim();
+  if(!title){ toast('수업명을 입력하세요', true); return; }
+  try{
+    await addDoc(collection(db,EXTRA_COL), {date:window.dailyDate, period, title, createdAt:serverTimestamp()});
+    document.getElementById('exPeriod').value='';
+    document.getElementById('exTitle').value='';
+    toast('✅ 추가되었습니다');
+  }catch(e){ toast('저장 실패: '+e.message, true); }
+};
+window.deleteExtraLesson = async function(id){
+  if(!confirm('삭제할까요?')) return;
+  try{ await deleteDoc(doc(db,EXTRA_COL,id)); toast('🗑️ 삭제되었습니다'); }
+  catch(e){ toast('삭제 실패: '+e.message, true); }
 };
 window.saveLesson = async function(period, label, logId){
   const unit=document.getElementById(`ls_u_${period}`).value.trim();
@@ -1155,16 +1171,6 @@ window.saveLesson = async function(period, label, logId){
       });
       toast('✅ 진도가 기록되었습니다');
     }
-  }catch(e){ toast('저장 실패: '+e.message, true); }
-};
-window.addDailyClassLog = async function(){
-  const classId=document.getElementById('dcClass').value;
-  const unit=document.getElementById('dcUnit').value.trim();
-  if(!classId||!unit){ toast('반과 진도 내용을 입력하세요', true); return; }
-  try{
-    await addDoc(collection(db,CLASS_LOG_COL), {classId, date:window.dailyDate, unit, page:'', createdAt:serverTimestamp()});
-    document.getElementById('dcUnit').value='';
-    toast('✅ 진도가 기록되었습니다');
   }catch(e){ toast('저장 실패: '+e.message, true); }
 };
 window.openModalForDaily = function(){
