@@ -220,6 +220,39 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:0
 .stat-list-item.p-done::before{background:var(--done)}
 .stat-list-item:hover{border-color:var(--accent);background:var(--accent-light)}
 
+/* CHECKLIST */
+.ck-toggle{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text-muted);cursor:pointer;user-select:none}
+.ck-toggle input{cursor:pointer}
+.ck-scroll{overflow-x:auto;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);box-shadow:var(--shadow)}
+.ck-table{border-collapse:separate;border-spacing:0;width:max-content;min-width:100%}
+.ck-table th,.ck-table td{border-bottom:1px solid var(--border);border-right:1px solid var(--border);padding:0}
+.ck-table thead th{position:sticky;top:0;z-index:2;background:var(--surface2);font-size:11px;font-weight:700;color:var(--text-muted);padding:0}
+.ck-th-stu{position:sticky;left:0;z-index:5!important;background:var(--surface2)!important;min-width:132px;width:132px;box-shadow:2px 0 4px rgba(0,0,0,.05)}
+.ck-td-stu{position:sticky;left:0;z-index:1;background:var(--surface);min-width:132px;width:132px;box-shadow:2px 0 4px rgba(0,0,0,.05);padding:7px 10px!important;text-align:left}
+.ck-row:hover .ck-td-stu{background:var(--accent-light)}
+.ck-row:hover td{background:var(--accent-light)}
+.ck-stu-line{display:flex;align-items:center;gap:8px}
+.ck-stu-num{width:24px;height:24px;flex-shrink:0;border-radius:6px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--text-muted)}
+.ck-stu-name{font-size:12.5px;font-weight:500}
+.ck-col{min-width:104px;width:104px;padding:8px 6px!important;vertical-align:bottom}
+.ck-col-name{font-size:11.5px;font-weight:700;color:var(--text);margin-bottom:3px;line-height:1.35;word-break:keep-all}
+.ck-col-due{font-size:9.5px;color:var(--text-dim);font-weight:500}
+.ck-col-due.over{color:var(--high)}
+.ck-col-cnt{font-size:9.5px;font-weight:700;color:var(--accent);margin-top:3px}
+.ck-col-cnt.full{color:var(--low)}
+.ck-col-tools{display:flex;gap:2px;justify-content:center;margin-top:4px}
+.ck-col-btn{background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:11px;padding:0 2px;border-radius:4px}
+.ck-col-btn:hover{color:var(--accent);background:var(--border)}
+.ck-cell{text-align:center;cursor:pointer;transition:background .1s;height:40px}
+.ck-cell:hover{background:var(--accent-light)!important}
+.ck-mark{width:22px;height:22px;border-radius:6px;border:2px solid var(--border2);display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:transparent;background:#fff;transition:all .12s}
+.ck-mark.on{background:var(--low);border-color:var(--low);color:#fff}
+.ck-sum-row td{background:var(--surface2);font-size:10.5px;font-weight:700;color:var(--text-muted);padding:6px 4px!important;text-align:center}
+.ck-done-col{opacity:.5}
+.miss-block{margin-bottom:14px}
+.miss-head{font-size:12.5px;font-weight:700;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center}
+.miss-names{font-size:12px;line-height:1.9;color:var(--text-muted);background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:9px 12px}
+
 /* STUDENT */
 .stu-layout{display:grid;grid-template-columns:250px 1fr;gap:16px;align-items:start}
 .stu-listwrap{display:flex;flex-direction:column;max-height:calc(100vh - 190px)}
@@ -365,6 +398,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:0
     <div class="tab" onclick="switchTab('todo')">✅ 할 일</div>
     <div class="tab" onclick="switchTab('class')">📖 수업 진도</div>
     <div class="tab" onclick="switchTab('student')">👤 학생카드</div>
+    <div class="tab" onclick="switchTab('check')">☑️ 체크리스트</div>
     <div class="tab" onclick="switchTab('timetable')">🕐 시간표</div>
   </div>
   <div class="header-right">
@@ -486,6 +520,19 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:0
       </div>
     </div>
 
+    <!-- CHECKLIST -->
+    <div class="view" id="view-check">
+      <div class="page-header">
+        <div class="page-title">체크리스트</div>
+        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+          <label class="ck-toggle"><input type="checkbox" id="ckShowDone" onchange="renderCheck()"> 완료 항목 표시</label>
+          <button class="btn btn-ghost btn-sm" onclick="openMissingModal()">📋 미제출자 보기</button>
+          <button class="btn btn-primary btn-sm" onclick="addCheckItem()">+ 제출물 추가</button>
+        </div>
+      </div>
+      <div id="checkContent"></div>
+    </div>
+
     <!-- TIMETABLE -->
     <div class="view" id="view-timetable">
       <div class="page-header">
@@ -542,6 +589,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:0
     <div class="mobile-tab" onclick="switchTab('todo')"><div class="mobile-tab-icon">✅</div>할 일</div>
     <div class="mobile-tab" onclick="switchTab('class')"><div class="mobile-tab-icon">📖</div>진도</div>
     <div class="mobile-tab" onclick="switchTab('student')"><div class="mobile-tab-icon">👤</div>학생</div>
+    <div class="mobile-tab" onclick="switchTab('check')"><div class="mobile-tab-icon">☑️</div>제출물</div>
     <div class="mobile-tab" onclick="switchTab('timetable')"><div class="mobile-tab-icon">🕐</div>시간표</div>
   </div>
 </div>
@@ -689,6 +737,17 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:0
 <!-- IMAGE ZOOM -->
 <div class="tt-zoom" id="ttZoom" onclick="closeTtZoom()"><img id="ttZoomImg" src="" alt="학급 시간표"></div>
 
+<!-- MISSING MODAL -->
+<div class="overlay" id="missOverlay" onclick="closeMissingOutside(event)">
+  <div class="modal" style="width:520px">
+    <div class="modal-head">
+      <div class="modal-title">📋 미제출자</div>
+      <button class="modal-close" onclick="closeMissingModal()">✕</button>
+    </div>
+    <div id="missBody"></div>
+  </div>
+</div>
+
 <div class="toast-wrap" id="toastWrap"></div>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
@@ -720,6 +779,8 @@ const STU_COL = "students";
 const STU_NOTE_COL = "studentNotes";
 const HOLIDAY_COL = "holidays";
 const EXTRA_COL = "extraLessons";
+const CK_ITEM_COL = "checkItems";
+const CK_MARK_COL = "checkMarks";
 
 window.tasks = [];
 window.journals = {};
@@ -731,6 +792,8 @@ window.ttImages = {};
 window.quickLinks = [];
 window.students = [];
 window.extraLessons = [];
+window.checkItems = [];
+window.checkMarks = {};
 window.studentNotes = {};
 window.currentStudentId = null;
 window.editId = null;
@@ -811,6 +874,7 @@ onSnapshot(collection(db,STU_COL), snap=>{
     .sort((a,b)=>(parseInt(a.number)||999)-(parseInt(b.number)||999)||(a.name||'').localeCompare(b.name||''));
   if(!window.currentStudentId && window.students.length) window.currentStudentId=window.students[0].id;
   if(isActive('student')) renderStudent();
+  if(isActive('check')) renderCheck();
 });
 onSnapshot(collection(db,STU_NOTE_COL), snap=>{
   window.studentNotes={};
@@ -826,6 +890,16 @@ onSnapshot(collection(db,HOLIDAY_COL), snap=>{
 onSnapshot(collection(db,EXTRA_COL), snap=>{
   window.extraLessons = snap.docs.map(d=>({id:d.id,...d.data()}));
   if(isActive('daily')) renderDailyClass();
+});
+onSnapshot(collection(db,CK_ITEM_COL), snap=>{
+  window.checkItems = snap.docs.map(d=>({id:d.id,...d.data()}))
+    .sort((a,b)=>(a.order||0)-(b.order||0));
+  if(isActive('check')) renderCheck();
+});
+onSnapshot(collection(db,CK_MARK_COL), snap=>{
+  window.checkMarks={};
+  snap.docs.forEach(d=>{ window.checkMarks[d.id]=true; });
+  if(isActive('check')) renderCheck();
 });
 
 function isActive(v){ return document.getElementById('view-'+v)?.classList.contains('active'); }
@@ -880,7 +954,7 @@ window.renderAll = function(){
 window.switchTab = function(view){
   document.querySelectorAll('.tab,.mobile-tab').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
-  const map={month:0,daily:1,todo:2,class:3,student:4,timetable:5};
+  const map={month:0,daily:1,todo:2,class:3,student:4,check:5,timetable:6};
   document.querySelectorAll('.tab')[map[view]]?.classList.add('active');
   document.querySelectorAll('.mobile-tab')[map[view]]?.classList.add('active');
   document.getElementById('view-'+view).classList.add('active');
@@ -888,6 +962,7 @@ window.switchTab = function(view){
   else if(view==='timetable') renderTimetable();
   else if(view==='class') renderClass();
   else if(view==='student') renderStudent();
+  else if(view==='check') renderCheck();
   else renderAll();
 };
 // 월간 안에서만 이번 달로 복귀
@@ -1970,6 +2045,157 @@ window.printStudent = function(){
   w.document.close(); w.print();
 };
 
+// ── CHECKLIST ────────────────────────────────────────
+function ckKey(itemId, stuId){ return `${itemId}_${stuId}`; }
+function ckDoneCount(itemId){
+  return window.students.filter(s=>window.checkMarks[ckKey(itemId,s.id)]).length;
+}
+function ckIsComplete(item){
+  return window.students.length>0 && ckDoneCount(item.id)>=window.students.length;
+}
+
+window.renderCheck = function(){
+  const el=document.getElementById('checkContent'); if(!el) return;
+  const showDone=document.getElementById('ckShowDone')?.checked;
+
+  if(!window.students.length){
+    el.innerHTML=`<div class="empty"><div class="empty-icon">👤</div><p>학생 명단이 없습니다</p>
+      <small>[학생카드] 탭에서 먼저 명단을 등록하세요</small></div>`;
+    return;
+  }
+  const items=window.checkItems.filter(it=>showDone||!ckIsComplete(it));
+  if(!window.checkItems.length){
+    el.innerHTML=`<div class="empty"><div class="empty-icon">☑️</div><p>등록된 제출물이 없습니다</p>
+      <small>+ 제출물 추가 버튼으로 시작하세요</small></div>`;
+    return;
+  }
+  if(!items.length){
+    el.innerHTML=`<div class="empty"><div class="empty-icon">🎉</div><p>모든 제출물이 완료되었습니다</p>
+      <small>완료 항목 표시를 켜면 볼 수 있습니다</small></div>`;
+    return;
+  }
+
+  const today=getTodayStr();
+  let head=`<tr><th class="ck-th-stu ck-col-name" style="padding:8px 10px;text-align:left">학생 (${window.students.length}명)</th>`;
+  items.forEach(it=>{
+    const done=ckDoneCount(it.id);
+    const full=done>=window.students.length;
+    const over=it.due && it.due<today && !full;
+    head+=`<th class="ck-col ${full?'ck-done-col':''}">
+      <div class="ck-col-name">${esc(it.name)}</div>
+      ${it.due?`<div class="ck-col-due ${over?'over':''}">~${it.due.slice(5)}</div>`:''}
+      <div class="ck-col-cnt ${full?'full':''}">${done}/${window.students.length}</div>
+      <div class="ck-col-tools">
+        <button class="ck-col-btn" title="수정" onclick="editCheckItem('${it.id}')">✏️</button>
+        <button class="ck-col-btn" title="전체 체크" onclick="ckToggleAll('${it.id}')">☑</button>
+        <button class="ck-col-btn" title="삭제" onclick="deleteCheckItem('${it.id}')">✕</button>
+      </div>
+    </th>`;
+  });
+  head+=`</tr>`;
+
+  let body='';
+  window.students.forEach(s=>{
+    body+=`<tr class="ck-row"><td class="ck-td-stu">
+      <div class="ck-stu-line"><div class="ck-stu-num">${esc(String(s.number||''))}</div>
+      <div class="ck-stu-name">${esc(s.name||'')}</div></div></td>`;
+    items.forEach(it=>{
+      const on=!!window.checkMarks[ckKey(it.id,s.id)];
+      body+=`<td class="ck-cell" onclick="ckToggle('${it.id}','${s.id}')">
+        <span class="ck-mark ${on?'on':''}">✓</span></td>`;
+    });
+    body+=`</tr>`;
+  });
+
+  let sum=`<tr class="ck-sum-row"><td class="ck-td-stu" style="background:var(--surface2)!important;text-align:left;padding-left:12px!important">제출 현황</td>`;
+  items.forEach(it=>{
+    const done=ckDoneCount(it.id);
+    const pct=window.students.length?Math.round(done/window.students.length*100):0;
+    sum+=`<td>${pct}%</td>`;
+  });
+  sum+=`</tr>`;
+
+  el.innerHTML=`<div class="ck-scroll"><table class="ck-table">
+    <thead>${head}</thead><tbody>${body}${sum}</tbody></table></div>
+    <p style="font-size:11px;color:var(--text-dim);margin-top:10px">
+      칸을 클릭하면 체크됩니다. 제출물이 많아지면 표를 좌우로 밀어서 보세요 (학생 이름은 고정됩니다).</p>`;
+};
+
+window.ckToggle = async function(itemId, stuId){
+  const key=ckKey(itemId,stuId);
+  try{
+    if(window.checkMarks[key]) await deleteDoc(doc(db,CK_MARK_COL,key));
+    else await setDoc(doc(db,CK_MARK_COL,key), {itemId, stuId});
+  }catch(e){ toast('오류: '+e.message, true); }
+};
+window.ckToggleAll = async function(itemId){
+  const done=ckDoneCount(itemId);
+  const makeAll = done < window.students.length;
+  if(!confirm(makeAll?'전체 학생을 제출 완료로 표시할까요?':'전체 체크를 해제할까요?')) return;
+  try{
+    for(const s of window.students){
+      const key=ckKey(itemId,s.id);
+      if(makeAll && !window.checkMarks[key]) await setDoc(doc(db,CK_MARK_COL,key), {itemId, stuId:s.id});
+      else if(!makeAll && window.checkMarks[key]) await deleteDoc(doc(db,CK_MARK_COL,key));
+    }
+    toast(makeAll?'✅ 전체 체크되었습니다':'전체 체크가 해제되었습니다');
+  }catch(e){ toast('오류: '+e.message, true); }
+};
+window.addCheckItem = async function(){
+  const name=prompt('제출물 이름을 입력하세요 (예: 개인정보 동의서)','');
+  if(name===null) return;
+  if(!name.trim()){ toast('이름을 입력하세요', true); return; }
+  const due=prompt('마감일을 입력하세요 (예: 2026-09-05)\n없으면 비워두세요','');
+  if(due===null) return;
+  const d=due.trim();
+  if(d && !/^\d{4}-\d{2}-\d{2}$/.test(d)){ toast('날짜 형식이 올바르지 않습니다', true); return; }
+  try{
+    await addDoc(collection(db,CK_ITEM_COL), {name:name.trim(), due:d, order:Date.now()});
+    toast('✅ 제출물이 추가되었습니다');
+  }catch(e){ toast('추가 실패: '+e.message, true); }
+};
+window.editCheckItem = async function(id){
+  const it=window.checkItems.find(x=>x.id===id); if(!it) return;
+  const name=prompt('제출물 이름', it.name); if(name===null) return;
+  if(!name.trim()){ toast('이름을 입력하세요', true); return; }
+  const due=prompt('마감일 (예: 2026-09-05, 없으면 비움)', it.due||''); if(due===null) return;
+  const d=due.trim();
+  if(d && !/^\d{4}-\d{2}-\d{2}$/.test(d)){ toast('날짜 형식이 올바르지 않습니다', true); return; }
+  try{ await updateDoc(doc(db,CK_ITEM_COL,id), {name:name.trim(), due:d}); toast('✏️ 수정되었습니다'); }
+  catch(e){ toast('수정 실패: '+e.message, true); }
+};
+window.deleteCheckItem = async function(id){
+  const it=window.checkItems.find(x=>x.id===id);
+  if(!confirm(`'${it?it.name:''}' 항목을 삭제할까요?\n체크 기록도 함께 삭제됩니다.`)) return;
+  try{
+    await deleteDoc(doc(db,CK_ITEM_COL,id));
+    for(const s of window.students){
+      const key=ckKey(id,s.id);
+      if(window.checkMarks[key]) await deleteDoc(doc(db,CK_MARK_COL,key)).catch(()=>{});
+    }
+    toast('🗑️ 삭제되었습니다');
+  }catch(e){ toast('삭제 실패: '+e.message, true); }
+};
+window.openMissingModal = function(){
+  const body=document.getElementById('missBody');
+  const items=window.checkItems.filter(it=>!ckIsComplete(it));
+  if(!window.students.length){ body.innerHTML=`<div class="empty"><p>학생 명단이 없습니다</p></div>`; }
+  else if(!items.length){ body.innerHTML=`<div class="empty"><div class="empty-icon">🎉</div><p>미제출자가 없습니다</p></div>`; }
+  else {
+    body.innerHTML=items.map(it=>{
+      const miss=window.students.filter(s=>!window.checkMarks[ckKey(it.id,s.id)]);
+      return `<div class="miss-block">
+        <div class="miss-head"><span>${esc(it.name)}${it.due?` <span style="font-weight:400;color:var(--text-dim);font-size:11px">~${it.due}</span>`:''}</span>
+        <span style="font-size:11px;color:var(--high)">${miss.length}명</span></div>
+        <div class="miss-names">${miss.map(s=>`${esc(String(s.number||''))} ${esc(s.name||'')}`).join(' · ')}</div>
+      </div>`;
+    }).join('');
+  }
+  document.getElementById('missOverlay').classList.add('open');
+};
+window.closeMissingModal = function(){ document.getElementById('missOverlay').classList.remove('open'); };
+window.closeMissingOutside = function(e){ if(e.target===document.getElementById('missOverlay')) closeMissingModal(); };
+
 // ── LINKS ────────────────────────────────────────────
 function renderLinks(){
   const side=document.getElementById('sideLinks');
@@ -2029,7 +2255,7 @@ window.deleteLink = async function(id){
 })();
 
 document.addEventListener('keydown', e=>{
-  if(e.key==='Escape'){ closeModal(); closeLinksModal(); closeTtModal(); closeStatModal(); closeTtZoom(); }
+  if(e.key==='Escape'){ closeModal(); closeLinksModal(); closeTtModal(); closeStatModal(); closeTtZoom(); closeMissingModal(); }
   if(e.key==='n'&&!e.target.matches('input,textarea,select')) openModal();
 });
 </script>
