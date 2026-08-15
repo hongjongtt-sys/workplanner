@@ -78,8 +78,8 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:0
 .cal-label:last-child{color:var(--accent)}
 .cal-cell{background:var(--surface);min-height:104px;padding:6px;cursor:pointer;transition:background .15s;position:relative}
 .cal-cell:hover{background:var(--accent-light)}
-.cal-cell.today{background:#fffbe8}
-.cal-cell.today::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--accent)}
+.cal-cell.today{background:#e8f0fe;box-shadow:inset 0 0 0 2.5px var(--accent);border-radius:4px}
+.cal-cell.today .cal-date span:first-child{background:var(--accent);color:#fff;border-radius:5px;padding:1px 6px;font-weight:700}
 .cal-cell.other{opacity:.38}
 .cal-date{font-size:11px;font-weight:700;color:var(--text-muted);margin-bottom:4px;display:flex;align-items:center;justify-content:space-between}
 .cal-cell.today .cal-date{color:var(--accent)}
@@ -196,6 +196,41 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:0
 .tt-class th{background:#eff6ff;color:#1d4ed8}
 .tt-class td.tt-period{background:#eff6ff;color:#1d4ed8}
 
+/* STUDENT */
+.stu-layout{display:grid;grid-template-columns:250px 1fr;gap:16px;align-items:start}
+.stu-listwrap{display:flex;flex-direction:column;max-height:calc(100vh - 190px)}
+.stu-list{overflow-y:auto;padding:0 8px 8px}
+.stu-item{display:flex;align-items:center;gap:9px;padding:9px 11px;border-radius:9px;margin-bottom:4px;cursor:pointer;transition:all .12s;border:1px solid transparent}
+.stu-item:hover{background:var(--surface2)}
+.stu-item.active{background:var(--accent-light);border-color:var(--accent)}
+.stu-num{width:26px;height:26px;flex-shrink:0;border-radius:7px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--text-muted)}
+.stu-item.active .stu-num{background:var(--accent);color:#fff}
+.stu-name{font-size:13px;font-weight:500;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.stu-dot{width:6px;height:6px;border-radius:50%;background:var(--mid);flex-shrink:0}
+.stu-detail-head{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.stu-detail-name{font-family:'Instrument Serif',serif;font-size:22px}
+.stu-detail-name small{font-family:'Pretendard',sans-serif;font-size:12px;color:var(--text-muted);margin-left:8px;font-weight:500}
+.stu-textarea{width:100%;min-height:calc(100vh - 300px);padding:16px;font-size:13.5px;line-height:1.8;border:none;outline:none;resize:vertical;font-family:'Pretendard',sans-serif;background:var(--surface);color:var(--text)}
+.stu-quick{display:flex;gap:5px;flex-wrap:wrap;padding:10px 16px 0}
+.stu-chip{padding:4px 11px;font-size:11px;font-weight:600;border-radius:16px;cursor:pointer;border:1px solid var(--border);background:var(--surface2);color:var(--text-muted);font-family:'Pretendard',sans-serif}
+.stu-chip:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-light)}
+
+/* TIMETABLE CELL */
+.tt-cell{min-height:44px;padding:5px 3px;cursor:pointer;transition:background .12s}
+.tt-cell:hover{background:var(--accent-light)}
+.tt-cell-sub{font-size:12px;font-weight:600;line-height:1.3}
+.tt-cell-cls{font-size:10px;color:var(--text-muted);margin-top:1px}
+.tt-cell-empty{color:var(--text-dim);font-size:11px}
+
+/* DAILY LESSON */
+.lesson-row{display:grid;grid-template-columns:46px 1fr 1.3fr 78px auto;gap:7px;align-items:center;padding:7px 9px;border-radius:9px;margin-bottom:5px;background:var(--surface2);border:1px solid var(--border);font-size:12px}
+.lesson-row.saved{background:var(--low-bg);border-color:#bbf7d0}
+.lesson-period{font-size:11px;font-weight:700;color:var(--text-muted);text-align:center;background:var(--surface);border-radius:6px;padding:3px 0;border:1px solid var(--border)}
+.lesson-label{font-weight:600}
+.lesson-label small{display:block;font-weight:400;color:var(--text-muted);font-size:10px}
+.lesson-row input{border:1px solid var(--border);border-radius:6px;padding:5px 8px;font-size:12px;font-family:'Pretendard',sans-serif;background:var(--surface);outline:none;width:100%;color:var(--text)}
+.lesson-row input:focus{border-color:var(--accent)}
+
 /* LINKS */
 .link-list{display:flex;flex-direction:column;gap:6px}
 .link-item{display:flex;align-items:center;gap:9px;padding:9px 11px;background:var(--surface2);border:1px solid var(--border);border-radius:9px;font-size:12.5px;transition:all .15s}
@@ -266,6 +301,9 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:0
 @media (max-width:900px){
   .class-body{grid-template-columns:1fr}
   .tt-wrap{grid-template-columns:1fr}
+  .stu-layout{grid-template-columns:1fr}
+  .stu-listwrap{max-height:290px}
+  .stu-textarea{min-height:300px}
 }
 @media (max-width:768px){
   .app{grid-template-columns:1fr}
@@ -296,6 +334,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:0
     <div class="tab" onclick="switchTab('daily')">📝 일간</div>
     <div class="tab" onclick="switchTab('todo')">✅ 할 일</div>
     <div class="tab" onclick="switchTab('class')">📖 수업 진도</div>
+    <div class="tab" onclick="switchTab('student')">👤 학생카드</div>
     <div class="tab" onclick="switchTab('timetable')">🕐 시간표</div>
   </div>
   <div class="header-right">
@@ -319,7 +358,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:0
           <span class="cal-month-label" id="calMonthLabel"></span>
           <button onclick="changeMonth(1)">›</button>
           <button onclick="changeYear(1)" title="다음 해">»</button>
-          <button onclick="goToday()" style="margin-left:4px">오늘</button>
+          <button onclick="goThisMonth()" style="margin-left:4px">이번 달</button>
         </div>
       </div>
       <div class="cal-scroll-wrap"><div class="cal-grid" id="calGrid"></div></div>
@@ -397,6 +436,25 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:0
       <div id="classContent"></div>
     </div>
 
+    <!-- STUDENT -->
+    <div class="view" id="view-student">
+      <div class="page-header">
+        <div class="page-title">학생카드</div>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-ghost btn-sm" onclick="addStudents()">+ 학생 추가</button>
+          <button class="btn btn-ghost btn-sm" onclick="printStudent()">🖨 인쇄</button>
+        </div>
+      </div>
+      <div class="stu-layout">
+        <div class="panel stu-listwrap">
+          <div class="panel-head"><span>명단</span><span id="stuCount" style="font-size:10px;font-weight:500;color:var(--text-muted)"></span></div>
+          <input type="text" class="form-input" id="stuSearch" placeholder="이름 검색..." style="margin:8px;width:calc(100% - 16px);padding:7px 10px;font-size:12px" oninput="renderStudentList()">
+          <div class="stu-list" id="stuList"></div>
+        </div>
+        <div class="panel" id="stuDetail"></div>
+      </div>
+    </div>
+
     <!-- TIMETABLE -->
     <div class="view" id="view-timetable">
       <div class="page-header">
@@ -455,6 +513,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:0
     <div class="mobile-tab" onclick="switchTab('daily')"><div class="mobile-tab-icon">📝</div>일간</div>
     <div class="mobile-tab" onclick="switchTab('todo')"><div class="mobile-tab-icon">✅</div>할 일</div>
     <div class="mobile-tab" onclick="switchTab('class')"><div class="mobile-tab-icon">📖</div>진도</div>
+    <div class="mobile-tab" onclick="switchTab('student')"><div class="mobile-tab-icon">👤</div>학생</div>
     <div class="mobile-tab" onclick="switchTab('timetable')"><div class="mobile-tab-icon">🕐</div>시간표</div>
   </div>
 </div>
@@ -557,6 +616,37 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:0
   </div>
 </div>
 
+<!-- TIMETABLE CELL MODAL -->
+<div class="overlay" id="ttOverlay" onclick="closeTtOutside(event)">
+  <div class="modal" style="width:400px">
+    <div class="modal-head">
+      <div class="modal-title" id="ttModalTitle">수업 입력</div>
+      <button class="modal-close" onclick="closeTtModal()">✕</button>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">학년</label><input type="text" class="form-input" id="ttGrade" placeholder="예: 2"></div>
+      <div class="form-group"><label class="form-label">반</label><input type="text" class="form-input" id="ttClassNo" placeholder="예: 3"></div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">과목</label>
+      <input type="text" class="form-input" id="ttSubject" placeholder="예: 확률과 통계" list="ttSubjectList">
+      <datalist id="ttSubjectList">
+        <option value="확률과 통계"></option><option value="대수"></option>
+        <option value="미적분"></option><option value="기하"></option>
+        <option value="공통수학1"></option><option value="공통수학2"></option>
+      </datalist>
+    </div>
+    <p style="font-size:11px;color:var(--text-dim);margin-bottom:14px">학년·반을 입력하면 그 요일의 일간 화면에 수업이 자동으로 나타납니다.</p>
+    <div class="modal-actions">
+      <button class="btn btn-danger" onclick="clearTtCell()">비우기</button>
+      <div class="modal-actions-right">
+        <button class="btn btn-ghost" onclick="closeTtModal()">취소</button>
+        <button class="btn btn-primary" onclick="saveTtCell()">저장</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="toast-wrap" id="toastWrap"></div>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
@@ -583,6 +673,8 @@ const CLASS_LOG_COL = "classLogs";
 const CLASS_MEMO_COL = "classMemos";
 const TT_COL = "timetables";
 const LINK_COL = "quickLinks";
+const STU_COL = "students";
+const STU_NOTE_COL = "studentNotes";
 
 window.tasks = [];
 window.journals = {};
@@ -591,6 +683,9 @@ window.classLogs = [];
 window.classMemos = {};
 window.timetables = {};
 window.quickLinks = [];
+window.students = [];
+window.studentNotes = {};
+window.currentStudentId = null;
 window.editId = null;
 window.currentFilter = 'all';
 window.calDate = new Date();
@@ -658,6 +753,17 @@ onSnapshot(collection(db,LINK_COL), snap=>{
   window.quickLinks = snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(a.order||0)-(b.order||0));
   renderLinks();
 });
+onSnapshot(collection(db,STU_COL), snap=>{
+  window.students = snap.docs.map(d=>({id:d.id,...d.data()}))
+    .sort((a,b)=>(parseInt(a.number)||999)-(parseInt(b.number)||999)||(a.name||'').localeCompare(b.name||''));
+  if(!window.currentStudentId && window.students.length) window.currentStudentId=window.students[0].id;
+  if(isActive('student')) renderStudent();
+});
+onSnapshot(collection(db,STU_NOTE_COL), snap=>{
+  window.studentNotes={};
+  snap.docs.forEach(d=>{ window.studentNotes[d.id]=d.data(); });
+  if(isActive('student')) renderStudent();
+});
 
 function isActive(v){ return document.getElementById('view-'+v)?.classList.contains('active'); }
 
@@ -711,19 +817,25 @@ window.renderAll = function(){
 window.switchTab = function(view){
   document.querySelectorAll('.tab,.mobile-tab').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
-  const map={month:0,daily:1,todo:2,class:3,timetable:4};
+  const map={month:0,daily:1,todo:2,class:3,student:4,timetable:5};
   document.querySelectorAll('.tab')[map[view]]?.classList.add('active');
   document.querySelectorAll('.mobile-tab')[map[view]]?.classList.add('active');
   document.getElementById('view-'+view).classList.add('active');
   if(view==='daily'){ if(!window.dailyDate) window.dailyDate=getTodayStr(); loadDaily(window.dailyDate); }
   else if(view==='timetable') renderTimetable();
   else if(view==='class') renderClass();
+  else if(view==='student') renderStudent();
   else renderAll();
 };
-window.goToday = function(){
-  const t=getTodayStr();
+// 월간 안에서만 이번 달로 복귀
+window.goThisMonth = function(){
   window.calDate=new Date();
-  window.dailyDate=t;
+  renderCalendar();
+};
+// 헤더 날짜 → 오늘 일간으로
+window.goToday = function(){
+  window.calDate=new Date();
+  window.dailyDate=getTodayStr();
   switchTab('daily');
 };
 
@@ -871,16 +983,44 @@ function renderDailyTasks(){
   }).join('');
 }
 
+function findClassIdByName(name){
+  if(!name) return null;
+  const c=window.classRooms.find(c=>(c.name||'').replace(/\s/g,'')===name.replace(/\s/g,''));
+  return c?c.id:null;
+}
 function renderDailyClass(){
   const el=document.getElementById('dailyClass'); if(!el) return;
-  if(!window.classRooms.length){
-    el.innerHTML=`<div style="text-align:center;padding:16px;color:var(--text-dim);font-size:12px">먼저 [수업 진도] 탭에서 반을 추가하세요</div>`;
-    return;
-  }
+  const lessons=lessonsOn(window.dailyDate);
   const logs=window.classLogs.filter(l=>l.date===window.dailyDate);
-  const opts=window.classRooms.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('');
-  el.innerHTML=`
-    ${logs.length?logs.map(l=>{
+  let html='';
+
+  if(lessons.length){
+    html += `<div style="font-size:11px;color:var(--text-dim);margin-bottom:7px">시간표 기준 이 날의 수업 ${lessons.length}개</div>`;
+    html += lessons.map(ls=>{
+      const cid=findClassIdByName(ls.label);
+      const log = logs.find(l=>String(l.period)===String(ls.period)) ||
+                  (cid?logs.find(l=>l.classId===cid&&!l.period):null);
+      const saved=!!log;
+      return `<div class="lesson-row ${saved?'saved':''}">
+        <div class="lesson-period">${ls.period}교시</div>
+        <div class="lesson-label">${esc(ls.label||'—')}<small>${esc(ls.s||'')}</small></div>
+        <input type="text" id="ls_u_${ls.period}" placeholder="단원명" value="${esc(log?log.unit:'')}">
+        <input type="text" id="ls_p_${ls.period}" placeholder="쪽수" value="${esc(log?(log.page||''):'')}">
+        ${saved
+          ? `<button class="btn btn-ghost btn-sm" style="white-space:nowrap" onclick="saveLesson('${ls.period}','${jsStr(ls.label)}','${log.id}')">수정</button>`
+          : `<button class="btn btn-primary btn-sm" style="white-space:nowrap" onclick="saveLesson('${ls.period}','${jsStr(ls.label)}','')">기록</button>`}
+      </div>`;
+    }).join('');
+  } else {
+    html += `<div style="text-align:center;padding:12px;color:var(--text-dim);font-size:12px">
+      시간표에 등록된 이 날의 수업이 없습니다<br>
+      <span style="font-size:11px">[시간표] 탭에서 학년·반·과목을 입력하면 자동으로 표시됩니다</span></div>`;
+  }
+
+  const extra=logs.filter(l=>!l.period);
+  if(extra.length){
+    html += `<div style="font-size:11px;color:var(--text-dim);margin:12px 0 6px">직접 추가한 기록</div>`;
+    html += extra.map(l=>{
       const cls=window.classRooms.find(c=>c.id===l.classId);
       return `<div class="dclass-item">
         <div class="dclass-name">${esc(cls?cls.name:'?')}</div>
@@ -888,14 +1028,43 @@ function renderDailyClass(){
         <div style="color:var(--text-muted);font-size:11px">${esc(l.page||'')}</div>
         <button class="dclass-del" onclick="deleteClassLog('${l.id}')">✕</button>
       </div>`;
-    }).join(''):`<div style="text-align:center;padding:12px;color:var(--text-dim);font-size:12px">이 날 기록된 진도가 없습니다</div>`}
-    <div class="dclass-row" style="margin-top:8px">
+    }).join('');
+  }
+
+  if(window.classRooms.length){
+    const opts=window.classRooms.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('');
+    html += `<div class="dclass-row" style="margin-top:12px;padding-top:10px;border-top:1px dashed var(--border)">
       <select class="form-select" id="dcClass" style="padding:6px 8px;font-size:12px">${opts}</select>
-      <input type="text" class="form-input" id="dcUnit" style="padding:6px 8px;font-size:12px" placeholder="단원명">
+      <input type="text" class="form-input" id="dcUnit" style="padding:6px 8px;font-size:12px" placeholder="단원명 (직접 추가)">
       <input type="text" class="form-input" id="dcPage" style="padding:6px 8px;font-size:12px" placeholder="쪽수">
-      <button class="btn btn-primary btn-sm" style="white-space:nowrap" onclick="addDailyClassLog()">추가</button>
+      <button class="btn btn-ghost btn-sm" style="white-space:nowrap" onclick="addDailyClassLog()">추가</button>
     </div>`;
+  }
+  el.innerHTML=html;
 }
+window.saveLesson = async function(period, label, logId){
+  const unit=document.getElementById(`ls_u_${period}`).value.trim();
+  const page=document.getElementById(`ls_p_${period}`).value.trim();
+  if(!unit){ toast('단원명을 입력하세요', true); return; }
+  let classId=findClassIdByName(label);
+  try{
+    if(!classId && label){
+      const ref=await addDoc(collection(db,CLASS_COL), {name:label, order:window.classRooms.length});
+      classId=ref.id;
+      toast(`'${label}' 반이 자동 등록되었습니다`);
+    }
+    if(logId){
+      await updateDoc(doc(db,CLASS_LOG_COL,logId), {unit, page, classId:classId||null, period:String(period)});
+      toast('✏️ 수정되었습니다');
+    } else {
+      await addDoc(collection(db,CLASS_LOG_COL), {
+        classId:classId||null, date:window.dailyDate, unit, page,
+        period:String(period), createdAt:serverTimestamp()
+      });
+      toast('✅ 진도가 기록되었습니다');
+    }
+  }catch(e){ toast('저장 실패: '+e.message, true); }
+};
 window.addDailyClassLog = async function(){
   const classId=document.getElementById('dcClass').value;
   const unit=document.getElementById('dcUnit').value.trim();
@@ -903,6 +1072,8 @@ window.addDailyClassLog = async function(){
   if(!classId||!unit){ toast('반과 단원명을 입력하세요', true); return; }
   try{
     await addDoc(collection(db,CLASS_LOG_COL), {classId, date:window.dailyDate, unit, page, createdAt:serverTimestamp()});
+    document.getElementById('dcUnit').value='';
+    document.getElementById('dcPage').value='';
     toast('✅ 진도가 기록되었습니다');
   }catch(e){ toast('저장 실패: '+e.message, true); }
 };
@@ -1236,14 +1407,28 @@ window.setTtSemester = function(s){
   document.getElementById('ttSem2').classList.toggle('active', s===2);
   renderTimetable();
 };
+// 셀 값 정규화: 예전 문자열 형식도 지원
+function ttNorm(v){
+  if(!v) return null;
+  if(typeof v==='string'){ return v.trim()? {g:'',c:'',s:v.trim()} : null; }
+  if(!v.s && !v.g && !v.c) return null;
+  return {g:v.g||'', c:v.c||'', s:v.s||''};
+}
+function ttClassLabel(cell){
+  if(!cell) return '';
+  if(cell.g&&cell.c) return `${cell.g}-${cell.c}`;
+  return cell.g||cell.c||'';
+}
 function renderTimetable(){
   const key=ttKey(window.ttYear, window.ttSemester);
   const data=window.timetables[key]||{};
-  document.getElementById('ttYearLabel').textContent=`${window.ttYear}학년도`;
-  document.getElementById('ttTeacher').innerHTML=ttGrid('teacher', data.teacher||{});
-  document.getElementById('ttClass').innerHTML=ttGrid('cls', data.cls||{});
+  const lbl=document.getElementById('ttYearLabel');
+  if(lbl) lbl.textContent=`${window.ttYear}학년도`;
+  const tEl=document.getElementById('ttTeacher'), cEl=document.getElementById('ttClass');
+  if(tEl) tEl.innerHTML=ttGrid('teacher', data.teacher||{}, true);
+  if(cEl) cEl.innerHTML=ttGrid('cls', data.cls||{}, false);
 }
-function ttGrid(kind, cells){
+function ttGrid(kind, cells, withClass){
   let h=`<table class="tt-grid ${kind==='teacher'?'tt-teacher':'tt-class'}"><tr><th class="tt-corner"></th>`;
   TT_DAYS.forEach(d=>{ h+=`<th>${d}</th>`; });
   h+=`</tr>`;
@@ -1251,30 +1436,81 @@ function ttGrid(kind, cells){
     h+=`<tr><td class="tt-period">${p}</td>`;
     TT_DAYS.forEach((d,di)=>{
       const ck=`${di}_${p}`;
-      h+=`<td><input type="text" value="${esc(cells[ck]||'')}" oninput="ttInput('${kind}','${ck}',this.value)" placeholder=""></td>`;
+      const cell=ttNorm(cells[ck]);
+      const cl=ttClassLabel(cell);
+      h+=`<td><div class="tt-cell" onclick="openTtModal('${kind}','${ck}',${di},${p})">
+        ${cell?`<div class="tt-cell-sub">${esc(cell.s||'')}</div>${withClass&&cl?`<div class="tt-cell-cls">${esc(cl)}</div>`:''}`
+              :`<div class="tt-cell-empty">+</div>`}
+      </div></td>`;
     });
     h+=`</tr>`;
   }
   return h+`</table>`;
 }
-window.ttInput = function(kind, cellKey, val){
+window._ttEdit=null;
+window.openTtModal = function(kind, cellKey, dayIdx, period){
+  window._ttEdit={kind, cellKey};
+  const key=ttKey(window.ttYear, window.ttSemester);
+  const cell=ttNorm((window.timetables[key]?.[kind])?.[cellKey]) || {g:'',c:'',s:''};
+  document.getElementById('ttModalTitle').textContent =
+    `${TT_DAYS[dayIdx]}요일 ${period}교시 · ${kind==='teacher'?'교사':'학급'}`;
+  document.getElementById('ttGrade').value=cell.g;
+  document.getElementById('ttClassNo').value=cell.c;
+  document.getElementById('ttSubject').value=cell.s;
+  document.getElementById('ttOverlay').classList.add('open');
+  setTimeout(()=>document.getElementById('ttSubject').focus(),100);
+};
+window.closeTtModal = function(){ document.getElementById('ttOverlay').classList.remove('open'); };
+window.closeTtOutside = function(e){ if(e.target===document.getElementById('ttOverlay')) closeTtModal(); };
+window.saveTtCell = async function(){
+  if(!window._ttEdit) return;
+  const g=document.getElementById('ttGrade').value.trim();
+  const c=document.getElementById('ttClassNo').value.trim();
+  const s=document.getElementById('ttSubject').value.trim();
+  if(!s && !g && !c){ toast('과목을 입력하세요', true); return; }
+  await writeTtCell(window._ttEdit.kind, window._ttEdit.cellKey, {g,c,s});
+  closeTtModal();
+};
+window.clearTtCell = async function(){
+  if(!window._ttEdit) return;
+  await writeTtCell(window._ttEdit.kind, window._ttEdit.cellKey, null);
+  closeTtModal();
+};
+async function writeTtCell(kind, cellKey, val){
   const key=ttKey(window.ttYear, window.ttSemester);
   if(!window.timetables[key]) window.timetables[key]={teacher:{}, cls:{}};
   if(!window.timetables[key][kind]) window.timetables[key][kind]={};
-  window.timetables[key][kind][cellKey]=val;
+  if(val) window.timetables[key][kind][cellKey]=val;
+  else delete window.timetables[key][kind][cellKey];
+  renderTimetable();
   document.getElementById('ttStatus').textContent='저장 중...';
-  clearTimeout(ttSaveTimer);
-  ttSaveTimer=setTimeout(async ()=>{
-    try{
-      await setDoc(doc(db,TT_COL,key), {
-        teacher: window.timetables[key].teacher||{},
-        cls: window.timetables[key].cls||{},
-        updatedAt: new Date().toISOString()
-      });
-      document.getElementById('ttStatus').textContent='✓ 저장됨';
-    }catch(e){ document.getElementById('ttStatus').textContent='저장 실패'; }
-  }, 1000);
-};
+  try{
+    await setDoc(doc(db,TT_COL,key), {
+      teacher: window.timetables[key].teacher||{},
+      cls: window.timetables[key].cls||{},
+      updatedAt: new Date().toISOString()
+    });
+    document.getElementById('ttStatus').textContent='✓ 저장됨';
+  }catch(e){ document.getElementById('ttStatus').textContent='저장 실패'; toast('저장 실패: '+e.message, true); }
+}
+// 특정 날짜의 교사 시간표 수업 목록
+function lessonsOn(dateStr){
+  const [y,m,d]=dateStr.split('-').map(Number);
+  const wd=new Date(y,m-1,d).getDay();      // 0=일
+  if(wd===0||wd===6) return [];
+  const dayIdx=wd-1;                         // 0=월
+  const schoolYear = m<3 ? y-1 : y;
+  const sem = (m>=3&&m<=7) ? 1 : (m>=8&&m<=12) ? 2 : 2;
+  let data = window.timetables[ttKey(schoolYear, sem)];
+  if(!data) data = window.timetables[ttKey(schoolYear, sem===1?2:1)];
+  if(!data||!data.teacher) return [];
+  const out=[];
+  for(let p=1;p<=TT_PERIODS;p++){
+    const cell=ttNorm(data.teacher[`${dayIdx}_${p}`]);
+    if(cell && (cell.s||cell.g)) out.push({period:p, ...cell, label:ttClassLabel(cell)});
+  }
+  return out;
+}
 window.copyTimetable = async function(){
   const src=prompt('복사해올 학년도와 학기를 입력하세요 (예: 2025-2)', `${window.ttYear-1}-${window.ttSemester}`);
   if(!src) return;
@@ -1296,6 +1532,141 @@ window.clearTimetable = async function(){
     renderTimetable();
     toast('🗑️ 비웠습니다');
   }catch(e){ toast('실패: '+e.message, true); }
+};
+
+// ── STUDENT CARD ─────────────────────────────────────
+let stuSaveTimer=null, pendingStuId=null;
+
+function renderStudent(){ renderStudentList(); renderStudentDetail(); }
+
+window.renderStudentList = function(){
+  const el=document.getElementById('stuList'); if(!el) return;
+  const q=(document.getElementById('stuSearch')?.value||'').trim().toLowerCase();
+  const list=window.students.filter(s=>!q||(s.name||'').toLowerCase().includes(q)||String(s.number||'').includes(q));
+  const cnt=document.getElementById('stuCount');
+  if(cnt) cnt.textContent=`${window.students.length}명`;
+  if(!window.students.length){
+    el.innerHTML=`<div style="font-size:12px;color:var(--text-dim);text-align:center;padding:18px">+ 학생 추가를 눌러<br>명단을 등록하세요</div>`;
+    return;
+  }
+  if(!list.length){ el.innerHTML=`<div style="font-size:12px;color:var(--text-dim);text-align:center;padding:18px">검색 결과 없음</div>`; return; }
+  el.innerHTML=list.map(s=>{
+    const has=!!(window.studentNotes[s.id]&&(window.studentNotes[s.id].content||'').trim());
+    return `<div class="stu-item ${s.id===window.currentStudentId?'active':''}" onclick="selectStudent('${s.id}')">
+      <div class="stu-num">${esc(String(s.number||''))}</div>
+      <div class="stu-name">${esc(s.name||'')}</div>
+      ${has?'<div class="stu-dot" title="기록 있음"></div>':''}
+    </div>`;
+  }).join('');
+};
+
+function renderStudentDetail(){
+  const el=document.getElementById('stuDetail'); if(!el) return;
+  const s=window.students.find(x=>x.id===window.currentStudentId);
+  if(!s){
+    el.innerHTML=`<div class="empty"><div class="empty-icon">👤</div><p>학생을 선택하세요</p><small>왼쪽 명단에서 이름을 클릭하면 기록할 수 있습니다</small></div>`;
+    return;
+  }
+  const note=(window.studentNotes[s.id]&&window.studentNotes[s.id].content)||'';
+  el.innerHTML=`
+    <div class="stu-detail-head">
+      <div class="stu-detail-name">${esc(s.name||'')}<small>${s.number?esc(String(s.number))+'번':''}</small></div>
+      <div style="display:flex;gap:6px;align-items:center">
+        <span id="stuStatus" style="font-size:11px;color:var(--text-dim)">${note.trim()?'✓ 저장됨':''}</span>
+        <button class="btn btn-ghost btn-sm" onclick="renameStudent('${s.id}')">✏️ 정보</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteStudent('${s.id}')">삭제</button>
+      </div>
+    </div>
+    <div class="stu-quick">
+      <button class="stu-chip" onclick="stuInsert('상담')">＋ 상담</button>
+      <button class="stu-chip" onclick="stuInsert('관찰')">＋ 관찰</button>
+      <button class="stu-chip" onclick="stuInsert('학부모 상담')">＋ 학부모</button>
+      <button class="stu-chip" onclick="stuInsert('진로')">＋ 진로</button>
+      <button class="stu-chip" onclick="stuInsert('생기부')">＋ 생기부</button>
+    </div>
+    <textarea class="stu-textarea" id="stuNote" placeholder="이 학생에 대한 기록을 자유롭게 작성하세요.&#10;&#10;상단 버튼을 누르면 날짜와 함께 항목이 추가됩니다.">${esc(note)}</textarea>`;
+  const ta=document.getElementById('stuNote');
+  ta.addEventListener('input', ()=>{
+    document.getElementById('stuStatus').textContent='저장 중...';
+    pendingStuId=s.id;
+    clearTimeout(stuSaveTimer);
+    stuSaveTimer=setTimeout(()=>saveStudentNote(s.id), 1200);
+  });
+}
+
+window.selectStudent = async function(id){
+  if(pendingStuId && pendingStuId!==id){ clearTimeout(stuSaveTimer); await saveStudentNote(pendingStuId); }
+  window.currentStudentId=id;
+  renderStudent();
+};
+async function saveStudentNote(sid){
+  const ta=document.getElementById('stuNote');
+  if(!ta || window.currentStudentId!==sid){ pendingStuId=null; return; }
+  const content=ta.value;
+  try{
+    if(content.trim()) await setDoc(doc(db,STU_NOTE_COL,sid), {content, updatedAt:new Date().toISOString()});
+    else await deleteDoc(doc(db,STU_NOTE_COL,sid)).catch(()=>{});
+    const st=document.getElementById('stuStatus');
+    if(st) st.textContent = content.trim()?'✓ 저장됨':'';
+    pendingStuId=null;
+  }catch(e){ toast('저장 실패: '+e.message, true); }
+}
+window.stuInsert = function(kind){
+  const ta=document.getElementById('stuNote'); if(!ta) return;
+  const n=new Date();
+  const header=`\n[${kind}] ${n.getFullYear()}-${pad2(n.getMonth()+1)}-${pad2(n.getDate())}\n`;
+  const cur=ta.value;
+  ta.value = (cur.trim()? cur.replace(/\s+$/,'')+'\n' : '') + header;
+  ta.focus();
+  ta.setSelectionRange(ta.value.length, ta.value.length);
+  ta.dispatchEvent(new Event('input'));
+};
+window.addStudents = async function(){
+  const input=prompt(
+    '학생을 추가합니다.\n\n· 이름만: 홍길동, 김철수\n· 번호와 함께: 1 홍길동, 2 김철수\n\n(쉼표 또는 줄바꿈으로 구분)', '');
+  if(input===null) return;
+  const rows=input.split(/[,\n]/).map(s=>s.trim()).filter(Boolean);
+  if(!rows.length){ toast('입력된 내용이 없습니다', true); return; }
+  let base=window.students.length;
+  try{
+    for(let i=0;i<rows.length;i++){
+      const m=rows[i].match(/^(\d+)[.\s)]*\s*(.+)$/);
+      const number = m? m[1] : String(base+i+1);
+      const name = m? m[2].trim() : rows[i];
+      await addDoc(collection(db,STU_COL), {name, number, order:base+i});
+    }
+    toast(`✅ ${rows.length}명이 추가되었습니다`);
+  }catch(e){ toast('추가 실패: '+e.message, true); }
+};
+window.renameStudent = async function(id){
+  const s=window.students.find(x=>x.id===id); if(!s) return;
+  const name=prompt('이름', s.name||''); if(name===null) return;
+  const number=prompt('번호', String(s.number||'')); if(number===null) return;
+  if(!name.trim()){ toast('이름을 입력하세요', true); return; }
+  try{ await updateDoc(doc(db,STU_COL,id), {name:name.trim(), number:number.trim()}); toast('✏️ 수정되었습니다'); }
+  catch(e){ toast('수정 실패: '+e.message, true); }
+};
+window.deleteStudent = async function(id){
+  const s=window.students.find(x=>x.id===id);
+  if(!confirm(`'${s?s.name:''}' 학생을 삭제할까요?\n기록도 함께 삭제됩니다.`)) return;
+  try{
+    await deleteDoc(doc(db,STU_COL,id));
+    await deleteDoc(doc(db,STU_NOTE_COL,id)).catch(()=>{});
+    if(window.currentStudentId===id) window.currentStudentId=window.students[0]?.id||null;
+    toast('🗑️ 삭제되었습니다');
+  }catch(e){ toast('삭제 실패: '+e.message, true); }
+};
+window.printStudent = function(){
+  const s=window.students.find(x=>x.id===window.currentStudentId);
+  if(!s){ toast('학생을 선택하세요', true); return; }
+  const note=(window.studentNotes[s.id]&&window.studentNotes[s.id].content)||'';
+  const w=window.open('','_blank');
+  w.document.write(`<html><head><meta charset="utf-8"><title>${esc(s.name)}</title>
+    <style>body{font-family:sans-serif;padding:36px;line-height:1.8}
+    h1{font-size:20px;border-bottom:2px solid #333;padding-bottom:8px}
+    pre{white-space:pre-wrap;font-family:sans-serif;font-size:14px}</style></head>
+    <body><h1>${esc(s.name)} ${s.number?esc(String(s.number))+'번':''}</h1><pre>${esc(note)}</pre></body></html>`);
+  w.document.close(); w.print();
 };
 
 // ── LINKS ────────────────────────────────────────────
