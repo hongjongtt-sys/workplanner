@@ -547,9 +547,11 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:0
         <button class="filter-chip active" id="ttSem1" onclick="setTtSemester(1)">1학기</button>
         <button class="filter-chip" id="ttSem2" onclick="setTtSemester(2)">2학기</button>
         <span style="flex:1"></span>
+        <button class="btn btn-ghost btn-sm" onclick="openSemesterModal()">📆 학기 기간</button>
         <button class="btn btn-ghost btn-sm" onclick="copyTimetable()">📋 다른 학기에서 복사</button>
         <button class="btn btn-danger btn-sm" onclick="clearTimetable()">비우기</button>
       </div>
+      <div id="ttRangeNote" style="font-size:11px;color:var(--text-dim);margin-bottom:12px"></div>
       <div class="tt-wrap">
         <div class="tt-panel">
           <div class="tt-title" style="color:#9f1239">🗓️ 교사 시간표</div>
@@ -779,6 +781,40 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:0
   </div>
 </div>
 
+<!-- SEMESTER RANGE MODAL -->
+<div class="overlay" id="semOverlay" onclick="closeSemOutside(event)">
+  <div class="modal" style="width:430px">
+    <div class="modal-head">
+      <div class="modal-title" id="semModalTitle">학기 기간</div>
+      <button class="modal-close" onclick="closeSemesterModal()">✕</button>
+    </div>
+    <p style="font-size:12px;color:var(--text-muted);margin-bottom:16px;line-height:1.7">
+      개학일과 방학식 날짜를 지정하면, 일간 화면에 <b>해당 학기의 수업만</b> 표시됩니다.
+      어느 기간에도 속하지 않는 날은 방학으로 처리됩니다.</p>
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:12px">
+      <div style="font-size:12px;font-weight:700;color:var(--accent);margin-bottom:9px">1학기</div>
+      <div class="form-row">
+        <div class="form-group" style="margin-bottom:0"><label class="form-label">시작 (개학)</label><input type="date" class="form-input" id="sem1Start"></div>
+        <div class="form-group" style="margin-bottom:0"><label class="form-label">종료 (방학식)</label><input type="date" class="form-input" id="sem1End"></div>
+      </div>
+    </div>
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:16px">
+      <div style="font-size:12px;font-weight:700;color:var(--accent);margin-bottom:9px">2학기</div>
+      <div class="form-row">
+        <div class="form-group" style="margin-bottom:0"><label class="form-label">시작 (개학)</label><input type="date" class="form-input" id="sem2Start"></div>
+        <div class="form-group" style="margin-bottom:0"><label class="form-label">종료 (방학식)</label><input type="date" class="form-input" id="sem2End"></div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-danger" onclick="clearSemesterRange()">기간 지정 해제</button>
+      <div class="modal-actions-right">
+        <button class="btn btn-ghost" onclick="closeSemesterModal()">취소</button>
+        <button class="btn btn-primary" onclick="saveSemesterRange()">저장</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="toast-wrap" id="toastWrap"></div>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
@@ -812,6 +848,7 @@ const HOLIDAY_COL = "holidays";
 const EXTRA_COL = "extraLessons";
 const CK_ITEM_COL = "checkItems";
 const CK_MARK_COL = "checkMarks";
+const SEM_COL = "semesters";
 
 window.tasks = [];
 window.journals = {};
@@ -825,6 +862,7 @@ window.students = [];
 window.extraLessons = [];
 window.checkItems = [];
 window.checkMarks = {};
+window.semRanges = {};
 window.studentNotes = {};
 window.currentStudentId = null;
 window.editId = null;
@@ -931,6 +969,12 @@ onSnapshot(collection(db,CK_MARK_COL), snap=>{
   window.checkMarks={};
   snap.docs.forEach(d=>{ window.checkMarks[d.id]=true; });
   if(isActive('check')) renderCheck();
+});
+onSnapshot(collection(db,SEM_COL), snap=>{
+  window.semRanges={};
+  snap.docs.forEach(d=>{ window.semRanges[d.id]=d.data(); });
+  renderSemNote();
+  if(isActive('daily')) renderDailyClass();
 });
 
 function isActive(v){ return document.getElementById('view-'+v)?.classList.contains('active'); }
@@ -1184,6 +1228,9 @@ function renderDailyClass(){
   if(hol){
     html += `<div style="text-align:center;padding:14px;color:var(--high);font-size:13px;font-weight:600;background:#fef4f4;border:1px solid #fecaca;border-radius:9px">
       🏖 ${esc(hol)} · 수업 없음</div>`;
+  } else if(isVacation(window.dailyDate)){
+    html += `<div style="text-align:center;padding:14px;color:var(--text-muted);font-size:13px;font-weight:600;background:var(--surface2);border:1px solid var(--border);border-radius:9px">
+      🏝 방학 중 · 학기 기간이 아닙니다</div>`;
   } else if(lessons.length){
     html += `<div style="font-size:11px;color:var(--text-dim);margin-bottom:7px">시간표 기준 이 날의 수업 ${lessons.length}개</div>`;
     html += lessons.map(ls=>{
@@ -1737,6 +1784,7 @@ function renderTimetable(){
   if(lbl) lbl.textContent=`${window.ttYear}학년도`;
   const tEl=document.getElementById('ttTeacher');
   if(tEl) tEl.innerHTML=ttGrid('teacher', data.teacher||{}, true);
+  renderSemNote();
   renderTtImage();
 }
 function renderTtImage(){
@@ -1895,16 +1943,34 @@ async function writeTtCell(kind, cellKey, val){
     document.getElementById('ttStatus').textContent='✓ 저장됨';
   }catch(e){ document.getElementById('ttStatus').textContent='저장 실패'; toast('저장 실패: '+e.message, true); }
 }
+// 날짜 → {schoolYear, semester} 또는 null(방학/학기 외)
+function semesterOf(dateStr){
+  // 1) 사용자가 지정한 학기 기간 우선
+  for(const key in window.semRanges){
+    const r=window.semRanges[key];
+    if(r && r.s1start && r.s1end && dateStr>=r.s1start && dateStr<=r.s1end)
+      return {schoolYear:parseInt(key), semester:1, named:true};
+    if(r && r.s2start && r.s2end && dateStr>=r.s2start && dateStr<=r.s2end)
+      return {schoolYear:parseInt(key), semester:2, named:true};
+  }
+  // 2) 지정된 기간이 하나라도 있으면, 벗어난 날은 방학으로 간주
+  if(Object.keys(window.semRanges).length) return null;
+  // 3) 미설정 시 기존 방식(월 기준)
+  const [y,m]=dateStr.split('-').map(Number);
+  const schoolYear = m<3 ? y-1 : y;
+  const semester = (m>=3&&m<=7) ? 1 : 2;
+  return {schoolYear, semester, named:false};
+}
+
 // 특정 날짜의 교사 시간표 수업 목록
 function lessonsOn(dateStr){
   const [y,m,d]=dateStr.split('-').map(Number);
   const wd=new Date(y,m-1,d).getDay();      // 0=일
   if(wd===0||wd===6) return [];
   const dayIdx=wd-1;                         // 0=월
-  const schoolYear = m<3 ? y-1 : y;
-  const sem = (m>=3&&m<=7) ? 1 : (m>=8&&m<=12) ? 2 : 2;
-  let data = window.timetables[ttKey(schoolYear, sem)];
-  if(!data) data = window.timetables[ttKey(schoolYear, sem===1?2:1)];
+  const sem=semesterOf(dateStr);
+  if(!sem) return [];                        // 방학 등
+  const data=window.timetables[ttKey(sem.schoolYear, sem.semester)];
   if(!data||!data.teacher) return [];
   const out=[];
   for(let p=1;p<=TT_PERIODS;p++){
@@ -1912,6 +1978,57 @@ function lessonsOn(dateStr){
     if(cell && (cell.s||cell.g)) out.push({period:p, ...cell, label:ttClassLabel(cell)});
   }
   return out;
+}
+function isVacation(dateStr){
+  return Object.keys(window.semRanges).length>0 && !semesterOf(dateStr);
+}
+
+// ── SEMESTER RANGE ───────────────────────────────────
+window.openSemesterModal = function(){
+  const y=window.ttYear;
+  const r=window.semRanges[y]||{};
+  document.getElementById('semModalTitle').textContent=`${y}학년도 학기 기간`;
+  document.getElementById('sem1Start').value=r.s1start||'';
+  document.getElementById('sem1End').value=r.s1end||'';
+  document.getElementById('sem2Start').value=r.s2start||'';
+  document.getElementById('sem2End').value=r.s2end||'';
+  document.getElementById('semOverlay').classList.add('open');
+};
+window.closeSemesterModal = function(){ document.getElementById('semOverlay').classList.remove('open'); };
+window.closeSemOutside = function(e){ if(e.target===document.getElementById('semOverlay')) closeSemesterModal(); };
+window.saveSemesterRange = async function(){
+  const y=window.ttYear;
+  const d={
+    s1start:document.getElementById('sem1Start').value,
+    s1end:document.getElementById('sem1End').value,
+    s2start:document.getElementById('sem2Start').value,
+    s2end:document.getElementById('sem2End').value
+  };
+  if(d.s1start&&d.s1end&&d.s1start>d.s1end){ toast('1학기 시작일이 종료일보다 늦습니다', true); return; }
+  if(d.s2start&&d.s2end&&d.s2start>d.s2end){ toast('2학기 시작일이 종료일보다 늦습니다', true); return; }
+  if(d.s1end&&d.s2start&&d.s2start<=d.s1end){ toast('2학기 시작일이 1학기 종료일보다 빨라야 할 수 없습니다', true); return; }
+  try{
+    await setDoc(doc(db,SEM_COL,String(y)), d);
+    toast('📆 학기 기간이 저장되었습니다');
+    closeSemesterModal();
+  }catch(e){ toast('저장 실패: '+e.message, true); }
+};
+window.clearSemesterRange = async function(){
+  const y=window.ttYear;
+  if(!confirm(`${y}학년도 학기 기간 지정을 해제할까요?\n(해제하면 월 기준으로 자동 판단합니다)`)) return;
+  try{ await deleteDoc(doc(db,SEM_COL,String(y))); toast('해제되었습니다'); closeSemesterModal(); }
+  catch(e){ toast('실패: '+e.message, true); }
+};
+function renderSemNote(){
+  const el=document.getElementById('ttRangeNote'); if(!el) return;
+  const r=window.semRanges[window.ttYear];
+  if(!r){
+    el.innerHTML=`<span style="color:var(--mid)">⚠ 학기 기간이 지정되지 않아 월 기준(3~7월 1학기 / 8~2월 2학기)으로 판단합니다. <b>📆 학기 기간</b>에서 지정하세요.</span>`;
+    return;
+  }
+  const s1 = r.s1start&&r.s1end ? `1학기 ${r.s1start} ~ ${r.s1end}` : '';
+  const s2 = r.s2start&&r.s2end ? `2학기 ${r.s2start} ~ ${r.s2end}` : '';
+  el.innerHTML=[s1,s2].filter(Boolean).map(t=>`<span style="margin-right:14px">📆 ${t}</span>`).join('')||'기간 미설정';
 }
 window.copyTimetable = async function(){
   const src=prompt('복사해올 학년도와 학기를 입력하세요 (예: 2025-2)', `${window.ttYear-1}-${window.ttSemester}`);
@@ -2311,7 +2428,7 @@ window.deleteLink = async function(id){
 })();
 
 document.addEventListener('keydown', e=>{
-  if(e.key==='Escape'){ closeModal(); closeLinksModal(); closeTtModal(); closeStatModal(); closeTtZoom(); closeMissingModal(); closeCkModal(); }
+  if(e.key==='Escape'){ closeModal(); closeLinksModal(); closeTtModal(); closeStatModal(); closeTtZoom(); closeMissingModal(); closeCkModal(); closeSemesterModal(); }
   if(e.key==='n'&&!e.target.matches('input,textarea,select')) openModal();
 });
 </script>
