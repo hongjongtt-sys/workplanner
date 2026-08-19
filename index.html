@@ -220,6 +220,21 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:0
 .stat-list-item.p-done::before{background:var(--done)}
 .stat-list-item:hover{border-color:var(--accent);background:var(--accent-light)}
 
+/* CLUB */
+.club-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+.act-add{display:grid;grid-template-columns:150px 1fr auto;gap:7px;align-items:start;padding:12px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:14px;box-shadow:var(--shadow)}
+.act-add textarea{min-height:38px;resize:vertical;font-family:'Pretendard',sans-serif;font-size:13px;line-height:1.6;padding:8px 10px;border:1px solid var(--border);border-radius:8px;outline:none;background:var(--bg);color:var(--text)}
+.act-add textarea:focus{border-color:var(--accent)}
+.act-item{display:flex;gap:12px;padding:12px 14px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:8px;box-shadow:var(--shadow)}
+.act-date{flex-shrink:0;width:104px;font-size:12px;font-weight:700;color:var(--accent);cursor:pointer}
+.act-date:hover{text-decoration:underline}
+.act-date small{display:block;font-weight:500;color:var(--text-dim);font-size:10px;margin-top:2px}
+.act-body{flex:1;font-size:13px;line-height:1.75;white-space:pre-wrap;word-break:break-word;min-width:0}
+.act-tools{flex-shrink:0;display:flex;gap:3px;align-items:flex-start}
+.mem-item{display:grid;grid-template-columns:64px 1fr auto;gap:10px;align-items:center;padding:9px 12px;background:var(--surface);border:1px solid var(--border);border-radius:10px;margin-bottom:5px;font-size:13px}
+.mem-cls{font-size:11px;font-weight:700;color:var(--text-muted);background:var(--surface2);border-radius:6px;padding:3px 0;text-align:center}
+.mem-name{font-weight:500}
+
 /* CHECKLIST */
 .ck-toggle{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text-muted);cursor:pointer;user-select:none}
 .ck-toggle input{cursor:pointer}
@@ -287,6 +302,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:0
 .btn-linklike:hover{text-decoration:underline}
 .class-add-form{padding:10px 12px;border-top:1px solid var(--border);display:grid;grid-template-columns:126px 1fr auto;gap:6px;align-items:center;background:var(--bg)}
 .class-log-item{display:grid;grid-template-columns:82px 1fr auto;gap:8px;align-items:center;padding:8px 10px;border-radius:8px;margin-bottom:4px;background:var(--surface2);border:1px solid var(--border);font-size:12px}
+.lesson-row.nonprog{background:var(--bg);border-style:dashed}
 .lesson-row.saved{background:var(--low-bg);border-color:#bbf7d0}
 .lesson-period{font-size:11px;font-weight:700;color:var(--text-muted);text-align:center;background:var(--surface);border-radius:6px;padding:3px 0;border:1px solid var(--border)}
 .lesson-label{font-weight:600}
@@ -403,6 +419,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:0
     <div class="tab" onclick="switchTab('class')">📖 수업 진도</div>
     <div class="tab" onclick="switchTab('student')">👤 학생카드</div>
     <div class="tab" onclick="switchTab('check')">☑️ 체크리스트</div>
+    <div class="tab" onclick="switchTab('club')">🎯 동아리</div>
     <div class="tab" onclick="switchTab('timetable')">🕐 시간표</div>
   </div>
   <div class="header-right">
@@ -537,6 +554,23 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:0
       <div id="checkContent"></div>
     </div>
 
+    <!-- CLUB -->
+    <div class="view" id="view-club">
+      <div class="page-header">
+        <div class="page-title" id="clubTitle">동아리</div>
+        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+          <button class="btn btn-ghost btn-sm" onclick="renameClub()">✏️ 이름</button>
+          <button class="btn btn-ghost btn-sm" onclick="addClubMembers()">+ 부원 추가</button>
+        </div>
+      </div>
+      <div class="club-tabs">
+        <button class="class-tab-btn active" id="clubTab0" onclick="switchClubView(0)">📋 활동 기록</button>
+        <button class="class-tab-btn" id="clubTab1" onclick="switchClubView(1)">📦 제출 현황</button>
+        <button class="class-tab-btn" id="clubTab2" onclick="switchClubView(2)">👥 부원 명단</button>
+      </div>
+      <div id="clubContent"></div>
+    </div>
+
     <!-- TIMETABLE -->
     <div class="view" id="view-timetable">
       <div class="page-header">
@@ -596,6 +630,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:0
     <div class="mobile-tab" onclick="switchTab('class')"><div class="mobile-tab-icon">📖</div>진도</div>
     <div class="mobile-tab" onclick="switchTab('student')"><div class="mobile-tab-icon">👤</div>학생</div>
     <div class="mobile-tab" onclick="switchTab('check')"><div class="mobile-tab-icon">☑️</div>제출물</div>
+    <div class="mobile-tab" onclick="switchTab('club')"><div class="mobile-tab-icon">🎯</div>동아리</div>
     <div class="mobile-tab" onclick="switchTab('timetable')"><div class="mobile-tab-icon">🕐</div>시간표</div>
   </div>
 </div>
@@ -853,6 +888,11 @@ const EXTRA_COL = "extraLessons";
 const CK_ITEM_COL = "checkItems";
 const CK_MARK_COL = "checkMarks";
 const SEM_COL = "semesters";
+const CLUB_MEM_COL = "clubMembers";
+const CLUB_ACT_COL = "clubActivities";
+const CLUB_ITEM_COL = "clubItems";
+const CLUB_MARK_COL = "clubMarks";
+const CFG_COL = "config";
 
 window.tasks = [];
 window.journals = {};
@@ -867,6 +907,12 @@ window.extraLessons = [];
 window.checkItems = [];
 window.checkMarks = {};
 window.semRanges = {};
+window.clubMembers = [];
+window.clubActs = [];
+window.clubItems = [];
+window.clubMarks = {};
+window.config = {};
+window.clubView = 0;
 window.studentNotes = {};
 window.currentStudentId = null;
 window.editId = null;
@@ -980,6 +1026,30 @@ onSnapshot(collection(db,SEM_COL), snap=>{
   renderSemNote();
   if(isActive('daily')) renderDailyClass();
 });
+onSnapshot(collection(db,CLUB_MEM_COL), snap=>{
+  window.clubMembers = snap.docs.map(d=>({id:d.id,...d.data()}))
+    .sort((a,b)=>(a.cls||'').localeCompare(b.cls||'')||(parseInt(a.number)||999)-(parseInt(b.number)||999));
+  if(isActive('club')) renderClub();
+});
+onSnapshot(collection(db,CLUB_ACT_COL), snap=>{
+  window.clubActs = snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>b.date<a.date?-1:1);
+  if(isActive('club')) renderClub();
+});
+onSnapshot(collection(db,CLUB_ITEM_COL), snap=>{
+  window.clubItems = snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(a.order||0)-(b.order||0));
+  if(isActive('club')) renderClub();
+});
+onSnapshot(collection(db,CLUB_MARK_COL), snap=>{
+  window.clubMarks={};
+  snap.docs.forEach(d=>{ window.clubMarks[d.id]=true; });
+  if(isActive('club')) renderClub();
+});
+onSnapshot(collection(db,CFG_COL), snap=>{
+  window.config={};
+  snap.docs.forEach(d=>{ window.config[d.id]=d.data(); });
+  const t=document.getElementById('clubTitle');
+  if(t) t.textContent=(window.config.club&&window.config.club.name)||'동아리';
+});
 
 function isActive(v){ return document.getElementById('view-'+v)?.classList.contains('active'); }
 
@@ -1033,7 +1103,7 @@ window.renderAll = function(){
 window.switchTab = function(view){
   document.querySelectorAll('.tab,.mobile-tab').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
-  const map={month:0,daily:1,todo:2,class:3,student:4,check:5,timetable:6};
+  const map={month:0,daily:1,todo:2,class:3,student:4,check:5,club:6,timetable:7};
   document.querySelectorAll('.tab')[map[view]]?.classList.add('active');
   document.querySelectorAll('.mobile-tab')[map[view]]?.classList.add('active');
   document.getElementById('view-'+view).classList.add('active');
@@ -1042,6 +1112,7 @@ window.switchTab = function(view){
   else if(view==='class') renderClass();
   else if(view==='student') renderStudent();
   else if(view==='check') renderCheck();
+  else if(view==='club') renderClub();
   else renderAll();
 };
 // 월간 안에서만 이번 달로 복귀
@@ -1222,6 +1293,10 @@ function findClassIdByName(name){
   const c=window.classRooms.find(c=>(c.name||'').replace(/\s/g,'')===name.replace(/\s/g,''));
   return c?c.id:null;
 }
+function isNonProgressSubject(s){
+  const t=(s||'').replace(/\s/g,'');
+  return /창체|자율|동아리|진로|봉사/.test(t);
+}
 function renderDailyClass(){
   const el=document.getElementById('dailyClass'); if(!el) return;
   const hol=holidayName(window.dailyDate);
@@ -1238,6 +1313,17 @@ function renderDailyClass(){
   } else if(lessons.length){
     html += `<div style="font-size:11px;color:var(--text-dim);margin-bottom:7px">시간표 기준 이 날의 수업 ${lessons.length}개</div>`;
     html += lessons.map(ls=>{
+      if(isNonProgressSubject(ls.s)){
+        const isClub=/창체|동아리/.test((ls.s||'').replace(/\s/g,''));
+        return `<div class="lesson-row nonprog">
+          <div class="lesson-period">${ls.period}교시</div>
+          <div class="lesson-label">${esc(ls.label||'—')}<small>${esc(ls.s||'')}</small></div>
+          <div style="font-size:11px;color:var(--text-dim)">진도 기록 대상이 아닙니다</div>
+          ${isClub
+            ? `<button class="btn btn-ghost btn-sm" style="white-space:nowrap" onclick="switchTab('club')">🎯 동아리 기록</button>`
+            : `<span></span>`}
+        </div>`;
+      }
       const cid=findClassIdByName(ls.label);
       const log = logs.find(l=>String(l.period)===String(ls.period)) ||
                   (cid?logs.find(l=>l.classId===cid&&!l.period):null);
@@ -2372,6 +2458,217 @@ window.openMissingModal = function(){
 };
 window.closeMissingModal = function(){ document.getElementById('missOverlay').classList.remove('open'); };
 window.closeMissingOutside = function(e){ if(e.target===document.getElementById('missOverlay')) closeMissingModal(); };
+
+// ── CLUB ─────────────────────────────────────────────
+window.switchClubView = function(v){
+  window.clubView=v;
+  [0,1,2].forEach(i=>document.getElementById('clubTab'+i).classList.toggle('active', i===v));
+  renderClub();
+};
+function clubMarkKey(itemId, memId){ return `${itemId}_${memId}`; }
+function clubDone(itemId){ return window.clubMembers.filter(m=>window.clubMarks[clubMarkKey(itemId,m.id)]).length; }
+
+window.renderClub = function(){
+  const el=document.getElementById('clubContent'); if(!el) return;
+  const t=document.getElementById('clubTitle');
+  if(t) t.textContent=(window.config.club&&window.config.club.name)||'동아리';
+  if(window.clubView===0) el.innerHTML=clubActivityView();
+  else if(window.clubView===1) el.innerHTML=clubSubmitView();
+  else el.innerHTML=clubMemberView();
+};
+
+function clubActivityView(){
+  const acts=window.clubActs;
+  const dayLabels=['일','월','화','수','목','금','토'];
+  return `<div class="act-add">
+      <input type="date" class="form-input" id="actDate" value="${getTodayStr()}" style="font-size:12px">
+      <textarea id="actBody" placeholder="활동 내용을 입력하세요 (예: 진로 융합 심화 탐구 주제 선정, 조별 계획서 작성)"></textarea>
+      <button class="btn btn-primary btn-sm" style="white-space:nowrap" onclick="addClubAct()">기록</button>
+    </div>
+    ${acts.length?acts.map(a=>{
+      const [y,m,d]=a.date.split('-').map(Number);
+      const dt=new Date(y,m-1,d);
+      return `<div class="act-item">
+        <div class="act-date" onclick="openDaily('${a.date}')">${a.date}<small>${dayLabels[dt.getDay()]}요일</small></div>
+        <div class="act-body">${esc(a.content)}</div>
+        <div class="act-tools">
+          <button class="ck-col-btn" onclick="editClubAct('${a.id}')">✏️</button>
+          <button class="ck-col-btn" onclick="deleteClubAct('${a.id}')">✕</button>
+        </div>
+      </div>`;
+    }).join(''):`<div class="empty"><div class="empty-icon">📋</div><p>활동 기록이 없습니다</p><small>위에서 날짜와 내용을 입력해 기록하세요</small></div>`}`;
+}
+window.addClubAct = async function(){
+  const date=document.getElementById('actDate').value;
+  const content=document.getElementById('actBody').value.trim();
+  if(!date||!content){ toast('날짜와 활동 내용을 입력하세요', true); return; }
+  try{
+    await addDoc(collection(db,CLUB_ACT_COL), {date, content, createdAt:serverTimestamp()});
+    document.getElementById('actBody').value='';
+    toast('✅ 활동이 기록되었습니다');
+  }catch(e){ toast('저장 실패: '+e.message, true); }
+};
+window.editClubAct = async function(id){
+  const a=window.clubActs.find(x=>x.id===id); if(!a) return;
+  const date=prompt('날짜 (예: 2026-08-19)', a.date); if(date===null) return;
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(date.trim())){ toast('날짜 형식이 올바르지 않습니다', true); return; }
+  const content=prompt('활동 내용', a.content); if(content===null) return;
+  if(!content.trim()){ toast('내용을 입력하세요', true); return; }
+  try{ await updateDoc(doc(db,CLUB_ACT_COL,id), {date:date.trim(), content:content.trim()}); toast('✏️ 수정되었습니다'); }
+  catch(e){ toast('수정 실패: '+e.message, true); }
+};
+window.deleteClubAct = async function(id){
+  if(!confirm('이 활동 기록을 삭제할까요?')) return;
+  try{ await deleteDoc(doc(db,CLUB_ACT_COL,id)); toast('🗑️ 삭제되었습니다'); }
+  catch(e){ toast('삭제 실패: '+e.message, true); }
+};
+
+function clubSubmitView(){
+  if(!window.clubMembers.length){
+    return `<div class="empty"><div class="empty-icon">👥</div><p>부원 명단이 없습니다</p><small>먼저 [부원 명단]에서 학생을 등록하세요</small></div>`;
+  }
+  const items=window.clubItems;
+  let head=`<tr><th class="ck-th-stu" style="padding:8px 10px;text-align:left;font-size:11px">부원 (${window.clubMembers.length}명)</th>`;
+  items.forEach(it=>{
+    const done=clubDone(it.id), full=done>=window.clubMembers.length;
+    const over=it.due && it.due<getTodayStr() && !full;
+    head+=`<th class="ck-col ${full?'ck-done-col':''}">
+      <div class="ck-col-name">${esc(it.name)}</div>
+      ${it.due?`<div class="ck-col-due ${over?'over':''}">~${it.due.slice(5)}</div>`:''}
+      <div class="ck-col-cnt ${full?'full':''}">${done}/${window.clubMembers.length}</div>
+      <div class="ck-col-tools">
+        <button class="ck-col-btn" onclick="editClubItem('${it.id}')">✏️</button>
+        <button class="ck-col-btn" onclick="deleteClubItem('${it.id}')">✕</button>
+      </div></th>`;
+  });
+  head+=`</tr>`;
+  let body='';
+  window.clubMembers.forEach(m=>{
+    body+=`<tr class="ck-row"><td class="ck-td-stu">
+      <div class="ck-stu-line"><div class="ck-stu-num">${esc(m.cls||'')}</div>
+      <div class="ck-stu-name">${esc(m.name||'')}</div></div></td>`;
+    items.forEach(it=>{
+      const on=!!window.clubMarks[clubMarkKey(it.id,m.id)];
+      body+=`<td class="ck-cell" onclick="clubToggle('${it.id}','${m.id}')"><span class="ck-mark ${on?'on':''}">✓</span></td>`;
+    });
+    body+=`</tr>`;
+  });
+  return `<div style="margin-bottom:12px;display:flex;gap:6px;flex-wrap:wrap">
+      <button class="btn btn-primary btn-sm" onclick="addClubItem()">+ 제출물 추가</button>
+      <button class="btn btn-ghost btn-sm" onclick="clubMissing()">📋 미제출자 보기</button>
+    </div>
+    ${items.length
+      ? `<div class="ck-scroll"><table class="ck-table"><thead>${head}</thead><tbody>${body}</tbody></table></div>`
+      : `<div class="empty"><div class="empty-icon">📦</div><p>등록된 제출물이 없습니다</p><small>+ 제출물 추가로 보고서·산출물을 등록하세요</small></div>`}`;
+}
+window.clubToggle = async function(itemId, memId){
+  const key=clubMarkKey(itemId,memId);
+  try{
+    if(window.clubMarks[key]) await deleteDoc(doc(db,CLUB_MARK_COL,key));
+    else await setDoc(doc(db,CLUB_MARK_COL,key), {itemId, memId});
+  }catch(e){ toast('오류: '+e.message, true); }
+};
+window.addClubItem = async function(){
+  const name=prompt('제출물 이름 (예: 1학기 활동 보고서)',''); if(name===null) return;
+  if(!name.trim()){ toast('이름을 입력하세요', true); return; }
+  const due=prompt('마감일 (예: 2026-08-31, 없으면 비움)',''); if(due===null) return;
+  const d=due.trim();
+  if(d && !/^\d{4}-\d{2}-\d{2}$/.test(d)){ toast('날짜 형식이 올바르지 않습니다', true); return; }
+  try{ await addDoc(collection(db,CLUB_ITEM_COL), {name:name.trim(), due:d, order:Date.now()}); toast('✅ 추가되었습니다'); }
+  catch(e){ toast('추가 실패: '+e.message, true); }
+};
+window.editClubItem = async function(id){
+  const it=window.clubItems.find(x=>x.id===id); if(!it) return;
+  const name=prompt('제출물 이름', it.name); if(name===null) return;
+  if(!name.trim()){ toast('이름을 입력하세요', true); return; }
+  const due=prompt('마감일 (없으면 비움)', it.due||''); if(due===null) return;
+  const d=due.trim();
+  if(d && !/^\d{4}-\d{2}-\d{2}$/.test(d)){ toast('날짜 형식이 올바르지 않습니다', true); return; }
+  try{ await updateDoc(doc(db,CLUB_ITEM_COL,id), {name:name.trim(), due:d}); toast('✏️ 수정되었습니다'); }
+  catch(e){ toast('수정 실패: '+e.message, true); }
+};
+window.deleteClubItem = async function(id){
+  const it=window.clubItems.find(x=>x.id===id);
+  if(!confirm(`'${it?it.name:''}' 항목을 삭제할까요?`)) return;
+  try{
+    await deleteDoc(doc(db,CLUB_ITEM_COL,id));
+    for(const m of window.clubMembers){
+      const k=clubMarkKey(id,m.id);
+      if(window.clubMarks[k]) await deleteDoc(doc(db,CLUB_MARK_COL,k)).catch(()=>{});
+    }
+    toast('🗑️ 삭제되었습니다');
+  }catch(e){ toast('삭제 실패: '+e.message, true); }
+};
+window.clubMissing = function(){
+  const body=document.getElementById('missBody');
+  const items=window.clubItems.filter(it=>clubDone(it.id)<window.clubMembers.length);
+  if(!items.length){ body.innerHTML=`<div class="empty"><div class="empty-icon">🎉</div><p>미제출자가 없습니다</p></div>`; }
+  else body.innerHTML=items.map(it=>{
+    const miss=window.clubMembers.filter(m=>!window.clubMarks[clubMarkKey(it.id,m.id)]);
+    return `<div class="miss-block">
+      <div class="miss-head"><span>${esc(it.name)}${it.due?` <span style="font-weight:400;color:var(--text-dim);font-size:11px">~${it.due}</span>`:''}</span>
+      <span style="font-size:11px;color:var(--high)">${miss.length}명</span></div>
+      <div class="miss-names">${miss.map(m=>`${esc(m.cls||'')} ${esc(m.name||'')}`).join(' · ')}</div>
+    </div>`;
+  }).join('');
+  document.getElementById('missOverlay').classList.add('open');
+};
+
+function clubMemberView(){
+  if(!window.clubMembers.length){
+    return `<div class="empty"><div class="empty-icon">👥</div><p>부원이 없습니다</p><small>+ 부원 추가 버튼으로 명단을 등록하세요</small></div>`;
+  }
+  return window.clubMembers.map(m=>`<div class="mem-item">
+      <div class="mem-cls">${esc(m.cls||'-')}</div>
+      <div class="mem-name">${esc(m.name||'')}</div>
+      <div style="display:flex;gap:3px">
+        <button class="ck-col-btn" onclick="editClubMember('${m.id}')">✏️</button>
+        <button class="ck-col-btn" onclick="deleteClubMember('${m.id}')">✕</button>
+      </div>
+    </div>`).join('');
+}
+window.addClubMembers = async function(){
+  const input=prompt('부원을 추가합니다.\n\n· 2-3 홍길동\n· 2-3 홍길동, 2-5 김철수\n\n(쉼표 또는 줄바꿈으로 구분)','');
+  if(input===null) return;
+  const rows=input.split(/[,\n]/).map(s=>s.trim()).filter(Boolean);
+  if(!rows.length){ toast('입력된 내용이 없습니다', true); return; }
+  try{
+    for(const r of rows){
+      const m=r.match(/^(\S+)\s+(.+)$/);
+      const cls = m? m[1] : '';
+      const name = m? m[2].trim() : r;
+      await addDoc(collection(db,CLUB_MEM_COL), {cls, name, number:''});
+    }
+    toast(`✅ ${rows.length}명이 추가되었습니다`);
+  }catch(e){ toast('추가 실패: '+e.message, true); }
+};
+window.editClubMember = async function(id){
+  const m=window.clubMembers.find(x=>x.id===id); if(!m) return;
+  const cls=prompt('반 (예: 2-3)', m.cls||''); if(cls===null) return;
+  const name=prompt('이름', m.name||''); if(name===null) return;
+  if(!name.trim()){ toast('이름을 입력하세요', true); return; }
+  try{ await updateDoc(doc(db,CLUB_MEM_COL,id), {cls:cls.trim(), name:name.trim()}); toast('✏️ 수정되었습니다'); }
+  catch(e){ toast('수정 실패: '+e.message, true); }
+};
+window.deleteClubMember = async function(id){
+  const m=window.clubMembers.find(x=>x.id===id);
+  if(!confirm(`'${m?m.name:''}' 부원을 삭제할까요?`)) return;
+  try{
+    await deleteDoc(doc(db,CLUB_MEM_COL,id));
+    for(const it of window.clubItems){
+      const k=clubMarkKey(it.id,id);
+      if(window.clubMarks[k]) await deleteDoc(doc(db,CLUB_MARK_COL,k)).catch(()=>{});
+    }
+    toast('🗑️ 삭제되었습니다');
+  }catch(e){ toast('삭제 실패: '+e.message, true); }
+};
+window.renameClub = async function(){
+  const cur=(window.config.club&&window.config.club.name)||'';
+  const name=prompt('동아리 이름을 입력하세요', cur);
+  if(name===null) return;
+  try{ await setDoc(doc(db,CFG_COL,'club'), {name:name.trim()||'동아리'}); toast('✏️ 변경되었습니다'); }
+  catch(e){ toast('변경 실패: '+e.message, true); }
+};
 
 // ── LINKS ────────────────────────────────────────────
 function renderLinks(){
