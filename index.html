@@ -683,6 +683,14 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:0
       <div class="form-group"><label class="form-label">시작일</label><input type="date" class="form-input" id="fStart"></div>
       <div class="form-group"><label class="form-label">마감일</label><input type="date" class="form-input" id="fDeadline"></div>
     </div>
+    <div class="form-group">
+      <label class="form-label">기간 표시</label>
+      <select class="form-select" id="fSpan">
+        <option value="all">모든 날 (주말·공휴일 포함)</option>
+        <option value="noweekend">주말 제외</option>
+        <option value="workday">주말 + 공휴일 제외</option>
+      </select>
+    </div>
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">상태</label>
@@ -1080,11 +1088,19 @@ function purgeOldDone(){
     }
   });
 }
+function taskCoversDate(t, dateStr){
+  const s=t.start||t.deadline, e=t.deadline||t.start;
+  if(!s || dateStr<s || dateStr>e) return false;
+  if(s===e) return true;                       // 하루짜리는 항상 표시
+  const span=t.span||'all';
+  if(span==='all') return true;
+  if(dateStr===s || dateStr===e) return true;  // 시작·마감일은 항상 표시
+  if(isWeekend(dateStr)) return false;
+  if(span==='workday' && holidayName(dateStr)) return false;
+  return true;
+}
 function tasksOn(dateStr){
-  return window.tasks.filter(t=>{
-    const s=t.start||t.deadline, e=t.deadline||t.start;
-    return s && dateStr>=s && dateStr<=e;
-  }).sort((a,b)=>{
+  return window.tasks.filter(t=>taskCoversDate(t,dateStr)).sort((a,b)=>{
     const da=a.deadline||a.start||'9999', dbb=b.deadline||b.start||'9999';
     return da<dbb?-1:1;
   });
@@ -1651,6 +1667,7 @@ window.openModal = function(){
   document.getElementById('fStart').value=getTodayStr();
   document.getElementById('fDeadline').value='';
   document.getElementById('fStatus').value='todo';
+  document.getElementById('fSpan').value='all';
   document.getElementById('fProgress').value=0;
   document.getElementById('fProgressVal').textContent='0%';
   document.getElementById('fAlarm').value='2';
@@ -1670,6 +1687,7 @@ window.editTask = function(id){
   document.getElementById('fStart').value=t.start||'';
   document.getElementById('fDeadline').value=t.deadline||'';
   document.getElementById('fStatus').value=t.status||'todo';
+  document.getElementById('fSpan').value=t.span||'all';
   document.getElementById('fProgress').value=t.progress||0;
   document.getElementById('fProgressVal').textContent=(t.progress||0)+'%';
   document.getElementById('fAlarm').value=String(t.alarm||0);
@@ -1691,6 +1709,7 @@ window.saveTask = async function(){
     start:document.getElementById('fStart').value,
     deadline:document.getElementById('fDeadline').value,
     status:document.getElementById('fStatus').value,
+    span:document.getElementById('fSpan').value,
     progress:parseInt(document.getElementById('fProgress').value),
     alarm:parseInt(document.getElementById('fAlarm').value),
     assignee:document.getElementById('fAssignee').value.trim(),
