@@ -79,7 +79,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:0
 .cal-cell{background:var(--surface);min-height:104px;padding:5px 4px;cursor:pointer;transition:background .15s;position:relative;min-width:0;overflow:hidden}
 .cal-cell:hover{background:var(--accent-light)}
 .cal-cell.today{background:#e8f0fe;box-shadow:inset 0 0 0 2.5px var(--accent);border-radius:4px}
-.cal-cell.today .cal-date span:first-child{background:var(--accent);color:#fff;border-radius:5px;padding:1px 6px;font-weight:700}
+.cal-cell.today .cal-date span:first-child{background:var(--accent);color:#fff!important;border-radius:5px;padding:1px 6px;font-weight:700}
 .cal-cell.other{opacity:.38}
 .cal-date{font-size:11px;font-weight:700;color:var(--text-muted);margin-bottom:4px;display:flex;align-items:center;justify-content:space-between}
 .cal-cell.today .cal-date{color:var(--accent)}
@@ -1223,7 +1223,7 @@ function renderCalendar(){
     const hkind=holidayKind(key);
     const isOff = hkind==='off';
     const wd=new Date(y,m,d).getDay();
-    const dateClr = isOff||wd===0 ? 'color:var(--high)' : wd===6 ? 'color:var(--accent)' : '';
+    const dateClr = isToday ? '' : (isOff||wd===0 ? 'color:var(--high)' : wd===6 ? 'color:var(--accent)' : '');
     const shown=dayTasks.slice(0,3);
     html+=`<div class="cal-cell ${isToday?'today':''} ${isOff?'holiday':hkind==='event'?'schoolday':''}" onclick="openDaily('${key}')">
       <div class="cal-date"><span style="${dateClr}">${d}</span>${hasNote?'<span class="cal-note-mark">📝</span>':''}</div>
