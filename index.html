@@ -87,8 +87,11 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:0
 .cal-dot{font-size:9px;padding:2px 4px;border-radius:3px;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block;max-width:100%}
 .cal-hol{font-size:9px;font-weight:700;color:var(--high);background:#fee2e2;border-radius:3px;padding:1px 4px;margin-bottom:3px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
 .cal-cell.holiday{background:#fef4f4}
-.cal-cell.holiday.today{background:#e8f0fe}
+.cal-cell.schoolday{background:#f4f4f2}
+.cal-cell.holiday.today,.cal-cell.schoolday.today{background:#e8f0fe}
+.cal-hol.evt{color:var(--text-muted);background:var(--border)}
 .hol-badge{font-size:11px;font-weight:700;color:var(--high);background:#fee2e2;border:1px solid #fecaca;border-radius:16px;padding:3px 11px}
+.hol-badge.evt{color:var(--text-muted);background:var(--surface2);border-color:var(--border2)}
 .cal-more{font-size:9px;color:var(--text-dim);padding-left:3px}
 
 /* DAILY */
@@ -705,8 +708,9 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:0
       <select class="form-select" id="fSpan">
         <option value="all">모든 날 (주말·공휴일 포함)</option>
         <option value="noweekend">주말 제외</option>
-        <option value="workday">주말 + 공휴일 제외</option>
+        <option value="workday">주말 + 법정공휴일 제외</option>
       </select>
+      <div style="font-size:10.5px;color:var(--text-dim);margin-top:5px">직접 지정한 휴업일은 제외되지 않습니다. 시작일·마감일은 항상 표시됩니다.</div>
     </div>
     <div class="form-row">
       <div class="form-group task-only">
@@ -874,6 +878,38 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:0
       <div class="modal-actions-right">
         <button class="btn btn-ghost" onclick="closeSemesterModal()">취소</button>
         <button class="btn btn-primary" onclick="saveSemesterRange()">저장</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- HOLIDAY MODAL -->
+<div class="overlay" id="holOverlay" onclick="closeHolOutside(event)">
+  <div class="modal" style="width:420px">
+    <div class="modal-head">
+      <div class="modal-title" id="holModalTitle">휴업일 지정</div>
+      <button class="modal-close" onclick="closeHolidayModal()">✕</button>
+    </div>
+    <div class="form-group">
+      <label class="form-label">종류</label>
+      <div class="type-pick">
+        <button class="type-btn active" id="holTypeOff" onclick="setHolKind('off')">🏖 쉬는 날<small>방학 · 재량휴업일</small></button>
+        <button class="type-btn" id="holTypeEvent" onclick="setHolKind('event')">🏫 수업 없음<small>행사 · 시험</small></button>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">이름</label>
+      <input type="text" class="form-input" id="holName" placeholder="예: 재량휴업일 / 학생주도활동주간">
+      <div style="display:flex;gap:5px;margin-top:7px;flex-wrap:wrap" id="holPresets"></div>
+    </div>
+    <p style="font-size:11px;color:var(--text-dim);line-height:1.7;margin-bottom:14px">
+      <b>쉬는 날</b>은 달력에 빨갛게 표시됩니다.<br>
+      <b>수업 없음</b>은 학교 행사가 있는 날로, 회색으로 표시되고 수업만 빠집니다.</p>
+    <div class="modal-actions">
+      <button class="btn btn-danger" id="holDeleteBtn" onclick="removeHoliday()" style="display:none">지정 해제</button>
+      <div class="modal-actions-right">
+        <button class="btn btn-ghost" onclick="closeHolidayModal()">취소</button>
+        <button class="btn btn-primary" onclick="saveHoliday()">저장</button>
       </div>
     </div>
   </div>
@@ -1116,7 +1152,8 @@ function taskCoversDate(t, dateStr){
   if(span==='all') return true;
   if(dateStr===s || dateStr===e) return true;  // 시작·마감일은 항상 표시
   if(isWeekend(dateStr)) return false;
-  if(span==='workday' && holidayName(dateStr)) return false;
+  // 법정공휴일만 제외 (직접 지정한 휴업일은 학교 행사가 있는 날이므로 유지)
+  if(span==='workday' && officialHolidayName(dateStr)) return false;
   return true;
 }
 function tasksOn(dateStr){
@@ -1183,12 +1220,14 @@ function renderCalendar(){
     const dayTasks=tasksOn(key);
     const hasNote=journalHasContent(window.journals[key]);
     const hol=holidayName(key);
+    const hkind=holidayKind(key);
+    const isOff = hkind==='off';
     const wd=new Date(y,m,d).getDay();
-    const dateClr = hol||wd===0 ? 'color:var(--high)' : wd===6 ? 'color:var(--accent)' : '';
+    const dateClr = isOff||wd===0 ? 'color:var(--high)' : wd===6 ? 'color:var(--accent)' : '';
     const shown=dayTasks.slice(0,3);
-    html+=`<div class="cal-cell ${isToday?'today':''} ${hol?'holiday':''}" onclick="openDaily('${key}')">
+    html+=`<div class="cal-cell ${isToday?'today':''} ${isOff?'holiday':hkind==='event'?'schoolday':''}" onclick="openDaily('${key}')">
       <div class="cal-date"><span style="${dateClr}">${d}</span>${hasNote?'<span class="cal-note-mark">📝</span>':''}</div>
-      ${hol?`<div class="cal-hol">${esc(hol)}</div>`:''}
+      ${hol?`<div class="cal-hol ${hkind==='event'?'evt':''}">${esc(hol)}</div>`:''}
       ${shown.map(t=>{
         const s=t.start||t.deadline, e=t.deadline||t.start;
         const ev=isEvent(t);
@@ -1225,11 +1264,13 @@ window.loadDaily = async function(dateStr){
   const dt=new Date(y,m-1,d);
   const isToday = dateStr===getTodayStr();
   const hol=holidayName(dateStr);
+  const hkind=holidayKind(dateStr);
+  const isOff = hkind==='off';
   const wd=dt.getDay();
-  const nameClr = hol||wd===0 ? 'color:var(--high)' : wd===6 ? 'color:var(--accent)' : '';
+  const nameClr = isOff||wd===0 ? 'color:var(--high)' : wd===6 ? 'color:var(--accent)' : '';
   document.getElementById('dailyDateLabel').innerHTML =
     `<span style="${nameClr}">${y}년 ${m}월 ${d}일 <small>(${dayLabels[wd]})${isToday?' · 오늘':''}</small></span>
-     ${hol?`<span class="hol-badge" style="margin-left:8px">${esc(hol)}</span>`:''}`;
+     ${hol?`<span class="hol-badge ${hkind==='event'?'evt':''}" style="margin-left:8px">${hkind==='event'?'🏫 ':''}${esc(hol)}</span>`:''}`;
   document.getElementById('dailyDatePicker').value=dateStr;
   document.getElementById('backToMonthBtn').textContent=`◀ ${m}월`;
   const hb=document.getElementById('holidayBtn');
@@ -1237,7 +1278,7 @@ window.loadDaily = async function(dateStr){
     const cu=window.customHolidays[dateStr];
     hb.style.display='';
     if(cu && cu.cancel) hb.textContent='↩ 공휴일 되돌리기';
-    else if(cu) hb.textContent='🏖 휴업일 해제';
+    else if(cu) hb.textContent='🏖 휴업일 수정';
     else if(hol) hb.textContent='↩ 수업일로 변경';
     else hb.textContent='🏖 휴업일 지정';
   }
@@ -1360,8 +1401,12 @@ function renderDailyClass(){
   let html='';
 
   if(hol){
-    html += `<div style="text-align:center;padding:14px;color:var(--high);font-size:13px;font-weight:600;background:#fef4f4;border:1px solid #fecaca;border-radius:9px">
-      🏖 ${esc(hol)} · 수업 없음</div>`;
+    const hk=holidayKind(window.dailyDate);
+    html += hk==='event'
+      ? `<div style="text-align:center;padding:14px;color:var(--text-muted);font-size:13px;font-weight:600;background:var(--surface2);border:1px solid var(--border);border-radius:9px">
+          🏫 ${esc(hol)} · 정규 수업 없음</div>`
+      : `<div style="text-align:center;padding:14px;color:var(--high);font-size:13px;font-weight:600;background:#fef4f4;border:1px solid #fecaca;border-radius:9px">
+          🏖 ${esc(hol)} · 수업 없음</div>`;
   } else if(isVacation(window.dailyDate)){
     html += `<div style="text-align:center;padding:14px;color:var(--text-muted);font-size:13px;font-weight:600;background:var(--surface2);border:1px solid var(--border);border-radius:9px">
       🏝 방학 중 · 학기 기간이 아닙니다</div>`;
@@ -1588,6 +1633,22 @@ function holidayName(dateStr){
   if(y===2026||y===2027) return null;   // 위 표가 완전한 연도
   return FIXED_HOLIDAYS[dateStr.slice(5)]||null;
 }
+// 법정공휴일만 (사용자가 지정한 휴업일은 제외하고 판단)
+function officialHolidayName(dateStr){
+  const cu=window.customHolidays[dateStr];
+  if(cu && cu.cancel) return null;
+  if(HOLIDAYS[dateStr]) return HOLIDAYS[dateStr];
+  const y=parseInt(dateStr.slice(0,4));
+  if(y===2026||y===2027) return null;
+  return FIXED_HOLIDAYS[dateStr.slice(5)]||null;
+}
+// 휴업일 종류: 'off'(쉬는 날) | 'event'(수업 없음, 학교 행사) | null
+function holidayKind(dateStr){
+  const cu=window.customHolidays[dateStr];
+  if(cu && !cu.cancel) return cu.kind||'off';
+  if(holidayName(dateStr)) return 'off';       // 법정공휴일
+  return null;
+}
 function isWeekend(dateStr){
   const [y,m,d]=dateStr.split('-').map(Number);
   const wd=new Date(y,m-1,d).getDay();
@@ -1595,29 +1656,59 @@ function isWeekend(dateStr){
 }
 function isNonSchoolDay(dateStr){ return isWeekend(dateStr) || !!holidayName(dateStr); }
 
-window.toggleCustomHoliday = async function(){
+window.holKind='off';
+window.setHolKind = function(k){
+  window.holKind=k;
+  document.getElementById('holTypeOff').classList.toggle('active', k==='off');
+  document.getElementById('holTypeEvent').classList.toggle('active', k==='event');
+  const presets = k==='off'
+    ? ['재량휴업일','방학','개교기념일']
+    : ['기말고사','중간고사','학생주도활동주간','축제','현장체험학습','졸업식'];
+  document.getElementById('holPresets').innerHTML =
+    presets.map(p=>`<button class="stu-chip" onclick="document.getElementById('holName').value='${p}'">${p}</button>`).join('');
+};
+window.toggleCustomHoliday = function(){
   const d=window.dailyDate;
   const cu=window.customHolidays[d];
   const builtin=HOLIDAYS[d]||FIXED_HOLIDAYS[d.slice(5)];
+  // 법정공휴일인 날은 '수업일로 변경' 토글로 동작
+  if(builtin && (!cu || !cu.cancel)){
+    if(!confirm(`'${holidayName(d)}'을(를) 이 앱에서 쉬는 날이 아닌 것으로 처리할까요?\n(수업일로 바뀝니다)`)) return;
+    setDoc(doc(db,HOLIDAY_COL,d), {cancel:true})
+      .then(()=>toast('수업일로 변경되었습니다'))
+      .catch(e=>toast('실패: '+e.message, true));
+    return;
+  }
+  if(cu && cu.cancel){
+    deleteDoc(doc(db,HOLIDAY_COL,d))
+      .then(()=>toast('공휴일로 되돌렸습니다'))
+      .catch(e=>toast('실패: '+e.message, true));
+    return;
+  }
+  // 사용자 지정 휴업일 추가/수정
+  const [y,m,dd]=d.split('-').map(Number);
+  document.getElementById('holModalTitle').textContent=`${m}월 ${dd}일 휴업일 지정`;
+  document.getElementById('holName').value=(cu&&cu.name)||'';
+  document.getElementById('holDeleteBtn').style.display=cu?'block':'none';
+  setHolKind((cu&&cu.kind)||'off');
+  document.getElementById('holOverlay').classList.add('open');
+  setTimeout(()=>document.getElementById('holName').focus(),100);
+};
+window.closeHolidayModal = function(){ document.getElementById('holOverlay').classList.remove('open'); };
+window.closeHolOutside = function(e){ if(e.target===document.getElementById('holOverlay')) closeHolidayModal(); };
+window.saveHoliday = async function(){
+  const name=document.getElementById('holName').value.trim();
+  if(!name){ toast('이름을 입력하세요', true); return; }
   try{
-    if(cu && !cu.cancel){
-      if(!confirm('휴업일 지정을 해제할까요?')) return;
-      await deleteDoc(doc(db,HOLIDAY_COL,d));
-      toast('휴업일이 해제되었습니다');
-    } else if(cu && cu.cancel){
-      await deleteDoc(doc(db,HOLIDAY_COL,d));
-      toast('공휴일로 되돌렸습니다');
-    } else if(builtin && holidayName(d)){
-      if(!confirm(`'${holidayName(d)}'을(를) 이 앱에서 쉬는 날이 아닌 것으로 처리할까요?\n(수업일로 바뀝니다)`)) return;
-      await setDoc(doc(db,HOLIDAY_COL,d), {cancel:true});
-      toast('수업일로 변경되었습니다');
-    } else {
-      const name=prompt('휴업일 이름을 입력하세요 (예: 재량휴업일, 개교기념일, 방학)','재량휴업일');
-      if(name===null) return;
-      await setDoc(doc(db,HOLIDAY_COL,d), {name:name.trim()||'휴업일'});
-      toast('🏖 휴업일로 지정되었습니다');
-    }
+    await setDoc(doc(db,HOLIDAY_COL,window.dailyDate), {name, kind:window.holKind});
+    toast(window.holKind==='off'?'🏖 쉬는 날로 지정되었습니다':'🏫 수업 없는 날로 지정되었습니다');
+    closeHolidayModal();
   }catch(e){ toast('실패: '+e.message, true); }
+};
+window.removeHoliday = async function(){
+  if(!confirm('지정을 해제할까요?')) return;
+  try{ await deleteDoc(doc(db,HOLIDAY_COL,window.dailyDate)); toast('해제되었습니다'); closeHolidayModal(); }
+  catch(e){ toast('실패: '+e.message, true); }
 };
 
 function renderSidebar(){
@@ -2804,7 +2895,7 @@ window.deleteLink = async function(id){
 })();
 
 document.addEventListener('keydown', e=>{
-  if(e.key==='Escape'){ closeModal(); closeLinksModal(); closeTtModal(); closeStatModal(); closeTtZoom(); closeMissingModal(); closeCkModal(); closeSemesterModal(); }
+  if(e.key==='Escape'){ closeModal(); closeLinksModal(); closeTtModal(); closeStatModal(); closeTtZoom(); closeMissingModal(); closeCkModal(); closeSemesterModal(); closeHolidayModal(); }
   if(e.key==='n'&&!e.target.matches('input,textarea,select')) openModal();
 });
 </script>
