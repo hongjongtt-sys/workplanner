@@ -223,6 +223,21 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:0
 .stat-list-item.p-done::before{background:var(--done)}
 .stat-list-item:hover{border-color:var(--accent);background:var(--accent-light)}
 
+/* DAILY BLOCK CHECKLIST */
+.blk-view{padding:10px 14px 12px;font-size:13.5px;line-height:1.75;cursor:text}
+.blk-empty{padding:14px;color:var(--text-dim);font-size:13px;cursor:text;min-height:56px}
+.blk-tail{min-height:22px}
+.plain-line{white-space:pre-wrap;word-break:break-word;min-height:22px}
+.chk-line{display:flex;align-items:flex-start;gap:8px;padding:1px 0;min-height:24px}
+.chk-box{flex-shrink:0;width:18px;height:18px;margin-top:2px;border:2px solid var(--border2);border-radius:5px;background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:transparent;transition:all .12s}
+.chk-box:hover{border-color:var(--accent)}
+.chk-box.on{background:var(--low);border-color:var(--low);color:#fff}
+.chk-text{flex:1;white-space:pre-wrap;word-break:break-word}
+.chk-line.done .chk-text{text-decoration:line-through;color:var(--text-dim)}
+.blk-hint{font-size:10.5px;color:var(--text-dim);padding:0 14px 9px}
+.carry-btn{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:3px 9px;font-size:10.5px;font-weight:600;color:var(--text-muted);cursor:pointer;font-family:'Pretendard',sans-serif}
+.carry-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-light)}
+
 /* TASK TYPE PICKER */
 .type-pick{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .type-btn{padding:10px 8px;border:1.5px solid var(--border);background:var(--surface);border-radius:10px;cursor:pointer;font-family:'Pretendard',sans-serif;font-size:13px;font-weight:600;color:var(--text-muted);transition:all .15s;text-align:center}
@@ -478,18 +493,36 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:0
       </div>
 
       <div class="daily-block">
-        <div class="daily-block-head dh-morning"><span>🌅 아침 조회</span><span id="stMorning" style="font-size:10px;font-weight:500"></span></div>
-        <textarea class="daily-textarea" id="dMorning" placeholder="전달사항, 출결 특이사항 등..."></textarea>
+        <div class="daily-block-head dh-morning">
+          <span>🌅 아침 조회</span>
+          <span style="display:flex;align-items:center;gap:7px">
+            <button class="carry-btn" id="carryMorning" onclick="carryOver('morning')" style="display:none">↪ 내일로</button>
+            <span id="stMorning" style="font-size:10px;font-weight:500"></span>
+          </span>
+        </div>
+        <div id="blkMorning"></div>
       </div>
 
       <div class="daily-block">
-        <div class="daily-block-head dh-closing"><span>🌇 종례</span><span id="stClosing" style="font-size:10px;font-weight:500"></span></div>
-        <textarea class="daily-textarea" id="dClosing" placeholder="종례 전달사항, 내일 준비물 등..."></textarea>
+        <div class="daily-block-head dh-closing">
+          <span>🌇 종례</span>
+          <span style="display:flex;align-items:center;gap:7px">
+            <button class="carry-btn" id="carryClosing" onclick="carryOver('closing')" style="display:none">↪ 내일로</button>
+            <span id="stClosing" style="font-size:10px;font-weight:500"></span>
+          </span>
+        </div>
+        <div id="blkClosing"></div>
       </div>
 
       <div class="daily-block">
-        <div class="daily-block-head dh-free"><span>📝 자유 기록 <span style="font-weight:400;opacity:.7">· 회의, 상담, 메모</span></span><span id="stFree" style="font-size:10px;font-weight:500"></span></div>
-        <textarea class="daily-textarea tall" id="dFree" placeholder="회의 내용, 학생 상담, 그밖의 기록을 자유롭게 작성하세요..."></textarea>
+        <div class="daily-block-head dh-free">
+          <span>📝 자유 기록 <span style="font-weight:400;opacity:.7">· 회의, 상담, 메모</span></span>
+          <span style="display:flex;align-items:center;gap:7px">
+            <button class="carry-btn" id="carryContent" onclick="carryOver('content')" style="display:none">↪ 내일로</button>
+            <span id="stFree" style="font-size:10px;font-weight:500"></span>
+          </span>
+        </div>
+        <div id="blkContent"></div>
       </div>
 
       <div class="daily-block">
@@ -1286,64 +1319,134 @@ window.loadDaily = async function(dateStr){
   renderDailyTasks();
   renderDailyClass();
 };
-function refreshDailyFields(){
+const BLOCKS={morning:{el:'blkMorning',st:'stMorning',carry:'carryMorning',ph:'전달사항, 출결 특이사항 등...',tall:false},
+             closing:{el:'blkClosing',st:'stClosing',carry:'carryClosing',ph:'종례 전달사항, 내일 준비물 등...',tall:false},
+             content:{el:'blkContent',st:'stFree',carry:'carryContent',ph:'회의 내용, 학생 상담, 그밖의 기록을 자유롭게 작성하세요...',tall:true}};
+window.editBlock=null;
+let pendingDailyDate=null;
+
+function blockText(field){
   const j=window.journals[window.dailyDate]||{};
-  const mEl=document.getElementById('dMorning'), cEl=document.getElementById('dClosing'), fEl=document.getElementById('dFree');
-  if(document.activeElement!==mEl) mEl.value=j.morning||'';
-  if(document.activeElement!==cEl) cEl.value=j.closing||'';
-  if(document.activeElement!==fEl) fEl.value=j.content||'';
-  const mark = j && journalHasContent(j) ? '✓ 저장됨' : '';
-  document.getElementById('stMorning').textContent = (j.morning&&j.morning.trim())?'✓':'';
-  document.getElementById('stClosing').textContent = (j.closing&&j.closing.trim())?'✓':'';
-  document.getElementById('stFree').textContent = (j.content&&j.content.trim())?'✓':'';
+  return j[field]||'';
 }
+// "[] 할 일" / "[x] 완료" 형태의 줄을 파싱
+function parseLine(line){
+  const m=line.match(/^(\s*)\[([ xX]?)\]\s?(.*)$/);
+  if(!m) return null;
+  return {indent:m[1], done:/[xX]/.test(m[2]), text:m[3]};
+}
+function refreshDailyFields(){
+  Object.keys(BLOCKS).forEach(k=>renderBlock(k));
+}
+function renderBlock(field){
+  const cfg=BLOCKS[field];
+  const el=document.getElementById(cfg.el); if(!el) return;
+  const text=blockText(field);
+  const stEl=document.getElementById(cfg.st);
+  if(stEl && window.editBlock!==field) stEl.textContent = text.trim()?'✓':'';
+
+  // 미완료 체크 항목이 있으면 '내일로' 버튼 노출
+  const undone=text.split('\n').filter(l=>{ const p=parseLine(l); return p&&!p.done&&p.text.trim(); });
+  const cb=document.getElementById(cfg.carry);
+  if(cb) cb.style.display = undone.length?'':'none';
+
+  if(window.editBlock===field){
+    el.innerHTML=`<textarea class="daily-textarea ${cfg.tall?'tall':''}" id="ta_${field}" placeholder="${esc(cfg.ph)}"
+      oninput="blockInput('${field}')" onblur="commitBlock('${field}')">${esc(text)}</textarea>
+      <div class="blk-hint">줄 앞에 <b>[]</b> 를 넣으면 체크 항목이 됩니다 · 빈 곳을 클릭하면 편집이 끝납니다</div>`;
+    const ta=document.getElementById(`ta_${field}`);
+    ta.focus();
+    ta.setSelectionRange(ta.value.length, ta.value.length);
+    return;
+  }
+  if(!text.trim()){
+    el.innerHTML=`<div class="blk-empty" onclick="startEdit('${field}')">${esc(cfg.ph)}</div>`;
+    return;
+  }
+  const lines=text.split('\n');
+  const html=lines.map((line,i)=>{
+    const p=parseLine(line);
+    if(p) return `<div class="chk-line ${p.done?'done':''}">
+      <span class="chk-box ${p.done?'on':''}" onclick="toggleLineCheck('${field}',${i})">${p.done?'✓':''}</span>
+      <span class="chk-text" onclick="startEdit('${field}')">${esc(p.text)||'&nbsp;'}</span></div>`;
+    return `<div class="plain-line" onclick="startEdit('${field}')">${esc(line)||'&nbsp;'}</div>`;
+  }).join('');
+  el.innerHTML=`<div class="blk-view">${html}<div class="blk-tail" onclick="startEdit('${field}')"></div></div>`;
+}
+window.startEdit = function(field){
+  if(window.editBlock===field) return;
+  const prev=window.editBlock;
+  window.editBlock=field;
+  if(prev) renderBlock(prev);
+  renderBlock(field);
+};
+window.blockInput = function(field){
+  const st=document.getElementById(BLOCKS[field].st);
+  if(st) st.textContent='저장 중...';
+  pendingDailyDate=window.dailyDate;
+  clearTimeout(dailySaveTimer);
+  dailySaveTimer=setTimeout(()=>saveField(field, pendingDailyDate), 1000);
+};
+window.commitBlock = async function(field){
+  const ta=document.getElementById(`ta_${field}`);
+  if(!ta) return;
+  clearTimeout(dailySaveTimer);
+  await saveField(field, window.dailyDate, ta.value);
+  window.editBlock=null;
+  renderBlock(field);
+};
+window.toggleLineCheck = async function(field, idx){
+  const lines=blockText(field).split('\n');
+  const p=parseLine(lines[idx]); if(!p) return;
+  lines[idx]=`${p.indent}[${p.done?' ':'x'}] ${p.text}`;
+  await saveField(field, window.dailyDate, lines.join('\n'));
+};
+async function saveField(field, dateStr, valueArg){
+  const ta=document.getElementById(`ta_${field}`);
+  const value = valueArg!==undefined ? valueArg : (ta?ta.value:blockText(field));
+  const j=window.journals[dateStr]||{};
+  const data={morning:j.morning||'', closing:j.closing||'', content:j.content||''};
+  data[field]=value;
+  const empty=!data.morning.trim()&&!data.closing.trim()&&!data.content.trim();
+  try{
+    if(empty){ if(window.journals[dateStr]) await deleteDoc(doc(db,JOURNAL_COL,dateStr)); }
+    else await setDoc(doc(db,JOURNAL_COL,dateStr), {...data, updatedAt:new Date().toISOString()});
+    pendingDailyDate=null;
+  }catch(e){ toast('저장 실패: '+e.message, true); }
+}
+async function flushDaily(){
+  if(pendingDailyDate){
+    clearTimeout(dailySaveTimer);
+    const d=pendingDailyDate, f=window.editBlock;
+    pendingDailyDate=null;
+    if(f) await saveField(f, d);
+  }
+  window.editBlock=null;
+}
+window.carryOver = async function(field){
+  const lines=blockText(field).split('\n');
+  const undone=lines.filter(l=>{ const p=parseLine(l); return p&&!p.done&&p.text.trim(); });
+  if(!undone.length){ toast('넘길 미완료 항목이 없습니다', true); return; }
+  const [y,m,d]=window.dailyDate.split('-').map(Number);
+  const dt=new Date(y,m-1,d); dt.setDate(dt.getDate()+1);
+  const next=dk(dt.getFullYear(), dt.getMonth()+1, dt.getDate());
+  const label=field==='morning'?'조회':field==='closing'?'종례':'자유 기록';
+  if(!confirm(`체크되지 않은 ${undone.length}개 항목을 ${next} ${label}(으)로 넘길까요?`)) return;
+  const nj=window.journals[next]||{};
+  const prev=nj[field]||'';
+  const merged=(prev.trim()? prev.replace(/\s+$/,'')+'\n' : '')+undone.join('\n');
+  const data={morning:nj.morning||'', closing:nj.closing||'', content:nj.content||''};
+  data[field]=merged;
+  try{
+    await setDoc(doc(db,JOURNAL_COL,next), {...data, updatedAt:new Date().toISOString()});
+    toast(`↪ ${undone.length}개 항목을 ${next}로 넘겼습니다`);
+  }catch(e){ toast('실패: '+e.message, true); }
+};
 window.shiftDaily = function(delta){
   const [y,m,d]=window.dailyDate.split('-').map(Number);
   const dt=new Date(y,m-1,d); dt.setDate(dt.getDate()+delta);
   loadDaily(dk(dt.getFullYear(), dt.getMonth()+1, dt.getDate()));
 };
-let pendingDailyDate=null;
-function bindDaily(id, field, statusId){
-  document.getElementById(id).addEventListener('input', function(){
-    document.getElementById(statusId).textContent='저장 중...';
-    pendingDailyDate=window.dailyDate;
-    clearTimeout(dailySaveTimer);
-    dailySaveTimer=setTimeout(()=>saveDaily(pendingDailyDate), 1200);
-  });
-}
-bindDaily('dMorning','morning','stMorning');
-bindDaily('dClosing','closing','stClosing');
-bindDaily('dFree','content','stFree');
-
-async function flushDaily(){
-  if(pendingDailyDate){
-    clearTimeout(dailySaveTimer);
-    const d=pendingDailyDate;
-    pendingDailyDate=null;
-    await saveDaily(d);
-  }
-}
-
-async function saveDaily(dateArg){
-  const dateStr=dateArg||window.dailyDate;
-  const morning=document.getElementById('dMorning').value;
-  const closing=document.getElementById('dClosing').value;
-  const content=document.getElementById('dFree').value;
-  const empty = !morning.trim() && !closing.trim() && !content.trim();
-  try{
-    if(empty){
-      if(window.journals[dateStr]) await deleteDoc(doc(db,JOURNAL_COL,dateStr));
-    } else {
-      await setDoc(doc(db,JOURNAL_COL,dateStr), {morning, closing, content, updatedAt:new Date().toISOString()});
-    }
-    if(dateStr===window.dailyDate){
-      document.getElementById('stMorning').textContent = morning.trim()?'✓':'';
-      document.getElementById('stClosing').textContent = closing.trim()?'✓':'';
-      document.getElementById('stFree').textContent = content.trim()?'✓':'';
-    }
-    pendingDailyDate=null;
-  }catch(e){ toast('저장 실패: '+e.message, true); }
-}
 
 function renderDailyTasks(){
   const el=document.getElementById('dailyTasks'); if(!el) return;
