@@ -234,7 +234,8 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:0
 .chk-box.on{background:var(--low);border-color:var(--low);color:#fff}
 .chk-text{flex:1;white-space:pre-wrap;word-break:break-word}
 .chk-line.done .chk-text{text-decoration:line-through;color:var(--text-dim)}
-.blk-hint{font-size:10.5px;color:var(--text-dim);padding:0 14px 9px}
+.blk-hint{font-size:10.5px;color:var(--text-dim)}
+.blk-edit-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 14px 10px;flex-wrap:wrap}
 .carry-btn{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:3px 9px;font-size:10.5px;font-weight:600;color:var(--text-muted);cursor:pointer;font-family:'Pretendard',sans-serif}
 .carry-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-light)}
 
@@ -1015,7 +1016,7 @@ window.calDate = new Date();
 window.currentClassId = null;
 window.ttYear = (new Date().getMonth()+1) < 3 ? new Date().getFullYear()-1 : new Date().getFullYear();
 window.ttSemester = 1;
-let dailySaveTimer = null, classMemoTimer = {}, ttSaveTimer = null;
+let classMemoTimer = {}, ttSaveTimer = null;
 
 function pad2(n){ return String(n).padStart(2,'0'); }
 function dk(y,m,d){ return `${y}-${pad2(m)}-${pad2(d)}`; }
@@ -1206,7 +1207,8 @@ window.renderAll = function(){
 };
 
 // ── TABS ─────────────────────────────────────────────
-window.switchTab = function(view){
+window.switchTab = async function(view){
+  if(window.dirtyBlock) await flushDaily();
   document.querySelectorAll('.tab,.mobile-tab').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   const map={month:0,daily:1,todo:2,class:3,student:4,check:5,club:6,timetable:7};
@@ -1290,7 +1292,7 @@ window.goMonthFromDaily = function(){
 
 // ── DAILY ────────────────────────────────────────────
 window.loadDaily = async function(dateStr){
-  if(pendingDailyDate && pendingDailyDate!==dateStr) await flushDaily();
+  if(window.dirtyBlock && window.dirtyBlock.date!==dateStr) await flushDaily();
   window.dailyDate=dateStr;
   const [y,m,d]=dateStr.split('-').map(Number);
   const dayLabels=['일','월','화','수','목','금','토'];
@@ -1323,6 +1325,7 @@ const BLOCKS={morning:{el:'blkMorning',st:'stMorning',carry:'carryMorning',ph:'�
              closing:{el:'blkClosing',st:'stClosing',carry:'carryClosing',ph:'종례 전달사항, 내일 준비물 등...',tall:false},
              content:{el:'blkContent',st:'stFree',carry:'carryContent',ph:'회의 내용, 학생 상담, 그밖의 기록을 자유롭게 작성하세요...',tall:true}};
 window.editBlock=null;
+window.dirtyBlock=null;
 let pendingDailyDate=null;
 
 function blockText(field){
@@ -1336,7 +1339,10 @@ function parseLine(line){
   return {indent:m[1], done:/[xX]/.test(m[2]), text:m[3]};
 }
 function refreshDailyFields(){
-  Object.keys(BLOCKS).forEach(k=>renderBlock(k));
+  Object.keys(BLOCKS).forEach(k=>{
+    if(window.editBlock===k) return;   // 편집 중인 칸은 건드리지 않음
+    renderBlock(k);
+  });
 }
 function renderBlock(field){
   const cfg=BLOCKS[field];
@@ -1352,8 +1358,14 @@ function renderBlock(field){
 
   if(window.editBlock===field){
     el.innerHTML=`<textarea class="daily-textarea ${cfg.tall?'tall':''}" id="ta_${field}" placeholder="${esc(cfg.ph)}"
-      oninput="blockInput('${field}')" onblur="commitBlock('${field}')">${esc(text)}</textarea>
-      <div class="blk-hint">줄 앞에 <b>[]</b> 를 넣으면 체크 항목이 됩니다 · 빈 곳을 클릭하면 편집이 끝납니다</div>`;
+      oninput="blockInput('${field}')" onkeydown="blockKey(event,'${field}')">${esc(text)}</textarea>
+      <div class="blk-edit-bar">
+        <span class="blk-hint">줄 앞에 <b>[]</b> 를 넣으면 체크 항목이 됩니다 · <b>Ctrl+Enter</b> 로 저장</span>
+        <span style="display:flex;gap:6px">
+          <button class="btn btn-ghost btn-sm" onclick="cancelBlock('${field}')">취소</button>
+          <button class="btn btn-primary btn-sm" onclick="commitBlock('${field}')">저장</button>
+        </span>
+      </div>`;
     const ta=document.getElementById(`ta_${field}`);
     ta.focus();
     ta.setSelectionRange(ta.value.length, ta.value.length);
@@ -1382,18 +1394,31 @@ window.startEdit = function(field){
 };
 window.blockInput = function(field){
   const st=document.getElementById(BLOCKS[field].st);
-  if(st) st.textContent='저장 중...';
-  pendingDailyDate=window.dailyDate;
-  clearTimeout(dailySaveTimer);
-  dailySaveTimer=setTimeout(()=>saveField(field, pendingDailyDate), 1000);
+  if(st) st.textContent='● 저장 안 됨';
+  window.dirtyBlock={field, date:window.dailyDate};
+};
+window.blockKey = function(e, field){
+  if(e.key==='Enter' && (e.ctrlKey||e.metaKey)){ e.preventDefault(); commitBlock(field); }
+  if(e.key==='Escape'){ e.preventDefault(); cancelBlock(field); }
+};
+window.cancelBlock = function(field){
+  const ta=document.getElementById(`ta_${field}`);
+  if(ta && ta.value!==blockText(field)){
+    if(!confirm('작성한 내용을 저장하지 않고 취소할까요?')) return;
+  }
+  window.dirtyBlock=null;
+  window.editBlock=null;
+  renderBlock(field);
 };
 window.commitBlock = async function(field){
   const ta=document.getElementById(`ta_${field}`);
   if(!ta) return;
-  clearTimeout(dailySaveTimer);
-  await saveField(field, window.dailyDate, ta.value);
+  const val=ta.value;
   window.editBlock=null;
+  window.dirtyBlock=null;
+  await saveField(field, window.dailyDate, val);
   renderBlock(field);
+  toast('✓ 저장되었습니다');
 };
 window.toggleLineCheck = async function(field, idx){
   const lines=blockText(field).split('\n');
@@ -1415,12 +1440,13 @@ async function saveField(field, dateStr, valueArg){
   }catch(e){ toast('저장 실패: '+e.message, true); }
 }
 async function flushDaily(){
-  if(pendingDailyDate){
-    clearTimeout(dailySaveTimer);
-    const d=pendingDailyDate, f=window.editBlock;
-    pendingDailyDate=null;
-    if(f) await saveField(f, d);
+  const d=window.dirtyBlock;
+  if(d){
+    const ta=document.getElementById(`ta_${d.field}`);
+    if(ta) await saveField(d.field, d.date, ta.value);
+    window.dirtyBlock=null;
   }
+  pendingDailyDate=null;
   window.editBlock=null;
 }
 window.carryOver = async function(field){
@@ -2998,7 +3024,10 @@ window.deleteLink = async function(id){
 })();
 
 document.addEventListener('keydown', e=>{
-  if(e.key==='Escape'){ closeModal(); closeLinksModal(); closeTtModal(); closeStatModal(); closeTtZoom(); closeMissingModal(); closeCkModal(); closeSemesterModal(); closeHolidayModal(); }
+  if(e.key==='Escape'){
+    if(window.editBlock) return;   // 기록 편집 중이면 해당 칸에서 처리
+    closeModal(); closeLinksModal(); closeTtModal(); closeStatModal(); closeTtZoom(); closeMissingModal(); closeCkModal(); closeSemesterModal(); closeHolidayModal();
+  }
   if(e.key==='n'&&!e.target.matches('input,textarea,select')) openModal();
 });
 </script>
