@@ -312,6 +312,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:0
 .stu-detail-name{font-family:'Instrument Serif',serif;font-size:22px}
 .stu-detail-name small{font-family:'Pretendard',sans-serif;font-size:12px;color:var(--text-muted);margin-left:8px;font-weight:500}
 .stu-textarea{width:100%;min-height:calc(100vh - 300px);padding:16px;font-size:13.5px;line-height:1.8;border:none;outline:none;resize:vertical;font-family:'Pretendard',sans-serif;background:var(--surface);color:var(--text)}
+.stu-save-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 16px 14px;border-top:1px solid var(--border);flex-wrap:wrap}
 .stu-quick{display:flex;gap:5px;flex-wrap:wrap;padding:10px 16px 0}
 .stu-chip{padding:4px 11px;font-size:11px;font-weight:600;border-radius:16px;cursor:pointer;border:1px solid var(--border);background:var(--surface2);color:var(--text-muted);font-family:'Pretendard',sans-serif}
 .stu-chip:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-light)}
@@ -1087,13 +1088,19 @@ onSnapshot(collection(db,STU_COL), snap=>{
   window.students = snap.docs.map(d=>({id:d.id,...d.data()}))
     .sort((a,b)=>(parseInt(a.number)||999)-(parseInt(b.number)||999)||(a.name||'').localeCompare(b.name||''));
   if(!window.currentStudentId && window.students.length) window.currentStudentId=window.students[0].id;
-  if(isActive('student')) renderStudent();
+  if(isActive('student')){
+    renderStudentList();
+    if(!window.dirtyStudent) renderStudentDetail();
+  }
   if(isActive('check')) renderCheck();
 });
 onSnapshot(collection(db,STU_NOTE_COL), snap=>{
   window.studentNotes={};
   snap.docs.forEach(d=>{ window.studentNotes[d.id]=d.data(); });
-  if(isActive('student')) renderStudent();
+  if(isActive('student')){
+    renderStudentList();
+    if(!window.dirtyStudent) renderStudentDetail();   // 작성 중이면 건드리지 않음
+  }
 });
 onSnapshot(collection(db,HOLIDAY_COL), snap=>{
   window.customHolidays={};
@@ -1209,6 +1216,7 @@ window.renderAll = function(){
 // ── TABS ─────────────────────────────────────────────
 window.switchTab = async function(view){
   if(window.dirtyBlock) await flushDaily();
+  if(window.dirtyStudent) await flushStudent();
   document.querySelectorAll('.tab,.mobile-tab').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   const map={month:0,daily:1,todo:2,class:3,student:4,check:5,club:6,timetable:7};
@@ -2444,7 +2452,7 @@ window.clearTimetable = async function(){
 };
 
 // ── STUDENT CARD ─────────────────────────────────────
-let stuSaveTimer=null, pendingStuId=null;
+window.dirtyStudent=null;
 
 function renderStudent(){ renderStudentList(); renderStudentDetail(); }
 
@@ -2493,33 +2501,60 @@ function renderStudentDetail(){
       <button class="stu-chip" onclick="stuInsert('진로')">＋ 진로</button>
       <button class="stu-chip" onclick="stuInsert('생기부')">＋ 생기부</button>
     </div>
-    <textarea class="stu-textarea" id="stuNote" placeholder="이 학생에 대한 기록을 자유롭게 작성하세요.&#10;&#10;상단 버튼을 누르면 날짜와 함께 항목이 추가됩니다.">${esc(note)}</textarea>`;
-  const ta=document.getElementById('stuNote');
-  ta.addEventListener('input', ()=>{
-    document.getElementById('stuStatus').textContent='저장 중...';
-    pendingStuId=s.id;
-    clearTimeout(stuSaveTimer);
-    stuSaveTimer=setTimeout(()=>saveStudentNote(s.id), 1200);
-  });
+    <textarea class="stu-textarea" id="stuNote" oninput="stuInput()" onkeydown="stuKey(event)"
+      placeholder="이 학생에 대한 기록을 자유롭게 작성하세요.&#10;&#10;상단 버튼을 누르면 날짜와 함께 항목이 추가됩니다.">${esc(note)}</textarea>
+    <div class="stu-save-bar">
+      <span class="blk-hint"><b>Ctrl+Enter</b> 로 저장</span>
+      <span style="display:flex;gap:6px">
+        <button class="btn btn-ghost btn-sm" onclick="revertStudentNote()">되돌리기</button>
+        <button class="btn btn-primary btn-sm" onclick="saveStudentNote()">저장</button>
+      </span>
+    </div>`;
 }
-
-window.selectStudent = async function(id){
-  if(pendingStuId && pendingStuId!==id){ clearTimeout(stuSaveTimer); await saveStudentNote(pendingStuId); }
-  window.currentStudentId=id;
-  renderStudent();
+window.stuInput = function(){
+  const st=document.getElementById('stuStatus');
+  if(st) st.textContent='● 저장 안 됨';
+  window.dirtyStudent=window.currentStudentId;
 };
-async function saveStudentNote(sid){
+window.stuKey = function(e){
+  if(e.key==='Enter' && (e.ctrlKey||e.metaKey)){ e.preventDefault(); saveStudentNote(); }
+};
+window.revertStudentNote = function(){
+  const sid=window.currentStudentId;
+  const ta=document.getElementById('stuNote'); if(!ta) return;
+  const saved=(window.studentNotes[sid]&&window.studentNotes[sid].content)||'';
+  if(ta.value!==saved && !confirm('저장하지 않은 내용을 버리고 되돌릴까요?')) return;
+  window.dirtyStudent=null;
+  renderStudentDetail();
+};
+window.saveStudentNote = async function(sidArg, valueArg){
+  const sid=sidArg||window.currentStudentId;
+  if(!sid) return;
   const ta=document.getElementById('stuNote');
-  if(!ta || window.currentStudentId!==sid){ pendingStuId=null; return; }
-  const content=ta.value;
+  const content = valueArg!==undefined ? valueArg : (ta?ta.value:null);
+  if(content===null) return;
   try{
     if(content.trim()) await setDoc(doc(db,STU_NOTE_COL,sid), {content, updatedAt:new Date().toISOString()});
     else await deleteDoc(doc(db,STU_NOTE_COL,sid)).catch(()=>{});
-    const st=document.getElementById('stuStatus');
-    if(st) st.textContent = content.trim()?'✓ 저장됨':'';
-    pendingStuId=null;
+    if(window.dirtyStudent===sid) window.dirtyStudent=null;
+    if(window.currentStudentId===sid){
+      const st=document.getElementById('stuStatus');
+      if(st) st.textContent = content.trim()?'✓ 저장됨':'';
+    }
+    toast('✓ 저장되었습니다');
   }catch(e){ toast('저장 실패: '+e.message, true); }
+};
+async function flushStudent(){
+  if(!window.dirtyStudent) return;
+  const ta=document.getElementById('stuNote');
+  if(ta) await saveStudentNote(window.dirtyStudent, ta.value);
+  window.dirtyStudent=null;
 }
+window.selectStudent = async function(id){
+  if(window.dirtyStudent && window.dirtyStudent!==id) await flushStudent();
+  window.currentStudentId=id;
+  renderStudent();
+};
 window.stuInsert = function(kind){
   const ta=document.getElementById('stuNote'); if(!ta) return;
   const n=new Date();
@@ -2528,7 +2563,7 @@ window.stuInsert = function(kind){
   ta.value = (cur.trim()? cur.replace(/\s+$/,'')+'\n' : '') + header;
   ta.focus();
   ta.setSelectionRange(ta.value.length, ta.value.length);
-  ta.dispatchEvent(new Event('input'));
+  stuInput();
 };
 window.addStudents = async function(){
   const input=prompt(
