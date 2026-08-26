@@ -223,6 +223,19 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:0
 .stat-list-item.p-done::before{background:var(--done)}
 .stat-list-item:hover{border-color:var(--accent);background:var(--accent-light)}
 
+/* CATEGORY MANAGER */
+.lbl-btn{background:none;border:none;color:var(--text-dim);font-size:10.5px;font-weight:700;cursor:pointer;font-family:'Pretendard',sans-serif;letter-spacing:0;text-transform:none}
+.lbl-btn:hover{color:var(--accent)}
+.cat-group{border:1px solid var(--border);border-radius:10px;margin-bottom:9px;overflow:hidden}
+.cat-group-head{display:flex;align-items:center;gap:6px;padding:8px 11px;background:var(--surface2);border-bottom:1px solid var(--border)}
+.cat-group-name{flex:1;font-size:12.5px;font-weight:700}
+.cat-items{padding:8px 11px;display:flex;gap:5px;flex-wrap:wrap}
+.cat-chip{display:inline-flex;align-items:center;gap:5px;padding:4px 6px 4px 11px;background:var(--surface2);border:1px solid var(--border);border-radius:16px;font-size:12px}
+.cat-chip button{background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:11px;padding:0 2px;line-height:1}
+.cat-chip button:hover{color:var(--high)}
+.cat-add{background:none;border:1px dashed var(--border2);border-radius:16px;padding:4px 11px;font-size:12px;color:var(--text-muted);cursor:pointer;font-family:'Pretendard',sans-serif}
+.cat-add:hover{border-color:var(--accent);color:var(--accent)}
+
 /* DAILY BLOCK CHECKLIST */
 .blk-view{padding:10px 14px 12px;font-size:13.5px;line-height:1.75;cursor:text}
 .blk-empty{padding:14px;color:var(--text-dim);font-size:13px;cursor:text;min-height:56px}
@@ -712,26 +725,11 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:0
         </select>
       </div>
       <div class="form-group">
-        <label class="form-label">카테고리</label>
-        <select class="form-select" id="fCategory">
-          <optgroup label="🏫 학급 담임">
-            <option>창체활동</option><option>학생 상담</option><option>출결 관리</option>
-            <option>담임 업무</option><option>봉사활동</option><option>학급 행사</option>
-          </optgroup>
-          <optgroup label="📐 수학 교사">
-            <option>수업 준비</option><option>수행평가</option><option>시험 출제</option><option>채점</option><option>성적 처리</option>
-          </optgroup>
-          <optgroup label="📋 업무 (평가)">
-            <option>평가계획 검토</option><option>출제 검토</option><option>서류 수합</option>
-            <option>나이스 성적 마감</option><option>공문 처리</option><option>위원회 회의</option>
-          </optgroup>
-          <optgroup label="🎯 동아리">
-            <option>동아리 활동 준비</option><option>산출물 관리</option><option>동아리 행사</option><option>동아리 학생 관리</option>
-          </optgroup>
-          <optgroup label="➕ 기타">
-            <option>연수·연구</option><option>학교 행사</option><option>행정</option><option>기타</option>
-          </optgroup>
-        </select>
+        <label class="form-label" style="display:flex;justify-content:space-between;align-items:center">
+          <span>카테고리</span>
+          <button type="button" class="lbl-btn" onclick="openCatModal()">⚙ 관리</button>
+        </label>
+        <select class="form-select" id="fCategory"></select>
       </div>
     </div>
     <div class="form-row">
@@ -950,6 +948,21 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:0
   </div>
 </div>
 
+<!-- CATEGORY MODAL -->
+<div class="overlay" id="catOverlay" onclick="closeCatOutside(event)">
+  <div class="modal" style="width:480px">
+    <div class="modal-head">
+      <div class="modal-title">⚙ 카테고리 관리</div>
+      <button class="modal-close" onclick="closeCatModal()">✕</button>
+    </div>
+    <div id="catList" style="margin-bottom:14px"></div>
+    <div style="border-top:1px solid var(--border);padding-top:14px;display:flex;gap:6px;flex-wrap:wrap">
+      <button class="btn btn-ghost btn-sm" onclick="addCatGroup()">+ 그룹 추가</button>
+      <button class="btn btn-ghost btn-sm" onclick="resetCats()" style="margin-left:auto">기본값으로 되돌리기</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast-wrap" id="toastWrap"></div>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
@@ -1151,6 +1164,8 @@ onSnapshot(collection(db,CFG_COL), snap=>{
   snap.docs.forEach(d=>{ window.config[d.id]=d.data(); });
   const t=document.getElementById('clubTitle');
   if(t) t.textContent=(window.config.club&&window.config.club.name)||'동아리';
+  renderCatSelect();
+  if(document.getElementById('catOverlay').classList.contains('open')) renderCatList();
 });
 
 function isActive(v){ return document.getElementById('view-'+v)?.classList.contains('active'); }
@@ -1936,14 +1951,19 @@ window.setTaskKind = function(kind){
   document.querySelector('#overlay .modal').classList.toggle('is-event', isEv);
   document.getElementById('titleLabel').textContent = isEv ? '일정명 *' : '업무명 *';
   document.getElementById('fTitle').placeholder = isEv ? '일정명을 입력하세요 (예: 수능일)' : '업무명을 입력하세요';
-  if(isEv) document.getElementById('fCategory').value='학교 행사';
+  if(isEv){
+    const sel=document.getElementById('fCategory');
+    if(Array.from(sel.options).some(o=>o.value==='학교 행사')) sel.value='학교 행사';
+  }
 };
 window.openModal = function(){
   window.editId=null;
   document.getElementById('modalTitle').textContent='새 업무';
   document.getElementById('fTitle').value='';
   document.getElementById('fPriority').value='MID';
-  document.getElementById('fCategory').value='창체활동';
+  renderCatSelect('');
+  const catSel=document.getElementById('fCategory');
+  if(catSel.options.length) catSel.selectedIndex=0;
   document.getElementById('fStart').value=getTodayStr();
   document.getElementById('fDeadline').value='';
   document.getElementById('fStatus').value='todo';
@@ -1964,7 +1984,7 @@ window.editTask = function(id){
   document.getElementById('modalTitle').textContent='업무 편집';
   document.getElementById('fTitle').value=t.title||'';
   document.getElementById('fPriority').value=t.priority||'MID';
-  document.getElementById('fCategory').value=t.category||'기타';
+  renderCatSelect(t.category||'');
   document.getElementById('fStart').value=t.start||'';
   document.getElementById('fDeadline').value=t.deadline||'';
   document.getElementById('fStatus').value=t.status||'todo';
@@ -3000,6 +3020,111 @@ window.renameClub = async function(){
   catch(e){ toast('변경 실패: '+e.message, true); }
 };
 
+// ── CATEGORIES ───────────────────────────────────────
+const DEFAULT_CATS=[
+  {g:'🏫 학급 담임', items:['창체활동','학생 상담','출결 관리','담임 업무','봉사활동','학급 행사']},
+  {g:'📐 수학 교사', items:['수업 준비','수행평가','시험 출제','채점','성적 처리']},
+  {g:'📋 업무 (평가)', items:['평가계획 검토','출제 검토','서류 수합','나이스 성적 마감','공문 처리','위원회 회의']},
+  {g:'🎯 동아리', items:['동아리 활동 준비','산출물 관리','동아리 행사','동아리 학생 관리']},
+  {g:'🏠 개인', items:['건강·병원','가족','경조사','약속','개인 일정']},
+  {g:'➕ 기타', items:['연수·연구','학교 행사','행정','기타']},
+];
+function getCats(){
+  const c=window.config.categories;
+  return (c&&Array.isArray(c.groups)&&c.groups.length)?c.groups:DEFAULT_CATS;
+}
+function renderCatSelect(keep){
+  const sel=document.getElementById('fCategory'); if(!sel) return;
+  const cur=keep!==undefined?keep:sel.value;
+  sel.innerHTML=getCats().map(g=>
+    `<optgroup label="${esc(g.g)}">${g.items.map(i=>`<option>${esc(i)}</option>`).join('')}</optgroup>`
+  ).join('');
+  if(cur){
+    // 목록에 없는 값(예전 카테고리)이면 임시 항목으로 추가해 유지
+    if(!Array.from(sel.options).some(o=>o.value===cur)){
+      const og=document.createElement('optgroup'); og.label='(사용 안 함)';
+      const op=document.createElement('option'); op.textContent=cur;
+      og.appendChild(op); sel.appendChild(og);
+    }
+    sel.value=cur;
+  }
+}
+async function saveCats(groups){
+  try{ await setDoc(doc(db,CFG_COL,'categories'), {groups}); }
+  catch(e){ toast('저장 실패: '+e.message, true); }
+}
+window.openCatModal = function(){ renderCatList(); document.getElementById('catOverlay').classList.add('open'); };
+window.closeCatModal = function(){ document.getElementById('catOverlay').classList.remove('open'); };
+window.closeCatOutside = function(e){ if(e.target===document.getElementById('catOverlay')) closeCatModal(); };
+function renderCatList(){
+  const el=document.getElementById('catList'); if(!el) return;
+  el.innerHTML=getCats().map((g,gi)=>`
+    <div class="cat-group">
+      <div class="cat-group-head">
+        <span class="cat-group-name">${esc(g.g)}</span>
+        <button class="ck-col-btn" title="그룹 이름 변경" onclick="renameCatGroup(${gi})">✏️</button>
+        <button class="ck-col-btn" title="위로" onclick="moveCatGroup(${gi},-1)">↑</button>
+        <button class="ck-col-btn" title="아래로" onclick="moveCatGroup(${gi},1)">↓</button>
+        <button class="ck-col-btn" title="그룹 삭제" onclick="deleteCatGroup(${gi})">✕</button>
+      </div>
+      <div class="cat-items">
+        ${g.items.map((it,ii)=>`<span class="cat-chip">${esc(it)}
+          <button title="이름 변경" onclick="renameCatItem(${gi},${ii})">✏️</button>
+          <button title="삭제" onclick="deleteCatItem(${gi},${ii})">✕</button></span>`).join('')}
+        <button class="cat-add" onclick="addCatItem(${gi})">+ 항목</button>
+      </div>
+    </div>`).join('');
+}
+async function updateCats(fn){
+  const groups=JSON.parse(JSON.stringify(getCats()));
+  const r=fn(groups);
+  if(r===false) return;
+  await saveCats(groups);
+  renderCatList();
+  renderCatSelect();
+}
+window.addCatGroup = function(){
+  const name=prompt('그룹 이름을 입력하세요 (이모지 포함 가능)\\n예: 🏠 개인','');
+  if(name===null||!name.trim()) return;
+  updateCats(g=>{ g.push({g:name.trim(), items:[]}); });
+};
+window.renameCatGroup = function(gi){
+  const cats=getCats();
+  const name=prompt('그룹 이름', cats[gi].g);
+  if(name===null||!name.trim()) return;
+  updateCats(g=>{ g[gi].g=name.trim(); });
+};
+window.deleteCatGroup = function(gi){
+  const cats=getCats();
+  if(!confirm(`'${cats[gi].g}' 그룹을 삭제할까요?\\n안에 있는 ${cats[gi].items.length}개 항목도 함께 사라집니다.\\n\\n(이미 등록된 업무의 카테고리는 그대로 유지됩니다)`)) return;
+  updateCats(g=>{ g.splice(gi,1); });
+};
+window.moveCatGroup = function(gi, d){
+  updateCats(g=>{
+    const ni=gi+d; if(ni<0||ni>=g.length) return false;
+    [g[gi],g[ni]]=[g[ni],g[gi]];
+  });
+};
+window.addCatItem = function(gi){
+  const name=prompt('항목 이름을 입력하세요\\n(여러 개는 쉼표로 구분)','');
+  if(name===null||!name.trim()) return;
+  const names=name.split(',').map(s=>s.trim()).filter(Boolean);
+  updateCats(g=>{ names.forEach(n=>{ if(!g[gi].items.includes(n)) g[gi].items.push(n); }); });
+};
+window.renameCatItem = function(gi, ii){
+  const cats=getCats();
+  const name=prompt('항목 이름', cats[gi].items[ii]);
+  if(name===null||!name.trim()) return;
+  updateCats(g=>{ g[gi].items[ii]=name.trim(); });
+};
+window.deleteCatItem = function(gi, ii){
+  updateCats(g=>{ g[gi].items.splice(ii,1); });
+};
+window.resetCats = function(){
+  if(!confirm('카테고리를 기본값으로 되돌릴까요?')) return;
+  updateCats(g=>{ g.length=0; DEFAULT_CATS.forEach(d=>g.push(JSON.parse(JSON.stringify(d)))); });
+};
+
 // ── LINKS ────────────────────────────────────────────
 function renderLinks(){
   const side=document.getElementById('sideLinks');
@@ -3061,7 +3186,7 @@ window.deleteLink = async function(id){
 document.addEventListener('keydown', e=>{
   if(e.key==='Escape'){
     if(window.editBlock) return;   // 기록 편집 중이면 해당 칸에서 처리
-    closeModal(); closeLinksModal(); closeTtModal(); closeStatModal(); closeTtZoom(); closeMissingModal(); closeCkModal(); closeSemesterModal(); closeHolidayModal();
+    closeModal(); closeLinksModal(); closeTtModal(); closeStatModal(); closeTtZoom(); closeMissingModal(); closeCkModal(); closeSemesterModal(); closeHolidayModal(); closeCatModal();
   }
   if(e.key==='n'&&!e.target.matches('input,textarea,select')) openModal();
 });
