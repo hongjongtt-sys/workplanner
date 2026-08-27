@@ -223,6 +223,17 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:0
 .stat-list-item.p-done::before{background:var(--done)}
 .stat-list-item:hover{border-color:var(--accent);background:var(--accent-light)}
 
+/* LOGIN */
+#loginScreen{position:fixed;inset:0;background:var(--bg);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px}
+.login-box{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:32px 28px;width:340px;max-width:100%;box-shadow:var(--shadow-md);text-align:center}
+.login-logo{font-family:'Instrument Serif',serif;font-size:30px;margin-bottom:6px}
+.login-logo em{color:var(--accent);font-style:italic}
+.login-sub{font-size:13px;color:var(--text-muted);margin-bottom:18px}
+.login-err{font-size:12px;color:var(--high);min-height:18px;margin-top:8px}
+.login-hint{font-size:11px;color:var(--text-dim);margin-top:14px;line-height:1.6}
+.logout-btn{background:none;border:none;color:var(--text-dim);font-size:11px;cursor:pointer;font-family:'Pretendard',sans-serif}
+.logout-btn:hover{color:var(--high)}
+
 /* CATEGORY MANAGER */
 .lbl-btn{background:none;border:none;color:var(--text-dim);font-size:10.5px;font-weight:700;cursor:pointer;font-family:'Pretendard',sans-serif;letter-spacing:0;text-transform:none}
 .lbl-btn:hover{color:var(--accent)}
@@ -448,6 +459,18 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:0
 </head>
 <body>
 
+<div id="loginScreen" style="display:none">
+  <div class="login-box">
+    <div class="login-logo">Work<em>Flow</em></div>
+    <p class="login-sub">비밀번호를 입력하세요</p>
+    <input type="password" id="loginPw" class="form-input" placeholder="비밀번호"
+      onkeydown="if(event.key==='Enter')doLogin()" autocomplete="current-password">
+    <div id="loginErr" class="login-err"></div>
+    <button class="btn btn-primary" style="width:100%;margin-top:10px" onclick="doLogin()" id="loginBtn">들어가기</button>
+    <div class="login-hint">이 기기에서는 다음부터 자동으로 로그인됩니다.</div>
+  </div>
+</div>
+
 <div id="loadingScreen">
   <div class="loading-logo">Work<em>Flow</em></div>
   <div class="loading-dot"><span></span><span></span><span></span></div>
@@ -467,6 +490,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:0
   </div>
   <div class="header-right">
     <div class="sync-indicator"><div class="sync-dot" id="syncDot"></div><span id="syncText">연결됨</span></div>
+    <button class="icon-btn" onclick="doLogout()" title="로그아웃">🔒</button>
     <button class="icon-btn" onclick="openLinksModal()" title="바로가기">🔗</button>
     <div class="today-label" id="todayLabel" onclick="goToday()" title="오늘로 이동"></div>
     <button class="btn btn-primary" onclick="openModal()">+ 업무</button>
@@ -970,6 +994,10 @@ import {
   getFirestore, collection, onSnapshot,
   addDoc, updateDoc, deleteDoc, doc, serverTimestamp, setDoc
 } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
+import {
+  getAuth, signInWithEmailAndPassword, signOut,
+  onAuthStateChanged, setPersistence, browserLocalPersistence
+} from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAlTnvXABpLX96jQa7rvTYCf7HScC1pMuY",
@@ -981,6 +1009,51 @@ const firebaseConfig = {
 };
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+const auth = getAuth(app);
+const LOGIN_EMAIL = "hongjongtt@class.com";
+
+// ── AUTH ─────────────────────────────────────────────
+let appStarted=false;
+setPersistence(auth, browserLocalPersistence).catch(()=>{});
+
+onAuthStateChanged(auth, user=>{
+  if(user){
+    document.getElementById('loginScreen').style.display='none';
+    if(!appStarted){ appStarted=true; initUI(); startApp(); }
+  } else {
+    document.getElementById('loadingScreen').style.display='none';
+    document.getElementById('loginScreen').style.display='flex';
+    setTimeout(()=>document.getElementById('loginPw')?.focus(),100);
+  }
+});
+
+window.doLogin = async function(){
+  const pw=document.getElementById('loginPw').value;
+  const err=document.getElementById('loginErr');
+  const btn=document.getElementById('loginBtn');
+  if(!pw){ err.textContent='비밀번호를 입력하세요'; return; }
+  btn.disabled=true; btn.textContent='확인 중...'; err.textContent='';
+  try{
+    await signInWithEmailAndPassword(auth, LOGIN_EMAIL, pw);
+    document.getElementById('loginPw').value='';
+    document.getElementById('loadingScreen').style.display='flex';
+  }catch(e){
+    const c=e.code||'';
+    err.textContent =
+      c.includes('invalid-credential')||c.includes('wrong-password')||c.includes('invalid-login') ? '비밀번호가 올바르지 않습니다'
+      : c.includes('user-not-found') ? '계정이 아직 만들어지지 않았습니다'
+      : c.includes('too-many-requests') ? '시도가 많습니다. 잠시 후 다시 시도하세요'
+      : c.includes('operation-not-allowed') ? 'Firebase에서 이메일 로그인을 켜주세요'
+      : c.includes('network') ? '네트워크 연결을 확인하세요'
+      : '로그인 실패: '+(e.message||'');
+    btn.disabled=false; btn.textContent='들어가기';
+  }
+};
+window.doLogout = async function(){
+  if(!confirm('로그아웃할까요?\n다시 들어오려면 비밀번호를 입력해야 합니다.')) return;
+  try{ await signOut(auth); location.reload(); }
+  catch(e){ toast('로그아웃 실패: '+e.message, true); }
+};
 
 const COL = "tasks";
 const JOURNAL_COL = "journals";
@@ -1053,120 +1126,123 @@ window.toast = function(msg, warn=false, ms=3000){
 };
 
 // ── SYNC ─────────────────────────────────────────────
-setSyncState('syncing');
-onSnapshot(collection(db,COL), snap=>{
-  window.tasks = snap.docs.map(d=>({id:d.id,...d.data()}));
-  purgeOldDone(); renderAll(); setSyncState('ok');
-  document.getElementById('loadingScreen').style.display='none';
-}, err=>{
-  setSyncState('error'); toast('⚠️ 동기화 오류: '+err.message, true);
-  document.getElementById('loadingScreen').style.display='none';
-});
-onSnapshot(collection(db,JOURNAL_COL), snap=>{
-  window.journals={};
-  snap.docs.forEach(d=>{ window.journals[d.id]=d.data(); });
-  renderCalendar(); if(isActive('daily')) refreshDailyFields();
-});
-onSnapshot(collection(db,CLASS_COL), snap=>{
-  window.classRooms = snap.docs.map(d=>({id:d.id,...d.data()}))
-    .sort((a,b)=>(a.order||0)-(b.order||0)||(a.name||'').localeCompare(b.name||''));
-  if(!window.currentClassId && window.classRooms.length) window.currentClassId=window.classRooms[0].id;
-  renderClass(); renderDailyClass();
-});
-onSnapshot(collection(db,CLASS_LOG_COL), snap=>{
-  window.classLogs = snap.docs.map(d=>({id:d.id,...d.data()}));
-  renderClass(); renderDailyClass();
-});
-onSnapshot(collection(db,CLASS_MEMO_COL), snap=>{
-  window.classMemos={};
-  snap.docs.forEach(d=>{ window.classMemos[d.id]=d.data().content||''; });
-  renderClass();
-});
-onSnapshot(collection(db,TT_COL), snap=>{
-  window.timetables={};
-  snap.docs.forEach(d=>{ window.timetables[d.id]=d.data(); });
-  if(isActive('timetable')) renderTimetable();
-  if(isActive('daily')) renderDailyClass();
-});
-onSnapshot(collection(db,TT_IMG_COL), snap=>{
-  window.ttImages={};
-  snap.docs.forEach(d=>{ window.ttImages[d.id]=d.data(); });
-  if(isActive('timetable')) renderTtImage();
-});
-onSnapshot(collection(db,LINK_COL), snap=>{
-  window.quickLinks = snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(a.order||0)-(b.order||0));
-  renderLinks();
-});
-onSnapshot(collection(db,STU_COL), snap=>{
-  window.students = snap.docs.map(d=>({id:d.id,...d.data()}))
-    .sort((a,b)=>(parseInt(a.number)||999)-(parseInt(b.number)||999)||(a.name||'').localeCompare(b.name||''));
-  if(!window.currentStudentId && window.students.length) window.currentStudentId=window.students[0].id;
-  if(isActive('student')){
-    renderStudentList();
-    if(!window.dirtyStudent) renderStudentDetail();
-  }
-  if(isActive('check')) renderCheck();
-});
-onSnapshot(collection(db,STU_NOTE_COL), snap=>{
-  window.studentNotes={};
-  snap.docs.forEach(d=>{ window.studentNotes[d.id]=d.data(); });
-  if(isActive('student')){
-    renderStudentList();
-    if(!window.dirtyStudent) renderStudentDetail();   // 작성 중이면 건드리지 않음
-  }
-});
-onSnapshot(collection(db,HOLIDAY_COL), snap=>{
-  window.customHolidays={};
-  snap.docs.forEach(d=>{ window.customHolidays[d.id]=d.data(); });
-  renderCalendar();
-  if(isActive('daily')) loadDaily(window.dailyDate);
-});
-onSnapshot(collection(db,EXTRA_COL), snap=>{
-  window.extraLessons = snap.docs.map(d=>({id:d.id,...d.data()}));
-  if(isActive('daily')) renderDailyClass();
-});
-onSnapshot(collection(db,CK_ITEM_COL), snap=>{
-  window.checkItems = snap.docs.map(d=>({id:d.id,...d.data()}))
-    .sort((a,b)=>(a.order||0)-(b.order||0));
-  if(isActive('check')) renderCheck();
-});
-onSnapshot(collection(db,CK_MARK_COL), snap=>{
-  window.checkMarks={};
-  snap.docs.forEach(d=>{ window.checkMarks[d.id]=true; });
-  if(isActive('check')) renderCheck();
-});
-onSnapshot(collection(db,SEM_COL), snap=>{
-  window.semRanges={};
-  snap.docs.forEach(d=>{ window.semRanges[d.id]=d.data(); });
-  renderSemNote();
-  if(isActive('daily')) renderDailyClass();
-});
-onSnapshot(collection(db,CLUB_MEM_COL), snap=>{
-  window.clubMembers = snap.docs.map(d=>({id:d.id,...d.data()}))
-    .sort((a,b)=>(a.cls||'').localeCompare(b.cls||'')||(parseInt(a.number)||999)-(parseInt(b.number)||999));
-  if(isActive('club')) renderClub();
-});
-onSnapshot(collection(db,CLUB_ACT_COL), snap=>{
-  window.clubActs = snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>b.date<a.date?-1:1);
-  if(isActive('club')) renderClub();
-});
-onSnapshot(collection(db,CLUB_ITEM_COL), snap=>{
-  window.clubItems = snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(a.order||0)-(b.order||0));
-  if(isActive('club')) renderClub();
-});
-onSnapshot(collection(db,CLUB_MARK_COL), snap=>{
-  window.clubMarks={};
-  snap.docs.forEach(d=>{ window.clubMarks[d.id]=true; });
-  if(isActive('club')) renderClub();
-});
-onSnapshot(collection(db,CFG_COL), snap=>{
-  window.config={};
-  snap.docs.forEach(d=>{ window.config[d.id]=d.data(); });
-  const t=document.getElementById('clubTitle');
-  if(t) t.textContent=(window.config.club&&window.config.club.name)||'동아리';
-  renderCatSelect();
-  if(document.getElementById('catOverlay').classList.contains('open')) renderCatList();
-});
+// ── SYNC (로그인 후 시작) ─────────────────────────────
+function startApp(){
+  setSyncState('syncing');
+  onSnapshot(collection(db,COL), snap=>{
+    window.tasks = snap.docs.map(d=>({id:d.id,...d.data()}));
+    purgeOldDone(); renderAll(); setSyncState('ok');
+    document.getElementById('loadingScreen').style.display='none';
+  }, err=>{
+    setSyncState('error'); toast('⚠️ 동기화 오류: '+err.message, true);
+    document.getElementById('loadingScreen').style.display='none';
+  });
+  onSnapshot(collection(db,JOURNAL_COL), snap=>{
+    window.journals={};
+    snap.docs.forEach(d=>{ window.journals[d.id]=d.data(); });
+    renderCalendar(); if(isActive('daily')) refreshDailyFields();
+  });
+  onSnapshot(collection(db,CLASS_COL), snap=>{
+    window.classRooms = snap.docs.map(d=>({id:d.id,...d.data()}))
+      .sort((a,b)=>(a.order||0)-(b.order||0)||(a.name||'').localeCompare(b.name||''));
+    if(!window.currentClassId && window.classRooms.length) window.currentClassId=window.classRooms[0].id;
+    renderClass(); renderDailyClass();
+  });
+  onSnapshot(collection(db,CLASS_LOG_COL), snap=>{
+    window.classLogs = snap.docs.map(d=>({id:d.id,...d.data()}));
+    renderClass(); renderDailyClass();
+  });
+  onSnapshot(collection(db,CLASS_MEMO_COL), snap=>{
+    window.classMemos={};
+    snap.docs.forEach(d=>{ window.classMemos[d.id]=d.data().content||''; });
+    renderClass();
+  });
+  onSnapshot(collection(db,TT_COL), snap=>{
+    window.timetables={};
+    snap.docs.forEach(d=>{ window.timetables[d.id]=d.data(); });
+    if(isActive('timetable')) renderTimetable();
+    if(isActive('daily')) renderDailyClass();
+  });
+  onSnapshot(collection(db,TT_IMG_COL), snap=>{
+    window.ttImages={};
+    snap.docs.forEach(d=>{ window.ttImages[d.id]=d.data(); });
+    if(isActive('timetable')) renderTtImage();
+  });
+  onSnapshot(collection(db,LINK_COL), snap=>{
+    window.quickLinks = snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(a.order||0)-(b.order||0));
+    renderLinks();
+  });
+  onSnapshot(collection(db,STU_COL), snap=>{
+    window.students = snap.docs.map(d=>({id:d.id,...d.data()}))
+      .sort((a,b)=>(parseInt(a.number)||999)-(parseInt(b.number)||999)||(a.name||'').localeCompare(b.name||''));
+    if(!window.currentStudentId && window.students.length) window.currentStudentId=window.students[0].id;
+    if(isActive('student')){
+      renderStudentList();
+      if(!window.dirtyStudent) renderStudentDetail();
+    }
+    if(isActive('check')) renderCheck();
+  });
+  onSnapshot(collection(db,STU_NOTE_COL), snap=>{
+    window.studentNotes={};
+    snap.docs.forEach(d=>{ window.studentNotes[d.id]=d.data(); });
+    if(isActive('student')){
+      renderStudentList();
+      if(!window.dirtyStudent) renderStudentDetail();   // 작성 중이면 건드리지 않음
+    }
+  });
+  onSnapshot(collection(db,HOLIDAY_COL), snap=>{
+    window.customHolidays={};
+    snap.docs.forEach(d=>{ window.customHolidays[d.id]=d.data(); });
+    renderCalendar();
+    if(isActive('daily')) loadDaily(window.dailyDate);
+  });
+  onSnapshot(collection(db,EXTRA_COL), snap=>{
+    window.extraLessons = snap.docs.map(d=>({id:d.id,...d.data()}));
+    if(isActive('daily')) renderDailyClass();
+  });
+  onSnapshot(collection(db,CK_ITEM_COL), snap=>{
+    window.checkItems = snap.docs.map(d=>({id:d.id,...d.data()}))
+      .sort((a,b)=>(a.order||0)-(b.order||0));
+    if(isActive('check')) renderCheck();
+  });
+  onSnapshot(collection(db,CK_MARK_COL), snap=>{
+    window.checkMarks={};
+    snap.docs.forEach(d=>{ window.checkMarks[d.id]=true; });
+    if(isActive('check')) renderCheck();
+  });
+  onSnapshot(collection(db,SEM_COL), snap=>{
+    window.semRanges={};
+    snap.docs.forEach(d=>{ window.semRanges[d.id]=d.data(); });
+    renderSemNote();
+    if(isActive('daily')) renderDailyClass();
+  });
+  onSnapshot(collection(db,CLUB_MEM_COL), snap=>{
+    window.clubMembers = snap.docs.map(d=>({id:d.id,...d.data()}))
+      .sort((a,b)=>(a.cls||'').localeCompare(b.cls||'')||(parseInt(a.number)||999)-(parseInt(b.number)||999));
+    if(isActive('club')) renderClub();
+  });
+  onSnapshot(collection(db,CLUB_ACT_COL), snap=>{
+    window.clubActs = snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>b.date<a.date?-1:1);
+    if(isActive('club')) renderClub();
+  });
+  onSnapshot(collection(db,CLUB_ITEM_COL), snap=>{
+    window.clubItems = snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(a.order||0)-(b.order||0));
+    if(isActive('club')) renderClub();
+  });
+  onSnapshot(collection(db,CLUB_MARK_COL), snap=>{
+    window.clubMarks={};
+    snap.docs.forEach(d=>{ window.clubMarks[d.id]=true; });
+    if(isActive('club')) renderClub();
+  });
+  onSnapshot(collection(db,CFG_COL), snap=>{
+    window.config={};
+    snap.docs.forEach(d=>{ window.config[d.id]=d.data(); });
+    const t=document.getElementById('clubTitle');
+    if(t) t.textContent=(window.config.club&&window.config.club.name)||'동아리';
+    renderCatSelect();
+    if(document.getElementById('catOverlay').classList.contains('open')) renderCatList();
+  });
+}
 
 function isActive(v){ return document.getElementById('view-'+v)?.classList.contains('active'); }
 
@@ -3175,13 +3251,14 @@ window.deleteLink = async function(id){
 };
 
 // ── INIT ─────────────────────────────────────────────
-(function(){
+function initUI(){
   const d=new Date(), days=['일','월','화','수','목','금','토'];
   document.getElementById('todayLabel').textContent=
     `${d.getFullYear()}.${pad2(d.getMonth()+1)}.${pad2(d.getDate())} (${days[d.getDay()]})`;
+  renderCatSelect('');
   loadDaily(getTodayStr());
   renderTimetable();
-})();
+}
 
 document.addEventListener('keydown', e=>{
   if(e.key==='Escape'){
