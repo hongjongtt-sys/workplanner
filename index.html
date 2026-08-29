@@ -447,8 +447,9 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:0
   .sidebar{display:none}
   .header-center{display:none}
   .mobile-nav{display:block}
-  .mobile-fab{display:flex}
-  .content{padding:14px;padding-bottom:80px}
+  .mobile-fab{display:none}
+  body.fab-on .mobile-fab{display:flex}
+  .content{padding:14px;padding-bottom:96px}
   header{padding:0 14px}
   .header-right .btn{display:none}
   .form-row{grid-template-columns:1fr}
@@ -1314,6 +1315,8 @@ window.switchTab = async function(view){
   document.querySelectorAll('.tab')[map[view]]?.classList.add('active');
   document.querySelectorAll('.mobile-tab')[map[view]]?.classList.add('active');
   document.getElementById('view-'+view).classList.add('active');
+  // 업무 추가 버튼은 월간·일간·할 일에서만 (모바일에서 저장 버튼을 가리지 않도록)
+  document.body.classList.toggle('fab-on', ['month','daily','todo'].includes(view));
   if(view==='daily'){ if(!window.dailyDate) window.dailyDate=getTodayStr(); loadDaily(window.dailyDate); }
   else if(view==='timetable') renderTimetable();
   else if(view==='class') renderClass();
@@ -3252,6 +3255,7 @@ window.deleteLink = async function(id){
 
 // ── INIT ─────────────────────────────────────────────
 function initUI(){
+  document.body.classList.add('fab-on');   // 시작 화면은 월간
   const d=new Date(), days=['일','월','화','수','목','금','토'];
   document.getElementById('todayLabel').textContent=
     `${d.getFullYear()}.${pad2(d.getMonth()+1)}.${pad2(d.getDate())} (${days[d.getDay()]})`;
