@@ -105,6 +105,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:0
 .dh-closing{background:#f0fdf4;color:#15803d}
 .dh-free{background:#fef9c3;color:#a16207}
 .dh-task{background:var(--surface2);color:var(--text-muted)}
+.dh-memo{background:#fff7ed;color:#c2410c}
 .dh-class{background:#f5f3ff;color:#6d28d9}
 .daily-textarea{width:100%;padding:12px 14px;font-size:13.5px;line-height:1.75;color:var(--text);background:var(--surface);border:none;outline:none;resize:vertical;font-family:'Pretendard',sans-serif;min-height:80px}
 .daily-textarea.tall{min-height:170px}
@@ -516,6 +517,14 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:0
       </div>
       <div class="cal-scroll-wrap"><div class="cal-grid" id="calGrid"></div></div>
       <p style="font-size:11px;color:var(--text-dim);margin-top:10px">날짜를 클릭하면 그날의 일간 기록으로 이동합니다. 📝 표시는 조회·종례·자유내용이 작성된 날입니다.</p>
+
+      <div class="daily-block" style="margin-top:18px">
+        <div class="daily-block-head dh-memo">
+          <span>🗒 자유 기록 <span style="font-weight:400;opacity:.7">· 떠오르는 대로 적어두는 곳</span></span>
+          <span id="stMemo" style="font-size:10px;font-weight:500"></span>
+        </div>
+        <div id="blkMemo"></div>
+      </div>
     </div>
 
     <!-- DAILY -->
@@ -1242,6 +1251,7 @@ function startApp(){
     if(t) t.textContent=(window.config.club&&window.config.club.name)||'동아리';
     renderCatSelect();
     if(document.getElementById('catOverlay').classList.contains('open')) renderCatList();
+    if(!window.editMemo) renderMemo();
   });
 }
 
@@ -1309,6 +1319,7 @@ window.renderAll = function(){
 window.switchTab = async function(view){
   if(window.dirtyBlock) await flushDaily();
   if(window.dirtyStudent) await flushStudent();
+  if(window.dirtyMemo) await flushMemo();
   document.querySelectorAll('.tab,.mobile-tab').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   const map={month:0,daily:1,todo:2,class:3,student:4,check:5,club:6,timetable:7};
@@ -1428,6 +1439,8 @@ const BLOCKS={morning:{el:'blkMorning',st:'stMorning',carry:'carryMorning',ph:'�
              content:{el:'blkContent',st:'stFree',carry:'carryContent',ph:'회의 내용, 학생 상담, 그밖의 기록을 자유롭게 작성하세요...',tall:true}};
 window.editBlock=null;
 window.dirtyBlock=null;
+window.editMemo=false;
+window.dirtyMemo=false;
 let pendingDailyDate=null;
 
 function blockText(field){
@@ -3204,6 +3217,81 @@ window.resetCats = function(){
   updateCats(g=>{ g.length=0; DEFAULT_CATS.forEach(d=>g.push(JSON.parse(JSON.stringify(d)))); });
 };
 
+// ── 상시 메모 (월간 하단) ─────────────────────────────
+function memoText(){ return (window.config.memo&&window.config.memo.content)||''; }
+window.renderMemo = function(){
+  const el=document.getElementById('blkMemo'); if(!el) return;
+  const text=memoText();
+  const st=document.getElementById('stMemo');
+  if(st && !window.editMemo) st.textContent = text.trim()?'✓':'';
+  if(window.editMemo){
+    el.innerHTML=`<textarea class="daily-textarea" id="ta_memo" placeholder="떠오르는 것을 자유롭게 적어두세요. 나중에 일간이나 할 일로 옮기면 됩니다."
+      oninput="memoInput()" onkeydown="memoKey(event)">${esc(text)}</textarea>
+      <div class="blk-edit-bar">
+        <span class="blk-hint">줄 앞에 <b>[]</b> 를 넣으면 체크 항목이 됩니다 · <b>Ctrl+Enter</b> 로 저장</span>
+        <span style="display:flex;gap:6px">
+          <button class="btn btn-ghost btn-sm" onclick="cancelMemo()">취소</button>
+          <button class="btn btn-primary btn-sm" onclick="commitMemo()">저장</button>
+        </span>
+      </div>`;
+    const ta=document.getElementById('ta_memo');
+    ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length);
+    return;
+  }
+  if(!text.trim()){
+    el.innerHTML=`<div class="blk-empty" onclick="startMemo()">떠오르는 것을 자유롭게 적어두세요. 나중에 일간이나 할 일로 옮기면 됩니다.</div>`;
+    return;
+  }
+  const lines=text.split('\n');
+  const html=lines.map((line,i)=>{
+    const p=parseLine(line);
+    if(p) return `<div class="chk-line ${p.done?'done':''}">
+      <span class="chk-box ${p.done?'on':''}" onclick="toggleMemoCheck(${i})">${p.done?'✓':''}</span>
+      <span class="chk-text" onclick="startMemo()">${esc(p.text)||'&nbsp;'}</span></div>`;
+    return `<div class="plain-line" onclick="startMemo()">${esc(line)||'&nbsp;'}</div>`;
+  }).join('');
+  el.innerHTML=`<div class="blk-view">${html}<div class="blk-tail" onclick="startMemo()"></div></div>`;
+};
+window.startMemo = function(){ window.editMemo=true; renderMemo(); };
+window.memoInput = function(){
+  const st=document.getElementById('stMemo');
+  if(st) st.textContent='● 저장 안 됨';
+  window.dirtyMemo=true;
+};
+window.memoKey = function(e){
+  if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)){ e.preventDefault(); commitMemo(); }
+  if(e.key==='Escape'){ e.preventDefault(); cancelMemo(); }
+};
+window.cancelMemo = function(){
+  const ta=document.getElementById('ta_memo');
+  if(ta && ta.value!==memoText() && !confirm('저장하지 않고 취소할까요?')) return;
+  window.dirtyMemo=false; window.editMemo=false; renderMemo();
+};
+window.commitMemo = async function(){
+  const ta=document.getElementById('ta_memo'); if(!ta) return;
+  const val=ta.value;
+  window.editMemo=false; window.dirtyMemo=false;
+  await saveMemo(val);
+  renderMemo();
+  toast('✓ 저장되었습니다');
+};
+window.toggleMemoCheck = async function(idx){
+  const lines=memoText().split('\n');
+  const p=parseLine(lines[idx]); if(!p) return;
+  lines[idx]=`${p.indent}[${p.done?' ':'x'}] ${p.text}`;
+  await saveMemo(lines.join('\n'));
+};
+async function saveMemo(content){
+  try{ await setDoc(doc(db,CFG_COL,'memo'), {content, updatedAt:new Date().toISOString()}); }
+  catch(e){ toast('저장 실패: '+e.message, true); }
+}
+async function flushMemo(){
+  if(!window.dirtyMemo) return;
+  const ta=document.getElementById('ta_memo');
+  if(ta) await saveMemo(ta.value);
+  window.dirtyMemo=false; window.editMemo=false;
+}
+
 // ── LINKS ────────────────────────────────────────────
 function renderLinks(){
   const side=document.getElementById('sideLinks');
@@ -3260,13 +3348,14 @@ function initUI(){
   document.getElementById('todayLabel').textContent=
     `${d.getFullYear()}.${pad2(d.getMonth()+1)}.${pad2(d.getDate())} (${days[d.getDay()]})`;
   renderCatSelect('');
+  renderMemo();
   loadDaily(getTodayStr());
   renderTimetable();
 }
 
 document.addEventListener('keydown', e=>{
   if(e.key==='Escape'){
-    if(window.editBlock) return;   // 기록 편집 중이면 해당 칸에서 처리
+    if(window.editBlock||window.editMemo) return;   // 기록 편집 중이면 해당 칸에서 처리
     closeModal(); closeLinksModal(); closeTtModal(); closeStatModal(); closeTtZoom(); closeMissingModal(); closeCkModal(); closeSemesterModal(); closeHolidayModal(); closeCatModal();
   }
   if(e.key==='n'&&!e.target.matches('input,textarea,select')) openModal();
