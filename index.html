@@ -1405,7 +1405,11 @@ window.goMonthFromDaily = function(){
 
 // ── DAILY ────────────────────────────────────────────
 window.loadDaily = async function(dateStr){
-  if(window.dirtyBlock && window.dirtyBlock.date!==dateStr) await flushDaily();
+  if(window.dailyDate!==dateStr){
+    if(window.dirtyBlock) await flushDaily();   // 미저장 내용은 원래 날짜에 저장
+    window.editBlock=null;                      // 날짜가 바뀌면 편집 상태 해제
+    window.editBlockDate=null;
+  }
   window.dailyDate=dateStr;
   const [y,m,d]=dateStr.split('-').map(Number);
   const dayLabels=['일','월','화','수','목','금','토'];
@@ -1438,6 +1442,7 @@ const BLOCKS={morning:{el:'blkMorning',st:'stMorning',carry:'carryMorning',ph:'�
              closing:{el:'blkClosing',st:'stClosing',carry:'carryClosing',ph:'종례 전달사항, 내일 준비물 등...',tall:false},
              content:{el:'blkContent',st:'stFree',carry:'carryContent',ph:'회의 내용, 학생 상담, 그밖의 기록을 자유롭게 작성하세요...',tall:true}};
 window.editBlock=null;
+window.editBlockDate=null;
 window.dirtyBlock=null;
 window.editMemo=false;
 window.dirtyMemo=false;
@@ -1504,6 +1509,7 @@ window.startEdit = function(field){
   if(window.editBlock===field) return;
   const prev=window.editBlock;
   window.editBlock=field;
+  window.editBlockDate=window.dailyDate;   // 이 칸이 어느 날짜의 것인지 기억
   if(prev) renderBlock(prev);
   renderBlock(field);
 };
@@ -1523,17 +1529,20 @@ window.cancelBlock = function(field){
   }
   window.dirtyBlock=null;
   window.editBlock=null;
+  window.editBlockDate=null;
   renderBlock(field);
 };
 window.commitBlock = async function(field){
   const ta=document.getElementById(`ta_${field}`);
   if(!ta) return;
   const val=ta.value;
+  const target=window.editBlockDate||window.dailyDate;   // 작성을 시작한 날짜에 저장
   window.editBlock=null;
+  window.editBlockDate=null;
   window.dirtyBlock=null;
-  await saveField(field, window.dailyDate, val);
+  await saveField(field, target, val);
   renderBlock(field);
-  toast('✓ 저장되었습니다');
+  toast(target===window.dailyDate?'✓ 저장되었습니다':`✓ ${target} 기록으로 저장되었습니다`);
 };
 window.toggleLineCheck = async function(field, idx){
   const lines=blockText(field).split('\n');
@@ -1563,6 +1572,7 @@ async function flushDaily(){
   }
   pendingDailyDate=null;
   window.editBlock=null;
+  window.editBlockDate=null;
 }
 window.carryOver = async function(field){
   const lines=blockText(field).split('\n');
