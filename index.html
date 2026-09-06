@@ -261,6 +261,8 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:0
 .att-stat-table thead .att-st-name{background:var(--surface2)!important;z-index:4}
 .att-stat-table td.nm{text-align:left;font-weight:600}
 .att-stat-table td.zero{color:var(--text-dim)}
+.att-stat-table th.att-sub.att-ex{color:var(--text-dim);font-style:italic}
+.att-stat-table td.att-ex{color:var(--text-dim);background:#fafaf8}
 .att-st-total{background:var(--surface2)}
 .att-stat-table th.att-st-total,.att-stat-table td.att-st-total{border-left:2px solid var(--border2)}
 .att-stat-table th.att-sub.att-st-total{border-left:1px solid var(--border)}
@@ -3618,14 +3620,17 @@ function renderAttStat(){
   const tot={}; ATT_TYPES.forEach(t=>ATT_REASONS.forEach(r=>{
     tot[key(t,r)]=rows.filter(x=>x.type===t&&(x.reason||'기타')===r).length;
   }));
-  const totType={}; ATT_TYPES.forEach(t=>totType[t]=rows.filter(r=>r.type===t).length);
+  const totType={}; ATT_TYPES.forEach(t=>totType[t]=rows.filter(r=>r.type===t&&(r.reason||'기타')!=='출석인정').length);
   const SHORT={'질병':'질병','미인정':'미인','출석인정':'인정','기타':'기타'};
-  // 학생별 구분 합계
-  const stuTypeSum=(s,t)=>ATT_REASONS.reduce((a,r)=>a+(s.c[key(t,r)]||0),0);
+  // 학생별 구분 합계 (출석인정은 나이스 기준상 합계에서 제외)
+  const COUNTED=ATT_REASONS.filter(r=>r!=='출석인정');
+  const stuTypeSum=(s,t)=>COUNTED.reduce((a,r)=>a+(s.c[key(t,r)]||0),0);
 
   el.innerHTML=`
-    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px">
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;align-items:center">
       ${ATT_TYPES.map(t=>`<span class="att-tag att-t-${t}">${t} ${totType[t]}</span>`).join('')}
+      ${(()=>{const ac=rows.filter(r=>(r.reason||'기타')==='출석인정').length;
+        return ac?`<span class="att-reason">출석인정 ${ac} (합계 제외)</span>`:'';})()}
     </div>
     <div class="att-stat-scroll">
     <table class="att-stat-table">
@@ -3635,7 +3640,7 @@ function renderAttStat(){
           ${ATT_TYPES.map(t=>`<th colspan="4" class="att-th-${t}">${t}</th>`).join('')}
           <th colspan="4" class="att-st-total">계</th>
         </tr>
-        <tr>${ATT_TYPES.map(()=>ATT_REASONS.map(r=>`<th class="att-sub">${SHORT[r]}</th>`).join('')).join('')}
+        <tr>${ATT_TYPES.map(()=>ATT_REASONS.map(r=>`<th class="att-sub ${r==='출석인정'?'att-ex':''}">${SHORT[r]}</th>`).join('')).join('')}
           ${ATT_TYPES.map(t=>`<th class="att-sub att-st-total">${t}</th>`).join('')}</tr>
       </thead>
       <tbody>
@@ -3643,7 +3648,7 @@ function renderAttStat(){
         <td class="nm att-st-name">${esc(String(s.no||''))} ${esc(s.name||'')}</td>
         ${ATT_TYPES.map(t=>ATT_REASONS.map(r=>{
           const v=s.c[key(t,r)]||0;
-          return `<td class="${v?'':'zero'}">${v||'·'}</td>`;
+          return `<td class="${v?'':'zero'} ${r==='출석인정'?'att-ex':''}">${v||'·'}</td>`;
         }).join('')).join('')}
         ${ATT_TYPES.map(t=>{
           const v=stuTypeSum(s,t);
@@ -3653,13 +3658,13 @@ function renderAttStat(){
         <td class="nm att-st-name">합계</td>
         ${ATT_TYPES.map(t=>ATT_REASONS.map(r=>{
           const v=tot[key(t,r)]||0;
-          return `<td class="${v?'':'zero'}">${v||'·'}</td>`;
+          return `<td class="${v?'':'zero'} ${r==='출석인정'?'att-ex':''}">${v||'·'}</td>`;
         }).join('')).join('')}
         ${ATT_TYPES.map(t=>`<td class="att-st-total ${totType[t]?'':'zero'}">${totType[t]||'·'}</td>`).join('')}</tr>
       </tbody>
     </table></div>
     <p style="font-size:11px;color:var(--text-dim);margin-top:10px">
-      기록이 있는 학생만 표시됩니다 · 인정=출석인정, 미인=미인정 · <b>계</b>는 사유와 무관한 구분별 합계입니다.</p>`;
+      기록이 있는 학생만 표시됩니다 · 인정=출석인정, 미인=미인정<br><b>계</b>는 구분별 합계이며, <b>출석인정은 제외</b>됩니다 (나이스 기준).</p>`;
 }
 
 // ── LINKS ────────────────────────────────────────────
