@@ -271,6 +271,23 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:0
 .att-stat-sum .att-st-name{background:var(--surface2)!important}
 .att-stat-nav{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap}
 
+/* 확인서 */
+.doc-check{display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;user-select:none;padding:9px 12px;background:var(--bg);border:1px solid var(--border);border-radius:9px}
+.doc-check input{width:17px;height:17px;cursor:pointer}
+.doc-badge{font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:12px;white-space:nowrap;flex-shrink:0}
+.doc-ok{background:var(--low-bg);color:#15803d}
+.doc-wait{background:var(--surface2);color:var(--text-muted)}
+.doc-soon{background:#fef3c7;color:#b45309}
+.doc-over{background:#fee2e2;color:#b91c1c}
+.att-item:has(.doc-soon){background:#fffbeb;border-color:#fde68a}
+.att-item:has(.doc-over){background:#fef4f4;border-color:#fecaca}
+.doc-panel{border:1px solid #fecaca;background:#fef4f4;border-radius:10px;padding:10px 12px;margin-bottom:14px}
+.doc-panel.ok{border-color:#bbf7d0;background:var(--low-bg);color:#15803d;font-size:12.5px;font-weight:600;text-align:center;padding:9px}
+.doc-panel-head{font-size:12.5px;font-weight:700;color:#b91c1c;margin-bottom:8px}
+.doc-row{display:flex;align-items:center;gap:8px;padding:6px 9px;background:var(--surface);border:1px solid var(--border);border-radius:8px;margin-bottom:4px;font-size:12px;cursor:pointer}
+.doc-row:hover{border-color:var(--accent)}
+.doc-date{font-weight:700;color:var(--accent);min-width:42px}
+
 /* LOGIN */
 #loginScreen{position:fixed;inset:0;background:var(--bg);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px}
 .login-box{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:32px 28px;width:340px;max-width:100%;box-shadow:var(--shadow-md);text-align:center}
@@ -1084,8 +1101,15 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:0
       <div id="attPeriodNote" style="font-size:10.5px;color:var(--text-dim);margin-top:5px"></div>
     </div>
     <div class="form-group">
+      <label class="form-label">확인서</label>
+      <div id="attDocWrap">
+        <label class="doc-check"><input type="checkbox" id="attDoc" onchange="updateDocNote()"> 확인서를 받았음</label>
+        <div id="attDocNote" style="font-size:10.5px;color:var(--text-dim);margin-top:6px"></div>
+      </div>
+    </div>
+    <div class="form-group">
       <label class="form-label">비고</label>
-      <input type="text" class="form-input" id="attNote" placeholder="예: 병원 진료, 대회 참가">
+      <input type="text" class="form-input" id="attNote" placeholder="예: 병원 진료, 현장체험학습" oninput="updateDocNote()">
     </div>
     <div class="modal-actions">
       <button class="btn btn-danger" id="attDeleteBtn" onclick="deleteAttFromModal()" style="display:none">삭제</button>
@@ -3453,6 +3477,36 @@ window.setSchoolInfo = async function(){
   }catch(e){ toast('저장 실패: '+e.message, true); }
 };
 function attLabel(a){ return `${a.reason||''}${a.type}`; }
+// 확인서 대상: 출석인정은 현장체험학습만, 나머지 사유는 모두 대상
+function needsDoc(a){
+  if(!a) return false;
+  const r=a.reason||'';
+  if(r==='출석인정') return /체험학습|현장/.test(a.note||'');
+  return true;
+}
+// 출결일 포함 5일 이내 제출
+function docDue(dateStr){
+  const [y,m,d]=dateStr.split('-').map(Number);
+  const dt=new Date(y,m-1,d); dt.setDate(dt.getDate()+4);
+  return dk(dt.getFullYear(), dt.getMonth()+1, dt.getDate());
+}
+// 남은 일수 (음수면 기한 초과)
+function docDaysLeft(dateStr){ return daysUntil(docDue(dateStr)); }
+function docState(a){
+  if(!needsDoc(a)) return null;
+  if(a.doc) return {k:'ok'};
+  const left=docDaysLeft(a.date);
+  if(left<0) return {k:'over', left};
+  if(left<=2) return {k:'soon', left};
+  return {k:'wait', left};
+}
+function docText(st){
+  if(!st) return '';
+  if(st.k==='ok') return '확인서 ✓';
+  if(st.k==='over') return `확인서 ${Math.abs(st.left)}일 초과`;
+  if(st.left===0) return '확인서 오늘까지';
+  return `확인서 D-${st.left}`;
+}
 function attPeriodText(a){
   if(a.type==='결석'||!a.pStart) return '';
   return a.pStart===a.pEnd ? a.pStart : `${a.pStart} ~ ${a.pEnd||a.pStart}`;
@@ -3485,6 +3539,7 @@ window.renderDailyAtt = function(){
       <span class="att-tag att-t-${a.type}">${esc(attLabel(a))}</span>
       ${pt?`<span class="att-reason">${esc(pt)}</span>`:''}
       <span class="att-note">${a.note?'· '+esc(a.note):''}</span>
+      ${(()=>{const st=docState(a); return st?`<span class="doc-badge doc-${st.k}">${docText(st)}</span>`:'';})()}
       <button class="att-del" onclick="event.stopPropagation();deleteAtt('${a.id}')">✕</button>
     </div>`;}).join('')
     + `<div style="text-align:center;margin-top:8px"><button class="btn-linklike" onclick="openAttStatModal()">📊 출결 통계 보기</button></div>`;
@@ -3497,7 +3552,8 @@ window.openAttModal = function(){
   document.getElementById('attSearch').value='';
   document.getElementById('attNote').value='';
   document.getElementById('attDeleteBtn').style.display='none';
-  renderAttPick(); renderAttBtns(); fillPeriodSelects('조회','종례');
+  document.getElementById('attDoc').checked=false;
+  renderAttPick(); renderAttBtns(); fillPeriodSelects('조회','종례'); updateDocNote();
   document.getElementById('attOverlay').classList.add('open');
   setTimeout(()=>document.getElementById('attSearch').focus(),100);
 };
@@ -3509,7 +3565,8 @@ window.editAtt = function(id){
   document.getElementById('attSearch').value='';
   document.getElementById('attNote').value=a.note||'';
   document.getElementById('attDeleteBtn').style.display='block';
-  renderAttPick(); renderAttBtns(); fillPeriodSelects(a.pStart||'조회', a.pEnd||'종례');
+  document.getElementById('attDoc').checked=!!a.doc;
+  renderAttPick(); renderAttBtns(); fillPeriodSelects(a.pStart||'조회', a.pEnd||'종례'); updateDocNote();
   document.getElementById('attOverlay').classList.add('open');
 };
 window.renderAttPick = function(){
@@ -3544,7 +3601,21 @@ function updatePeriodState(){
   document.getElementById('attPeriodNote').textContent = off ? '결석은 교시를 입력하지 않습니다' : '';
 }
 window.setAttType = function(t){ window.attType=t; renderAttBtns(); updatePeriodState(); };
-window.setAttReason = function(r){ window.attReason=r; renderAttBtns(); };
+window.setAttReason = function(r){ window.attReason=r; renderAttBtns(); updateDocNote(); };
+window.updateDocNote = function(){
+  const el=document.getElementById('attDocNote'); if(!el) return;
+  const note=document.getElementById('attNote')?.value||'';
+  const target=needsDoc({reason:window.attReason, note});
+  const wrap=document.getElementById('attDocWrap');
+  wrap.style.opacity=target?'1':'.45';
+  document.getElementById('attDoc').disabled=!target;
+  if(!target){
+    el.textContent='출석인정은 확인서 대상이 아닙니다 (비고에 "체험학습"을 넣으면 대상이 됩니다)';
+    return;
+  }
+  const due=docDue(window.dailyDate);
+  el.textContent=`제출 기한: ${due}까지 (출결일 포함 5일)`;
+};
 window.closeAttModal = function(){ document.getElementById('attOverlay').classList.remove('open'); };
 window.closeAttOutside = function(e){ if(e.target===document.getElementById('attOverlay')) closeAttModal(); };
 window.saveAtt = async function(){
@@ -3558,7 +3629,7 @@ window.saveAtt = async function(){
     date:window.dailyDate, stuId:window.attPickId,
     name:s?s.name:'', number:s?String(s.number||''):'', stuNo:stuNo(s),
     type:window.attType, reason:window.attReason,
-    pStart:ps, pEnd:pe,
+    pStart:ps, pEnd:pe, doc:document.getElementById('attDoc').checked,
     note:document.getElementById('attNote').value.trim()
   };
   try{
@@ -3595,6 +3666,7 @@ window.attStatMonth = function(d){
   window.attStatYM={y,m}; window.attStatAll=false; renderAttStat();
 };
 window.toggleAttScope = function(){ window.attStatAll=!window.attStatAll; renderAttStat(); };
+window.goAttDate = function(date){ closeAttStatModal(); openDaily(date); };
 function renderAttStat(){
   const {y,m}=window.attStatYM;
   const prefix=`${y}-${pad2(m)}`;
@@ -3632,6 +3704,22 @@ function renderAttStat(){
       ${(()=>{const ac=rows.filter(r=>(r.reason||'기타')==='출석인정').length;
         return ac?`<span class="att-reason">출석인정 ${ac} (합계 제외)</span>`:'';})()}
     </div>
+    ${(()=>{
+      const miss=rows.filter(a=>{const st=docState(a); return st&&st.k!=='ok';})
+        .sort((x,y)=>x.date<y.date?-1:1);
+      if(!miss.length) return `<div class="doc-panel ok">✓ 확인서 미제출 없음</div>`;
+      return `<div class="doc-panel">
+        <div class="doc-panel-head">⚠ 확인서 미제출 ${miss.length}건</div>
+        ${miss.map(a=>{const st=docState(a);
+          return `<div class="doc-row doc-${st.k}" onclick="goAttDate('${a.date}')">
+            <span class="doc-date">${a.date.slice(5)}</span>
+            <span style="font-weight:600">${esc(String(a.stuNo||a.number||''))} ${esc(a.name||'')}</span>
+            <span class="att-tag att-t-${a.type}">${esc(attLabel(a))}</span>
+            <span style="flex:1"></span>
+            <span class="doc-badge doc-${st.k}">${docText(st)}</span>
+          </div>`;}).join('')}
+      </div>`;
+    })()}
     <div class="att-stat-scroll">
     <table class="att-stat-table">
       <thead>
