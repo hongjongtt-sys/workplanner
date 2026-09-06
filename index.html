@@ -224,6 +224,51 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:0
 .stat-list-item.p-done::before{background:var(--done)}
 .stat-list-item:hover{border-color:var(--accent);background:var(--accent-light)}
 
+/* ATTENDANCE */
+.dh-att{background:#ecfeff;color:#0e7490}
+.att-item{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:9px;margin-bottom:5px;background:var(--surface2);border:1px solid var(--border);font-size:12.5px;cursor:pointer;transition:all .12s}
+.att-item:hover{border-color:var(--accent);background:var(--accent-light)}
+.att-num{width:26px;height:26px;flex-shrink:0;border-radius:7px;background:var(--surface);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:700;color:var(--text-muted)}
+.att-name{font-weight:600;min-width:52px}
+.att-tag{font-size:11px;font-weight:700;padding:2px 9px;border-radius:14px;white-space:nowrap}
+.att-t-결석{background:#fee2e2;color:#b91c1c}
+.att-t-지각{background:#fef3c7;color:#b45309}
+.att-t-조퇴{background:#e0e7ff;color:#4338ca}
+.att-t-결과{background:#f3e8ff;color:#7e22ce}
+.att-reason{font-size:11px;color:var(--text-muted);background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1px 8px}
+.att-note{font-size:11px;color:var(--text-dim);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.att-del{background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:13px;padding:0 3px;flex-shrink:0}
+.att-del:hover{color:var(--high)}
+.att-btns{display:flex;gap:6px;flex-wrap:wrap}
+.att-btn{padding:7px 15px;border:1.5px solid var(--border);background:var(--surface);border-radius:9px;cursor:pointer;font-size:12.5px;font-weight:600;color:var(--text-muted);font-family:'Pretendard',sans-serif;transition:all .12s}
+.att-btn:hover{border-color:var(--accent);color:var(--accent)}
+.att-btn.active{border-color:var(--accent);background:var(--accent-light);color:var(--accent)}
+.att-pick{max-height:168px;overflow-y:auto;border:1px solid var(--border);border-radius:9px;margin-top:7px;background:var(--bg)}
+.att-pick-item{display:flex;align-items:center;gap:9px;padding:8px 11px;cursor:pointer;border-bottom:1px solid var(--border);font-size:12.5px}
+.att-pick-item:last-child{border-bottom:none}
+.att-pick-item:hover{background:var(--accent-light)}
+.att-pick-item.on{background:var(--accent-light);font-weight:700;color:var(--accent)}
+.att-stat-scroll{overflow-x:auto;border:1px solid var(--border);border-radius:9px}
+.att-stat-table{width:max-content;min-width:100%;border-collapse:separate;border-spacing:0;font-size:12px}
+.att-stat-table th,.att-stat-table td{border-right:1px solid var(--border);border-bottom:1px solid var(--border);padding:6px 7px;text-align:center;white-space:nowrap}
+.att-stat-table thead th{background:var(--surface2);font-size:11px;font-weight:700;color:var(--text-muted);position:sticky;top:0}
+.att-stat-table th.att-sub{font-size:10px;font-weight:600;padding:4px 6px}
+.att-th-결석{background:#fee2e2!important;color:#b91c1c!important}
+.att-th-지각{background:#fef3c7!important;color:#b45309!important}
+.att-th-조퇴{background:#e0e7ff!important;color:#4338ca!important}
+.att-th-결과{background:#f3e8ff!important;color:#7e22ce!important}
+.att-st-name{position:sticky;left:0;z-index:3;background:var(--surface)!important;text-align:left!important;min-width:106px;box-shadow:2px 0 3px rgba(0,0,0,.04)}
+.att-stat-table thead .att-st-name{background:var(--surface2)!important;z-index:4}
+.att-stat-table td.nm{text-align:left;font-weight:600}
+.att-stat-table td.zero{color:var(--text-dim)}
+.att-st-total{background:var(--surface2)}
+.att-stat-table th.att-st-total,.att-stat-table td.att-st-total{border-left:2px solid var(--border2)}
+.att-stat-table th.att-sub.att-st-total{border-left:1px solid var(--border)}
+.att-stat-table tr th.att-sub.att-st-total:first-of-type{border-left:2px solid var(--border2)}
+.att-stat-sum{background:var(--surface2);font-weight:700}
+.att-stat-sum .att-st-name{background:var(--surface2)!important}
+.att-stat-nav{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+
 /* LOGIN */
 #loginScreen{position:fixed;inset:0;background:var(--bg);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px}
 .login-box{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:32px 28px;width:340px;max-width:100%;box-shadow:var(--shadow-md);text-align:center}
@@ -542,6 +587,14 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:0
       </div>
 
       <div class="daily-block">
+        <div class="daily-block-head dh-att">
+          <span>🙋 출결</span>
+          <button class="carry-btn" onclick="openAttModal()">+ 출결 추가</button>
+        </div>
+        <div class="daily-body" id="dailyAtt"></div>
+      </div>
+
+      <div class="daily-block">
         <div class="daily-block-head dh-morning">
           <span>🌅 아침 조회</span>
           <span style="display:flex;align-items:center;gap:7px">
@@ -622,6 +675,8 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:0
       <div class="page-header">
         <div class="page-title">학생카드</div>
         <div style="display:flex;gap:6px">
+          <button class="btn btn-ghost btn-sm" onclick="openAttStatModal()">📊 출결 통계</button>
+          <button class="btn btn-ghost btn-sm" onclick="setSchoolInfo()">⚙ 학년·반</button>
           <button class="btn btn-ghost btn-sm" onclick="addStudents()">+ 학생 추가</button>
           <button class="btn btn-ghost btn-sm" onclick="printStudent()">🖨 인쇄</button>
         </div>
@@ -997,6 +1052,67 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:0
   </div>
 </div>
 
+<!-- ATTENDANCE MODAL -->
+<div class="overlay" id="attOverlay" onclick="closeAttOutside(event)">
+  <div class="modal" style="width:430px">
+    <div class="modal-head">
+      <div class="modal-title" id="attModalTitle">출결 추가</div>
+      <button class="modal-close" onclick="closeAttModal()">✕</button>
+    </div>
+    <div class="form-group">
+      <label class="form-label">학생 *</label>
+      <input type="text" class="form-input" id="attSearch" placeholder="이름 또는 번호로 검색" oninput="renderAttPick()">
+      <div class="att-pick" id="attPick"></div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">구분</label>
+      <div class="att-btns" id="attTypeBtns"></div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">사유</label>
+      <div class="att-btns" id="attReasonBtns"></div>
+    </div>
+    <div class="form-group" id="attPeriodGroup">
+      <label class="form-label">교시</label>
+      <div style="display:flex;align-items:center;gap:8px">
+        <select class="form-select" id="attPStart" style="flex:1"></select>
+        <span style="color:var(--text-muted);font-size:13px">~</span>
+        <select class="form-select" id="attPEnd" style="flex:1"></select>
+      </div>
+      <div id="attPeriodNote" style="font-size:10.5px;color:var(--text-dim);margin-top:5px"></div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">비고</label>
+      <input type="text" class="form-input" id="attNote" placeholder="예: 병원 진료, 대회 참가">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-danger" id="attDeleteBtn" onclick="deleteAttFromModal()" style="display:none">삭제</button>
+      <div class="modal-actions-right">
+        <button class="btn btn-ghost" onclick="closeAttModal()">취소</button>
+        <button class="btn btn-primary" onclick="saveAtt()">저장</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ATTENDANCE STATS MODAL -->
+<div class="overlay" id="attStatOverlay" onclick="closeAttStatOutside(event)">
+  <div class="modal" style="width:860px">
+    <div class="modal-head">
+      <div class="modal-title">📊 출결 통계</div>
+      <button class="modal-close" onclick="closeAttStatModal()">✕</button>
+    </div>
+    <div class="att-stat-nav">
+      <button class="btn btn-ghost btn-sm" onclick="attStatMonth(-1)">‹</button>
+      <span id="attStatLabel" style="font-weight:700;font-size:14px"></span>
+      <button class="btn btn-ghost btn-sm" onclick="attStatMonth(1)">›</button>
+      <span style="flex:1"></span>
+      <button class="btn btn-ghost btn-sm" id="attStatScope" onclick="toggleAttScope()">이번 달</button>
+    </div>
+    <div id="attStatBody"></div>
+  </div>
+</div>
+
 <div class="toast-wrap" id="toastWrap"></div>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
@@ -1080,6 +1196,7 @@ const EXTRA_COL = "extraLessons";
 const CK_ITEM_COL = "checkItems";
 const CK_MARK_COL = "checkMarks";
 const SEM_COL = "semesters";
+const ATT_COL = "attendance";
 const CLUB_MEM_COL = "clubMembers";
 const CLUB_ACT_COL = "clubActivities";
 const CLUB_ITEM_COL = "clubItems";
@@ -1099,6 +1216,7 @@ window.extraLessons = [];
 window.checkItems = [];
 window.checkMarks = {};
 window.semRanges = {};
+window.attendance = [];
 window.clubMembers = [];
 window.clubActs = [];
 window.clubItems = [];
@@ -1225,6 +1343,11 @@ function startApp(){
     snap.docs.forEach(d=>{ window.semRanges[d.id]=d.data(); });
     renderSemNote();
     if(isActive('daily')) renderDailyClass();
+  });
+  onSnapshot(collection(db,ATT_COL), snap=>{
+    window.attendance = snap.docs.map(d=>({id:d.id,...d.data()}));
+    if(isActive('daily')) renderDailyAtt();
+    if(document.getElementById('attStatOverlay').classList.contains('open')) renderAttStat();
   });
   onSnapshot(collection(db,CLUB_MEM_COL), snap=>{
     window.clubMembers = snap.docs.map(d=>({id:d.id,...d.data()}))
@@ -1435,6 +1558,7 @@ window.loadDaily = async function(dateStr){
     else hb.textContent='🏖 휴업일 지정';
   }
   refreshDailyFields();
+  renderDailyAtt();
   renderDailyTasks();
   renderDailyClass();
 };
@@ -3302,6 +3426,242 @@ async function flushMemo(){
   window.dirtyMemo=false; window.editMemo=false;
 }
 
+// ── ATTENDANCE ───────────────────────────────────────
+const ATT_TYPES=['결석','지각','조퇴','결과'];
+const ATT_REASONS=['질병','미인정','출석인정','기타'];
+const ATT_PERIODS=['조회','1교시','2교시','3교시','4교시','5교시','6교시','7교시','종례'];
+window.attPickId=null; window.attType='결석'; window.attReason='질병'; window.attEditId=null;
+
+// 학번: 2학년 3반 1번 → 20301
+function stuNo(s){
+  if(!s) return '';
+  const sc=window.config.school||{};
+  const n=parseInt(s.number);
+  if(!sc.grade||!sc.cls||!n) return String(s.number||'');
+  return `${sc.grade}${pad2(sc.cls)}${pad2(n)}`;
+}
+window.setSchoolInfo = async function(){
+  const sc=window.config.school||{};
+  const g=prompt('학년을 입력하세요 (예: 2)', sc.grade||''); if(g===null) return;
+  const cl=prompt('반을 입력하세요 (예: 3)', sc.cls||''); if(cl===null) return;
+  if(!g.trim()||!cl.trim()){ toast('학년과 반을 모두 입력하세요', true); return; }
+  try{
+    await setDoc(doc(db,CFG_COL,'school'), {grade:g.trim(), cls:cl.trim()});
+    toast(`✅ ${g.trim()}학년 ${cl.trim()}반으로 설정되었습니다`);
+  }catch(e){ toast('저장 실패: '+e.message, true); }
+};
+function attLabel(a){ return `${a.reason||''}${a.type}`; }
+function attPeriodText(a){
+  if(a.type==='결석'||!a.pStart) return '';
+  return a.pStart===a.pEnd ? a.pStart : `${a.pStart} ~ ${a.pEnd||a.pStart}`;
+}
+
+function attOn(dateStr){
+  return window.attendance.filter(a=>a.date===dateStr)
+    .sort((a,b)=>(parseInt(a.number)||999)-(parseInt(b.number)||999));
+}
+window.renderDailyAtt = function(){
+  const el=document.getElementById('dailyAtt'); if(!el) return;
+  const list=attOn(window.dailyDate);
+  if(!window.students.length){
+    el.innerHTML=`<div style="text-align:center;padding:14px;color:var(--text-dim);font-size:12px">먼저 [학생카드]에서 명단을 등록하세요</div>`;
+    return;
+  }
+  if(!list.length){
+    el.innerHTML=`<div style="text-align:center;padding:14px;color:var(--text-dim);font-size:12px">
+      전원 출석 <span style="font-size:11px">· 특이사항이 있으면 + 출결 추가</span></div>
+      <div style="text-align:center"><button class="btn-linklike" onclick="openAttStatModal()">📊 출결 통계 보기</button></div>`;
+    return;
+  }
+  el.innerHTML=list.map(a=>{
+      const s=window.students.find(x=>x.id===a.stuId);
+      const no=a.stuNo||stuNo(s)||a.number||'';
+      const pt=attPeriodText(a);
+      return `<div class="att-item" onclick="editAtt('${a.id}')">
+      <div class="att-num">${esc(String(no))}</div>
+      <div class="att-name">${esc(a.name||'')}</div>
+      <span class="att-tag att-t-${a.type}">${esc(attLabel(a))}</span>
+      ${pt?`<span class="att-reason">${esc(pt)}</span>`:''}
+      <span class="att-note">${a.note?'· '+esc(a.note):''}</span>
+      <button class="att-del" onclick="event.stopPropagation();deleteAtt('${a.id}')">✕</button>
+    </div>`;}).join('')
+    + `<div style="text-align:center;margin-top:8px"><button class="btn-linklike" onclick="openAttStatModal()">📊 출결 통계 보기</button></div>`;
+};
+window.openAttModal = function(){
+  if(!window.students.length){ toast('먼저 학생 명단을 등록하세요', true); return; }
+  window.attEditId=null; window.attPickId=null;
+  window.attType='결석'; window.attReason='질병';
+  document.getElementById('attModalTitle').textContent='출결 추가';
+  document.getElementById('attSearch').value='';
+  document.getElementById('attNote').value='';
+  document.getElementById('attDeleteBtn').style.display='none';
+  renderAttPick(); renderAttBtns(); fillPeriodSelects('조회','종례');
+  document.getElementById('attOverlay').classList.add('open');
+  setTimeout(()=>document.getElementById('attSearch').focus(),100);
+};
+window.editAtt = function(id){
+  const a=window.attendance.find(x=>x.id===id); if(!a) return;
+  window.attEditId=id; window.attPickId=a.stuId;
+  window.attType=a.type; window.attReason=a.reason||'질병';
+  document.getElementById('attModalTitle').textContent='출결 수정';
+  document.getElementById('attSearch').value='';
+  document.getElementById('attNote').value=a.note||'';
+  document.getElementById('attDeleteBtn').style.display='block';
+  renderAttPick(); renderAttBtns(); fillPeriodSelects(a.pStart||'조회', a.pEnd||'종례');
+  document.getElementById('attOverlay').classList.add('open');
+};
+window.renderAttPick = function(){
+  const q=(document.getElementById('attSearch')?.value||'').trim().toLowerCase();
+  const list=window.students.filter(s=>!q||(s.name||'').toLowerCase().includes(q)||String(s.number||'').includes(q));
+  document.getElementById('attPick').innerHTML = list.length
+    ? list.map(s=>`<div class="att-pick-item ${s.id===window.attPickId?'on':''}" onclick="pickAttStu('${s.id}')">
+        <div class="att-num">${esc(String(s.number||''))}</div><div>${esc(s.name||'')}</div></div>`).join('')
+    : `<div style="padding:12px;text-align:center;color:var(--text-dim);font-size:12px">검색 결과 없음</div>`;
+};
+window.pickAttStu = function(id){ window.attPickId=id; renderAttPick(); };
+function renderAttBtns(){
+  document.getElementById('attTypeBtns').innerHTML=ATT_TYPES.map(t=>
+    `<button class="att-btn ${t===window.attType?'active':''}" onclick="setAttType('${t}')">${t}</button>`).join('');
+  document.getElementById('attReasonBtns').innerHTML=ATT_REASONS.map(r=>
+    `<button class="att-btn ${r===window.attReason?'active':''}" onclick="setAttReason('${r}')">${r}</button>`).join('');
+}
+function fillPeriodSelects(s,e){
+  const o=ATT_PERIODS.map(p=>`<option>${p}</option>`).join('');
+  const ss=document.getElementById('attPStart'), ee=document.getElementById('attPEnd');
+  ss.innerHTML=o; ee.innerHTML=o;
+  ss.value=s; ee.value=e;
+  updatePeriodState();
+}
+function updatePeriodState(){
+  const off=window.attType==='결석';
+  const ss=document.getElementById('attPStart'), ee=document.getElementById('attPEnd');
+  const g=document.getElementById('attPeriodGroup');
+  if(!ss) return;
+  ss.disabled=off; ee.disabled=off;
+  g.style.opacity=off?'.45':'1';
+  document.getElementById('attPeriodNote').textContent = off ? '결석은 교시를 입력하지 않습니다' : '';
+}
+window.setAttType = function(t){ window.attType=t; renderAttBtns(); updatePeriodState(); };
+window.setAttReason = function(r){ window.attReason=r; renderAttBtns(); };
+window.closeAttModal = function(){ document.getElementById('attOverlay').classList.remove('open'); };
+window.closeAttOutside = function(e){ if(e.target===document.getElementById('attOverlay')) closeAttModal(); };
+window.saveAtt = async function(){
+  if(!window.attPickId){ toast('학생을 선택하세요', true); return; }
+  const s=window.students.find(x=>x.id===window.attPickId);
+  const off=window.attType==='결석';
+  let ps=off?'':document.getElementById('attPStart').value;
+  let pe=off?'':document.getElementById('attPEnd').value;
+  if(!off && ATT_PERIODS.indexOf(pe)<ATT_PERIODS.indexOf(ps)){ [ps,pe]=[pe,ps]; }
+  const data={
+    date:window.dailyDate, stuId:window.attPickId,
+    name:s?s.name:'', number:s?String(s.number||''):'', stuNo:stuNo(s),
+    type:window.attType, reason:window.attReason,
+    pStart:ps, pEnd:pe,
+    note:document.getElementById('attNote').value.trim()
+  };
+  try{
+    if(window.attEditId) await updateDoc(doc(db,ATT_COL,window.attEditId), data);
+    else await addDoc(collection(db,ATT_COL), {...data, createdAt:serverTimestamp()});
+    toast(window.attEditId?'✏️ 수정되었습니다':'✅ 출결이 기록되었습니다');
+    closeAttModal();
+  }catch(e){ toast('저장 실패: '+e.message, true); }
+};
+window.deleteAtt = async function(id){
+  if(!confirm('이 출결 기록을 삭제할까요?')) return;
+  try{ await deleteDoc(doc(db,ATT_COL,id)); toast('🗑️ 삭제되었습니다'); }
+  catch(e){ toast('삭제 실패: '+e.message, true); }
+};
+window.deleteAttFromModal = async function(){
+  if(!window.attEditId) return;
+  await deleteAtt(window.attEditId);
+  closeAttModal();
+};
+
+// ── 출결 통계 ─────────────────────────────────────────
+window.attStatYM=null; window.attStatAll=false;
+window.openAttStatModal = function(){
+  const [y,m]=window.dailyDate.split('-').map(Number);
+  window.attStatYM={y,m}; window.attStatAll=false;
+  renderAttStat();
+  document.getElementById('attStatOverlay').classList.add('open');
+};
+window.closeAttStatModal = function(){ document.getElementById('attStatOverlay').classList.remove('open'); };
+window.closeAttStatOutside = function(e){ if(e.target===document.getElementById('attStatOverlay')) closeAttStatModal(); };
+window.attStatMonth = function(d){
+  let {y,m}=window.attStatYM; m+=d;
+  if(m<1){m=12;y--;} if(m>12){m=1;y++;}
+  window.attStatYM={y,m}; window.attStatAll=false; renderAttStat();
+};
+window.toggleAttScope = function(){ window.attStatAll=!window.attStatAll; renderAttStat(); };
+function renderAttStat(){
+  const {y,m}=window.attStatYM;
+  const prefix=`${y}-${pad2(m)}`;
+  const rows=window.attendance.filter(a=>window.attStatAll||a.date.startsWith(prefix));
+  document.getElementById('attStatLabel').textContent = window.attStatAll?'전체 기간':`${y}년 ${m}월`;
+  document.getElementById('attStatScope').textContent = window.attStatAll?'전체 보기 중':'이번 달만';
+  const el=document.getElementById('attStatBody');
+  if(!rows.length){
+    el.innerHTML=`<div class="empty"><div class="empty-icon">🙋</div><p>해당 기간 출결 기록이 없습니다</p></div>`;
+    return;
+  }
+  // 학생별 × (구분 × 사유) 집계
+  const key=(t,r)=>t+'|'+r;
+  const byStu={};
+  rows.forEach(a=>{
+    const k=a.stuId||a.name;
+    if(!byStu[k]) byStu[k]={no:a.stuNo||a.number, number:a.number, name:a.name, c:{}, sum:0};
+    const kk=key(a.type, a.reason||'기타');
+    byStu[k].c[kk]=(byStu[k].c[kk]||0)+1;
+    byStu[k].sum++;
+  });
+  const list=Object.values(byStu).sort((a,b)=>(parseInt(a.number)||999)-(parseInt(b.number)||999));
+  const tot={}; ATT_TYPES.forEach(t=>ATT_REASONS.forEach(r=>{
+    tot[key(t,r)]=rows.filter(x=>x.type===t&&(x.reason||'기타')===r).length;
+  }));
+  const totType={}; ATT_TYPES.forEach(t=>totType[t]=rows.filter(r=>r.type===t).length);
+  const SHORT={'질병':'질병','미인정':'미인','출석인정':'인정','기타':'기타'};
+  // 학생별 구분 합계
+  const stuTypeSum=(s,t)=>ATT_REASONS.reduce((a,r)=>a+(s.c[key(t,r)]||0),0);
+
+  el.innerHTML=`
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px">
+      ${ATT_TYPES.map(t=>`<span class="att-tag att-t-${t}">${t} ${totType[t]}</span>`).join('')}
+    </div>
+    <div class="att-stat-scroll">
+    <table class="att-stat-table">
+      <thead>
+        <tr>
+          <th class="att-st-name" rowspan="2">학생</th>
+          ${ATT_TYPES.map(t=>`<th colspan="4" class="att-th-${t}">${t}</th>`).join('')}
+          <th colspan="4" class="att-st-total">계</th>
+        </tr>
+        <tr>${ATT_TYPES.map(()=>ATT_REASONS.map(r=>`<th class="att-sub">${SHORT[r]}</th>`).join('')).join('')}
+          ${ATT_TYPES.map(t=>`<th class="att-sub att-st-total">${t}</th>`).join('')}</tr>
+      </thead>
+      <tbody>
+      ${list.map(s=>`<tr>
+        <td class="nm att-st-name">${esc(String(s.no||''))} ${esc(s.name||'')}</td>
+        ${ATT_TYPES.map(t=>ATT_REASONS.map(r=>{
+          const v=s.c[key(t,r)]||0;
+          return `<td class="${v?'':'zero'}">${v||'·'}</td>`;
+        }).join('')).join('')}
+        ${ATT_TYPES.map(t=>{
+          const v=stuTypeSum(s,t);
+          return `<td class="att-st-total ${v?'':'zero'}" style="font-weight:700">${v||'·'}</td>`;
+        }).join('')}</tr>`).join('')}
+      <tr class="att-stat-sum">
+        <td class="nm att-st-name">합계</td>
+        ${ATT_TYPES.map(t=>ATT_REASONS.map(r=>{
+          const v=tot[key(t,r)]||0;
+          return `<td class="${v?'':'zero'}">${v||'·'}</td>`;
+        }).join('')).join('')}
+        ${ATT_TYPES.map(t=>`<td class="att-st-total ${totType[t]?'':'zero'}">${totType[t]||'·'}</td>`).join('')}</tr>
+      </tbody>
+    </table></div>
+    <p style="font-size:11px;color:var(--text-dim);margin-top:10px">
+      기록이 있는 학생만 표시됩니다 · 인정=출석인정, 미인=미인정 · <b>계</b>는 사유와 무관한 구분별 합계입니다.</p>`;
+}
+
 // ── LINKS ────────────────────────────────────────────
 function renderLinks(){
   const side=document.getElementById('sideLinks');
@@ -3366,7 +3726,7 @@ function initUI(){
 document.addEventListener('keydown', e=>{
   if(e.key==='Escape'){
     if(window.editBlock||window.editMemo) return;   // 기록 편집 중이면 해당 칸에서 처리
-    closeModal(); closeLinksModal(); closeTtModal(); closeStatModal(); closeTtZoom(); closeMissingModal(); closeCkModal(); closeSemesterModal(); closeHolidayModal(); closeCatModal();
+    closeModal(); closeLinksModal(); closeTtModal(); closeStatModal(); closeTtZoom(); closeMissingModal(); closeCkModal(); closeSemesterModal(); closeHolidayModal(); closeCatModal(); closeAttModal(); closeAttStatModal();
   }
   if(e.key==='n'&&!e.target.matches('input,textarea,select')) openModal();
 });
