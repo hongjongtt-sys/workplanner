@@ -271,6 +271,15 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:0
 .att-stat-sum .att-st-name{background:var(--surface2)!important}
 .att-stat-nav{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap}
 
+/* CLASS CALENDAR */
+.cal-head-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;flex-wrap:wrap}
+.cls-legend{display:flex;gap:5px;flex-wrap:wrap}
+.cls-legend span{font-size:10.5px;font-weight:700;padding:2px 9px;border-radius:12px}
+.cls-dot{font-size:9.5px;padding:2px 5px;border-radius:4px;margin-bottom:2px;display:block;line-height:1.35;cursor:pointer}
+.cls-dot b{font-weight:700}
+.cls-dot span{opacity:.85}
+.cls-cell-empty{color:var(--text-dim);font-size:9px}
+
 /* 확인서 */
 .doc-check{display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;user-select:none;padding:9px 12px;background:var(--bg);border:1px solid var(--border);border-radius:9px}
 .doc-check input{width:17px;height:17px;cursor:pointer}
@@ -683,10 +692,31 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:0
     <div class="view" id="view-class">
       <div class="page-header">
         <div class="page-title">수업 진도</div>
-        <button class="btn btn-primary btn-sm" onclick="openClassSetup()">⚙️ 반 설정</button>
+        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+          <button class="filter-chip active" id="clsViewCal" onclick="setClassView('cal')">📅 달력</button>
+          <button class="filter-chip" id="clsViewList" onclick="setClassView('list')">📋 목록</button>
+          <button class="btn btn-primary btn-sm" onclick="openClassSetup()">⚙️ 반 설정</button>
+        </div>
       </div>
-      <div class="class-tabs" id="classTabs"></div>
-      <div id="classContent"></div>
+      <div id="classCalWrap">
+        <div class="cal-head-row">
+          <div class="cal-nav">
+            <button onclick="clsMonth(-12)" title="이전 해">«</button>
+            <button onclick="clsMonth(-1)">‹</button>
+            <span class="cal-month-label" id="clsMonthLabel"></span>
+            <button onclick="clsMonth(1)">›</button>
+            <button onclick="clsMonth(12)" title="다음 해">»</button>
+            <button onclick="clsThisMonth()" style="margin-left:4px">이번 달</button>
+          </div>
+          <div class="cls-legend" id="clsLegend"></div>
+        </div>
+        <div class="cal-scroll-wrap"><div class="cal-grid" id="clsCalGrid"></div></div>
+        <p style="font-size:11px;color:var(--text-dim);margin-top:10px">날짜를 클릭하면 그날의 일간 기록으로 이동합니다.</p>
+      </div>
+      <div id="classListWrap" style="display:none">
+        <div class="class-tabs" id="classTabs"></div>
+        <div id="classContent"></div>
+      </div>
     </div>
 
     <!-- STUDENT -->
@@ -1301,10 +1331,12 @@ function startApp(){
       .sort((a,b)=>(a.order||0)-(b.order||0)||(a.name||'').localeCompare(b.name||''));
     if(!window.currentClassId && window.classRooms.length) window.currentClassId=window.classRooms[0].id;
     renderClass(); renderDailyClass();
+    if(isActive('class')&&window.clsView==='cal') renderClassCal();
   });
   onSnapshot(collection(db,CLASS_LOG_COL), snap=>{
     window.classLogs = snap.docs.map(d=>({id:d.id,...d.data()}));
     renderClass(); renderDailyClass();
+    if(isActive('class')&&window.clsView==='cal') renderClassCal();
   });
   onSnapshot(collection(db,CLASS_MEMO_COL), snap=>{
     window.classMemos={};
@@ -1479,7 +1511,7 @@ window.switchTab = async function(view){
   document.body.classList.toggle('fab-on', ['month','daily','todo'].includes(view));
   if(view==='daily'){ if(!window.dailyDate) window.dailyDate=getTodayStr(); loadDaily(window.dailyDate); }
   else if(view==='timetable') renderTimetable();
-  else if(view==='class') renderClass();
+  else if(view==='class'){ if(window.clsView==='cal') renderClassCal(); else renderClass(); }
   else if(view==='student') renderStudent();
   else if(view==='check') renderCheck();
   else if(view==='club') renderClub();
@@ -3754,6 +3786,69 @@ function renderAttStat(){
     <p style="font-size:11px;color:var(--text-dim);margin-top:10px">
       기록이 있는 학생만 표시됩니다 · 인정=출석인정, 미인=미인정<br><b>계</b>는 구분별 합계이며, <b>출석인정은 제외</b>됩니다 (나이스 기준).</p>`;
 }
+
+// ── 수업 진도 달력 ────────────────────────────────────
+const CLS_COLORS=['#2563eb','#16a34a','#d97706','#7c3aed','#dc2626','#0891b2','#be185d','#65a30d'];
+window.clsView='cal';
+window.clsDate=new Date();
+function clsColor(classId){
+  const i=window.classRooms.findIndex(c=>c.id===classId);
+  return i<0?'#6b7280':CLS_COLORS[i%CLS_COLORS.length];
+}
+window.setClassView = function(v){
+  window.clsView=v;
+  document.getElementById('clsViewCal').classList.toggle('active', v==='cal');
+  document.getElementById('clsViewList').classList.toggle('active', v==='list');
+  document.getElementById('classCalWrap').style.display = v==='cal'?'':'none';
+  document.getElementById('classListWrap').style.display = v==='list'?'':'none';
+  if(v==='cal') renderClassCal(); else renderClass();
+};
+window.clsMonth = function(d){ window.clsDate.setDate(1); window.clsDate.setMonth(window.clsDate.getMonth()+d); renderClassCal(); };
+window.clsThisMonth = function(){ window.clsDate=new Date(); renderClassCal(); };
+
+window.renderClassCal = function(){
+  const el=document.getElementById('clsCalGrid'); if(!el) return;
+  const y=window.clsDate.getFullYear(), m=window.clsDate.getMonth();
+  document.getElementById('clsMonthLabel').textContent=`${y}년 ${m+1}월`;
+
+  document.getElementById('clsLegend').innerHTML = window.classRooms.map(c=>{
+    const col=clsColor(c.id);
+    return `<span style="background:${col}1a;color:${col}">${esc(c.name)}</span>`;
+  }).join('');
+
+  const first=new Date(y,m,1), last=new Date(y,m+1,0);
+  const today=getTodayStr();
+  const days=['일','월','화','수','목','금','토'];
+  let html=days.map(d=>`<div class="cal-label">${d}</div>`).join('');
+  const prevLast=new Date(y,m,0).getDate();
+  for(let i=first.getDay()-1;i>=0;i--) html+=`<div class="cal-cell other"><div class="cal-date">${prevLast-i}</div></div>`;
+
+  for(let d=1;d<=last.getDate();d++){
+    const key=dk(y,m+1,d);
+    const isToday=key===today;
+    const hol=holidayName(key);
+    const hkind=holidayKind(key);
+    const isOff=hkind==='off';
+    const wd=new Date(y,m,d).getDay();
+    const dateClr = isToday ? '' : (isOff||wd===0 ? 'color:var(--high)' : wd===6 ? 'color:var(--accent)' : '');
+    const logs=window.classLogs.filter(l=>l.date===key)
+      .sort((a,b)=>(parseInt(a.period)||99)-(parseInt(b.period)||99));
+    html+=`<div class="cal-cell ${isToday?'today':''} ${isOff?'holiday':hkind==='event'?'schoolday':''}" onclick="openDaily('${key}')">
+      <div class="cal-date"><span style="${dateClr}">${d}</span></div>
+      ${hol?`<div class="cal-hol ${hkind==='event'?'evt':''}">${esc(hol)}</div>`:''}
+      ${logs.map(l=>{
+        const cls=window.classRooms.find(c=>c.id===l.classId);
+        const col=clsColor(l.classId);
+        const txt=[l.unit,l.page].filter(Boolean).join(' ');
+        return `<div class="cls-dot" style="background:${col}14;color:${col}" title="${esc((cls?cls.name+' · ':'')+txt)}">
+          <b>${esc(cls?cls.name:'?')}</b> <span>${esc(txt)}</span></div>`;
+      }).join('')}
+    </div>`;
+  }
+  const rem=(first.getDay()+last.getDate())%7;
+  if(rem>0) for(let d=1;d<=7-rem;d++) html+=`<div class="cal-cell other"><div class="cal-date">${d}</div></div>`;
+  el.innerHTML=html;
+};
 
 // ── LINKS ────────────────────────────────────────────
 function renderLinks(){
