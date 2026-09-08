@@ -1354,8 +1354,12 @@ function startApp(){
 }
 
 // ── 지연 로딩 ─────────────────────────────────────────
+// 일부 화면은 다른 그룹의 데이터도 필요합니다
+const GROUP_DEPS={ check:['student'], class:['student'] };
 window.loadedGroups={};
+window.dataReady={};
 window.loadGroup = function(g){
+  (GROUP_DEPS[g]||[]).forEach(d=>loadGroup(d));
   if(window.loadedGroups[g]) return;
   window.loadedGroups[g]=true;
   if(g==='class'){
@@ -1383,6 +1387,7 @@ window.loadGroup = function(g){
   }
   if(g==='student'){
   onSnapshot(collection(db,STU_COL), snap=>{
+    window.dataReady.students=true;
     window.students = snap.docs.map(d=>({id:d.id,...d.data()}))
       .sort((a,b)=>(parseInt(a.number)||999)-(parseInt(b.number)||999)||(a.name||'').localeCompare(b.name||''));
     if(!window.currentStudentId && window.students.length) window.currentStudentId=window.students[0].id;
@@ -1408,6 +1413,7 @@ window.loadGroup = function(g){
   }
   if(g==='check'){
   onSnapshot(collection(db,CK_ITEM_COL), snap=>{
+    window.dataReady.checkItems=true;
     window.checkItems = snap.docs.map(d=>({id:d.id,...d.data()}))
       .sort((a,b)=>(a.order||0)-(b.order||0));
     if(isActive('check')) renderCheck();
@@ -2957,6 +2963,10 @@ window.renderCheck = function(){
   const el=document.getElementById('checkContent'); if(!el) return;
   const showDone=document.getElementById('ckShowDone')?.checked;
 
+  if(!window.dataReady.students || !window.dataReady.checkItems){
+    el.innerHTML=`<div class="empty"><div class="empty-icon">⏳</div><p>불러오는 중...</p></div>`;
+    return;
+  }
   if(!window.students.length){
     el.innerHTML=`<div class="empty"><div class="empty-icon">👤</div><p>학생 명단이 없습니다</p>
       <small>[학생카드] 탭에서 먼저 명단을 등록하세요</small></div>`;
