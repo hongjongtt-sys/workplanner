@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>WorkFlow</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%232563eb'/%3E%3Ctext x='32' y='45' font-size='38' font-family='Georgia,serif' font-style='italic' fill='white' text-anchor='middle'%3EW%3C/text%3E%3C/svg%3E">
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Pretendard:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -1326,6 +1327,38 @@ function startApp(){
     snap.docs.forEach(d=>{ window.journals[d.id]=d.data(); });
     renderCalendar(); if(isActive('daily')) refreshDailyFields();
   });
+  onSnapshot(collection(db,HOLIDAY_COL), snap=>{
+    window.customHolidays={};
+    snap.docs.forEach(d=>{ window.customHolidays[d.id]=d.data(); });
+    renderCalendar();
+    if(isActive('daily')) loadDaily(window.dailyDate);
+  });
+  onSnapshot(collection(db,CFG_COL), snap=>{
+    window.config={};
+    snap.docs.forEach(d=>{ window.config[d.id]=d.data(); });
+    const t=document.getElementById('clubTitle');
+    if(t) t.textContent=(window.config.club&&window.config.club.name)||'동아리';
+    renderCatSelect();
+    if(document.getElementById('catOverlay').classList.contains('open')) renderCatList();
+    if(!window.editMemo) renderMemo();
+  });
+  onSnapshot(collection(db,SEM_COL), snap=>{
+    window.semRanges={};
+    snap.docs.forEach(d=>{ window.semRanges[d.id]=d.data(); });
+    renderSemNote();
+    if(isActive('daily')) renderDailyClass();
+  });
+
+  // 첫 화면에 필요없는 데이터는 해당 탭을 열 때 불러옵니다
+  loadGroup('links');
+}
+
+// ── 지연 로딩 ─────────────────────────────────────────
+window.loadedGroups={};
+window.loadGroup = function(g){
+  if(window.loadedGroups[g]) return;
+  window.loadedGroups[g]=true;
+  if(g==='class'){
   onSnapshot(collection(db,CLASS_COL), snap=>{
     window.classRooms = snap.docs.map(d=>({id:d.id,...d.data()}))
       .sort((a,b)=>(a.order||0)-(b.order||0)||(a.name||'').localeCompare(b.name||''));
@@ -1343,21 +1376,12 @@ function startApp(){
     snap.docs.forEach(d=>{ window.classMemos[d.id]=d.data().content||''; });
     renderClass();
   });
-  onSnapshot(collection(db,TT_COL), snap=>{
-    window.timetables={};
-    snap.docs.forEach(d=>{ window.timetables[d.id]=d.data(); });
-    if(isActive('timetable')) renderTimetable();
+  onSnapshot(collection(db,EXTRA_COL), snap=>{
+    window.extraLessons = snap.docs.map(d=>({id:d.id,...d.data()}));
     if(isActive('daily')) renderDailyClass();
   });
-  onSnapshot(collection(db,TT_IMG_COL), snap=>{
-    window.ttImages={};
-    snap.docs.forEach(d=>{ window.ttImages[d.id]=d.data(); });
-    if(isActive('timetable')) renderTtImage();
-  });
-  onSnapshot(collection(db,LINK_COL), snap=>{
-    window.quickLinks = snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(a.order||0)-(b.order||0));
-    renderLinks();
-  });
+  }
+  if(g==='student'){
   onSnapshot(collection(db,STU_COL), snap=>{
     window.students = snap.docs.map(d=>({id:d.id,...d.data()}))
       .sort((a,b)=>(parseInt(a.number)||999)-(parseInt(b.number)||999)||(a.name||'').localeCompare(b.name||''));
@@ -1376,16 +1400,13 @@ function startApp(){
       if(!window.dirtyStudent) renderStudentDetail();   // 작성 중이면 건드리지 않음
     }
   });
-  onSnapshot(collection(db,HOLIDAY_COL), snap=>{
-    window.customHolidays={};
-    snap.docs.forEach(d=>{ window.customHolidays[d.id]=d.data(); });
-    renderCalendar();
-    if(isActive('daily')) loadDaily(window.dailyDate);
+  onSnapshot(collection(db,ATT_COL), snap=>{
+    window.attendance = snap.docs.map(d=>({id:d.id,...d.data()}));
+    if(isActive('daily')) renderDailyAtt();
+    if(document.getElementById('attStatOverlay').classList.contains('open')) renderAttStat();
   });
-  onSnapshot(collection(db,EXTRA_COL), snap=>{
-    window.extraLessons = snap.docs.map(d=>({id:d.id,...d.data()}));
-    if(isActive('daily')) renderDailyClass();
-  });
+  }
+  if(g==='check'){
   onSnapshot(collection(db,CK_ITEM_COL), snap=>{
     window.checkItems = snap.docs.map(d=>({id:d.id,...d.data()}))
       .sort((a,b)=>(a.order||0)-(b.order||0));
@@ -1396,17 +1417,8 @@ function startApp(){
     snap.docs.forEach(d=>{ window.checkMarks[d.id]=true; });
     if(isActive('check')) renderCheck();
   });
-  onSnapshot(collection(db,SEM_COL), snap=>{
-    window.semRanges={};
-    snap.docs.forEach(d=>{ window.semRanges[d.id]=d.data(); });
-    renderSemNote();
-    if(isActive('daily')) renderDailyClass();
-  });
-  onSnapshot(collection(db,ATT_COL), snap=>{
-    window.attendance = snap.docs.map(d=>({id:d.id,...d.data()}));
-    if(isActive('daily')) renderDailyAtt();
-    if(document.getElementById('attStatOverlay').classList.contains('open')) renderAttStat();
-  });
+  }
+  if(g==='club'){
   onSnapshot(collection(db,CLUB_MEM_COL), snap=>{
     window.clubMembers = snap.docs.map(d=>({id:d.id,...d.data()}))
       .sort((a,b)=>(a.cls||'').localeCompare(b.cls||'')||(parseInt(a.number)||999)-(parseInt(b.number)||999));
@@ -1425,16 +1437,28 @@ function startApp(){
     snap.docs.forEach(d=>{ window.clubMarks[d.id]=true; });
     if(isActive('club')) renderClub();
   });
-  onSnapshot(collection(db,CFG_COL), snap=>{
-    window.config={};
-    snap.docs.forEach(d=>{ window.config[d.id]=d.data(); });
-    const t=document.getElementById('clubTitle');
-    if(t) t.textContent=(window.config.club&&window.config.club.name)||'동아리';
-    renderCatSelect();
-    if(document.getElementById('catOverlay').classList.contains('open')) renderCatList();
-    if(!window.editMemo) renderMemo();
+  }
+  if(g==='timetable'){
+  onSnapshot(collection(db,TT_COL), snap=>{
+    window.timetables={};
+    snap.docs.forEach(d=>{ window.timetables[d.id]=d.data(); });
+    if(isActive('timetable')) renderTimetable();
+    if(isActive('daily')) renderDailyClass();
   });
-}
+  onSnapshot(collection(db,TT_IMG_COL), snap=>{
+    window.ttImages={};
+    snap.docs.forEach(d=>{ window.ttImages[d.id]=d.data(); });
+    if(isActive('timetable')) renderTtImage();
+  });
+  }
+  if(g==='links'){
+  onSnapshot(collection(db,LINK_COL), snap=>{
+    window.quickLinks = snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(a.order||0)-(b.order||0));
+    renderLinks();
+  });
+  }
+};
+const TAB_GROUP={class:'class', student:'student', check:'check', club:'club', timetable:'timetable', daily:'class'};
 
 function isActive(v){ return document.getElementById('view-'+v)?.classList.contains('active'); }
 
@@ -1507,6 +1531,9 @@ window.switchTab = async function(view){
   document.querySelectorAll('.tab')[map[view]]?.classList.add('active');
   document.querySelectorAll('.mobile-tab')[map[view]]?.classList.add('active');
   document.getElementById('view-'+view).classList.add('active');
+  if(TAB_GROUP[view]) loadGroup(TAB_GROUP[view]);
+  // 일간의 출결·수업진도도 함께 필요
+  if(view==='daily'){ loadGroup('student'); }
   // 업무 추가 버튼은 월간·일간·할 일에서만 (모바일에서 저장 버튼을 가리지 않도록)
   document.body.classList.toggle('fab-on', ['month','daily','todo'].includes(view));
   if(view==='daily'){ if(!window.dailyDate) window.dailyDate=getTodayStr(); loadDaily(window.dailyDate); }
