@@ -1355,7 +1355,7 @@ function startApp(){
 
 // ── 지연 로딩 ─────────────────────────────────────────
 // 일부 화면은 다른 그룹의 데이터도 필요합니다
-const GROUP_DEPS={ check:['student'], class:['student'] };
+const GROUP_DEPS={ check:['student'], class:['student'], daily:['class','student','timetable'] };
 window.loadedGroups={};
 window.dataReady={};
 window.loadGroup = function(g){
@@ -1446,6 +1446,7 @@ window.loadGroup = function(g){
   }
   if(g==='timetable'){
   onSnapshot(collection(db,TT_COL), snap=>{
+    window.dataReady.timetable=true;
     window.timetables={};
     snap.docs.forEach(d=>{ window.timetables[d.id]=d.data(); });
     if(isActive('timetable')) renderTimetable();
@@ -1464,7 +1465,7 @@ window.loadGroup = function(g){
   });
   }
 };
-const TAB_GROUP={class:'class', student:'student', check:'check', club:'club', timetable:'timetable', daily:'class'};
+const TAB_GROUP={class:'class', student:'student', check:'check', club:'club', timetable:'timetable', daily:'daily'};
 
 function isActive(v){ return document.getElementById('view-'+v)?.classList.contains('active'); }
 
@@ -1538,8 +1539,6 @@ window.switchTab = async function(view){
   document.querySelectorAll('.mobile-tab')[map[view]]?.classList.add('active');
   document.getElementById('view-'+view).classList.add('active');
   if(TAB_GROUP[view]) loadGroup(TAB_GROUP[view]);
-  // 일간의 출결·수업진도도 함께 필요
-  if(view==='daily'){ loadGroup('student'); }
   // 업무 추가 버튼은 월간·일간·할 일에서만 (모바일에서 저장 버튼을 가리지 않도록)
   document.body.classList.toggle('fab-on', ['month','daily','todo'].includes(view));
   if(view==='daily'){ if(!window.dailyDate) window.dailyDate=getTodayStr(); loadDaily(window.dailyDate); }
@@ -1909,6 +1908,8 @@ function renderDailyClass(){
     }).join('');
   } else if(isWeekend(window.dailyDate)){
     html += `<div style="text-align:center;padding:14px;color:var(--text-dim);font-size:12px">주말 · 수업 없음</div>`;
+  } else if(!window.dataReady.timetable){
+    html += `<div style="text-align:center;padding:14px;color:var(--text-dim);font-size:12px">⏳ 시간표 불러오는 중...</div>`;
   } else {
     html += `<div style="text-align:center;padding:12px;color:var(--text-dim);font-size:12px">
       시간표에 등록된 이 날의 수업이 없습니다<br>
