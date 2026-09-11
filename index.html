@@ -330,7 +330,7 @@ body.home-mode .content{padding:0;overflow:visible}
 .hflip{display:flex;align-items:center;gap:9px;perspective:600px}
 .fgroup{display:flex;gap:5px}
 .fdigit{
-  position:relative;width:50px;height:68px;border-radius:12px;overflow:hidden;
+  position:relative;width:68px;height:94px;border-radius:15px;overflow:hidden;
   background:linear-gradient(180deg,#2b323f 0%,#20262f 49%,#1a1f27 51%,#141920 100%);
   border:1px solid rgba(255,255,255,.10);
   box-shadow:0 6px 18px rgba(0,0,0,.5), 0 0 26px rgba(111,157,255,.14), inset 0 1px 0 rgba(255,255,255,.10);
@@ -338,7 +338,7 @@ body.home-mode .content{padding:0;overflow:visible}
 }
 .fdigit::after{content:'';position:absolute;left:0;right:0;top:50%;height:1px;background:rgba(0,0,0,.62);z-index:2}
 .fval{
-  font-size:46px;line-height:1;font-weight:300;color:#fff;
+  font-size:64px;line-height:1;font-weight:300;color:#fff;
   font-variant-numeric:tabular-nums;
   text-shadow:0 0 10px rgba(190,215,255,.95), 0 0 26px rgba(120,165,255,.75), 0 0 56px rgba(95,140,255,.5);
   transform-origin:center center;
@@ -349,10 +349,10 @@ body.home-mode .content{padding:0;overflow:visible}
   55%{opacity:1;filter:blur(0)}
   100%{transform:rotateX(0) scale(1);opacity:1}
 }
-.fsep{font-size:30px;color:rgba(160,180,215,.55);font-weight:300;text-shadow:0 0 16px rgba(120,165,255,.5);padding-bottom:4px}
-.fsec .fdigit{width:34px;height:46px;border-radius:9px}
-.fsec .fval{font-size:26px;text-shadow:0 0 8px rgba(160,195,255,.8), 0 0 20px rgba(111,157,255,.5)}
-.fsec{align-self:flex-end;padding-bottom:4px}
+.fsep{font-size:40px;color:rgba(160,180,215,.55);font-weight:300;text-shadow:0 0 16px rgba(120,165,255,.5);padding-bottom:6px}
+.fsec .fdigit{width:44px;height:60px;border-radius:11px}
+.fsec .fval{font-size:36px;text-shadow:0 0 9px rgba(160,195,255,.85), 0 0 24px rgba(111,157,255,.55)}
+.fsec{align-self:flex-end;padding-bottom:6px}
 .hdate{font-size:13px;color:#b6c2d6;margin-top:12px;font-weight:500;letter-spacing:.01em;
   text-shadow:0 0 12px rgba(160,195,255,.45)}
 .hmeta{font-size:11.5px;color:var(--hmute);margin-top:7px;letter-spacing:.01em}
@@ -360,6 +360,7 @@ body.home-mode .content{padding:0;overflow:visible}
 
 /* 빠른 추가 */
 .hquick{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.hcard-clock{padding:24px 28px}
 .hq-btn{
   display:flex;align-items:center;gap:8px;padding:10px 12px;
   background:var(--hcard2);border:1px solid var(--hline);border-radius:12px;
@@ -430,11 +431,13 @@ body.home-mode .content{padding:0;overflow:visible}
   .home{padding:20px 14px 92px}
   .home-grid{grid-template-columns:1fr;gap:12px}
   .hcard-wide,.hcard-memo{grid-column:span 1}
-  .fdigit{width:42px;height:58px}
-  .fval{font-size:38px}
-  .fsec .fdigit{width:29px;height:40px}
-  .fsec .fval{font-size:22px}
+  .fdigit{width:52px;height:72px;border-radius:12px}
+  .fval{font-size:48px}
+  .fsec .fdigit{width:34px;height:46px;border-radius:9px}
+  .fsec .fval{font-size:27px}
+  .fsep{font-size:30px}
   .hflip{gap:7px}
+  .hcard-clock{padding:18px 17px}
   .hcard{min-height:0;padding:16px 17px}
 }
 
@@ -861,7 +864,7 @@ body.home-mode .content{padding:0;overflow:visible}
       <div class="home">
         <div class="home-grid">
 
-          <div class="hcard hcard-clock">
+          <div class="hcard hcard-clock hcard-wide">
             <div class="hflip" id="hClock"></div>
             <div class="hdate" id="hDate"></div>
             <div class="hmeta" id="hMeta"></div>
