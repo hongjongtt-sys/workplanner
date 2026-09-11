@@ -289,9 +289,9 @@ body.home-mode .content{padding:0;overflow:visible}
 .home::before{
   content:''; position:absolute; inset:0; pointer-events:none;
   background:
-    radial-gradient(820px 460px at 10% -10%, rgba(111,157,255,.30), transparent 64%),
-    radial-gradient(680px 400px at 94% 2%, rgba(72,217,164,.18), transparent 62%),
-    radial-gradient(980px 540px at 52% 112%, rgba(150,124,255,.20), transparent 66%);
+    radial-gradient(880px 500px at 8% -12%, rgba(111,157,255,.42), transparent 66%),
+    radial-gradient(720px 430px at 96% 0%, rgba(72,217,164,.26), transparent 64%),
+    radial-gradient(1040px 580px at 52% 114%, rgba(155,124,255,.30), transparent 68%);
 }
 .home>*{position:relative}
 .home-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;max-width:1280px;margin:0 auto}
@@ -303,16 +303,18 @@ body.home-mode .content{padding:0;overflow:visible}
   box-shadow:0 1px 0 rgba(255,255,255,.05) inset, 0 12px 30px rgba(0,0,0,.34);
   transition:border-color .18s, transform .18s;
 }
-.hcard:hover{border-color:var(--hline2)}
+.hcard:hover{border-color:rgba(111,157,255,.30);box-shadow:0 1px 0 rgba(255,255,255,.06) inset,0 14px 34px rgba(0,0,0,.36),0 0 30px rgba(111,157,255,.12)}
 .hcard-wide{grid-column:span 2}
 .hcard-memo{grid-column:span 3}
 .hcard-head{
   display:flex;align-items:center;justify-content:space-between;gap:8px;
-  font-size:10.5px;font-weight:700;color:var(--hmute);margin-bottom:14px;
+  font-size:10.5px;font-weight:700;color:#a8b3c6;margin-bottom:14px;
   letter-spacing:.14em;text-transform:uppercase;
+  text-shadow:0 0 10px rgba(150,185,255,.45), 0 0 22px rgba(111,157,255,.22);
 }
-.hcount{font-size:10px;font-weight:700;color:var(--hac);background:rgba(111,157,255,.14);
-  border:1px solid rgba(111,157,255,.24);padding:2px 9px;border-radius:11px;letter-spacing:0}
+.hcount{font-size:10px;font-weight:700;color:#8fb3ff;background:rgba(111,157,255,.16);
+  border:1px solid rgba(111,157,255,.30);padding:2px 9px;border-radius:11px;letter-spacing:0;
+  text-shadow:0 0 10px rgba(111,157,255,.7);box-shadow:0 0 14px rgba(111,157,255,.14)}
 .hbtn-add{background:transparent;border:1px solid var(--hline);color:var(--hdim);border-radius:9px;
   padding:3px 11px;font-size:10.5px;font-weight:600;cursor:pointer;font-family:'Pretendard',sans-serif;
   letter-spacing:0;text-transform:none;transition:all .15s}
@@ -351,7 +353,8 @@ body.home-mode .content{padding:0;overflow:visible}
 .fsec .fdigit{width:34px;height:46px;border-radius:9px}
 .fsec .fval{font-size:26px;text-shadow:0 0 8px rgba(160,195,255,.8), 0 0 20px rgba(111,157,255,.5)}
 .fsec{align-self:flex-end;padding-bottom:4px}
-.hdate{font-size:13px;color:var(--hdim);margin-top:12px;font-weight:500;letter-spacing:.01em}
+.hdate{font-size:13px;color:#b6c2d6;margin-top:12px;font-weight:500;letter-spacing:.01em;
+  text-shadow:0 0 12px rgba(160,195,255,.45)}
 .hmeta{font-size:11.5px;color:var(--hmute);margin-top:7px;letter-spacing:.01em}
 .hmeta b{color:var(--hwarn);font-weight:700;text-shadow:0 0 14px rgba(255,183,77,.4)}
 
@@ -363,8 +366,9 @@ body.home-mode .content{padding:0;overflow:visible}
   color:var(--htext);font-size:12.5px;font-weight:600;cursor:pointer;
   font-family:'Pretendard',sans-serif;transition:all .15s;
 }
-.hq-btn:hover{border-color:rgba(111,157,255,.45);background:rgba(111,157,255,.12);
-  box-shadow:0 0 18px rgba(111,157,255,.16)}
+.hq-btn{text-shadow:0 0 8px rgba(190,210,245,.32)}
+.hq-btn:hover{border-color:rgba(111,157,255,.55);background:rgba(111,157,255,.15);
+  box-shadow:0 0 26px rgba(111,157,255,.28);text-shadow:0 0 12px rgba(160,195,255,.7)}
 .hq-btn span{font-size:14px;filter:saturate(1.1)}
 .hlinks{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
 .hlink{font-size:11px;color:var(--hdim);background:var(--hcard2);border:1px solid var(--hline);
@@ -379,7 +383,8 @@ body.home-mode .content{padding:0;overflow:visible}
   font-size:12.5px;cursor:pointer;transition:all .14s;
 }
 .hrow:hover{border-color:rgba(111,157,255,.4);background:rgba(111,157,255,.09)}
-.hrow-title{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hrow-title{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  text-shadow:0 0 8px rgba(190,210,245,.30)}
 .hrow.done{opacity:.5}
 .hrow.done .hrow-title{text-decoration:line-through}
 .hchk{width:19px;height:19px;flex-shrink:0;border:1.5px solid var(--hmute);border-radius:7px;
@@ -390,20 +395,25 @@ body.home-mode .content{padding:0;overflow:visible}
   box-shadow:0 0 14px rgba(72,217,164,.45)}
 .hpill{font-size:9.5px;font-weight:700;padding:3px 9px;border-radius:10px;
   white-space:nowrap;flex-shrink:0;letter-spacing:.02em}
-.hp-HIGH{background:rgba(255,107,129,.14);color:var(--hhigh);border:1px solid rgba(255,107,129,.24)}
-.hp-MID{background:rgba(255,183,77,.13);color:var(--hwarn);border:1px solid rgba(255,183,77,.22)}
-.hp-LOW{background:rgba(72,217,164,.13);color:var(--hok);border:1px solid rgba(72,217,164,.22)}
-.hp-event{background:rgba(154,140,255,.15);color:#b3a6ff;border:1px solid rgba(154,140,255,.26)}
+.hp-HIGH{background:rgba(255,107,129,.16);color:var(--hhigh);border:1px solid rgba(255,107,129,.30);
+  text-shadow:0 0 10px rgba(255,107,129,.6);box-shadow:0 0 14px rgba(255,107,129,.14)}
+.hp-MID{background:rgba(255,183,77,.15);color:var(--hwarn);border:1px solid rgba(255,183,77,.28);
+  text-shadow:0 0 10px rgba(255,183,77,.6);box-shadow:0 0 14px rgba(255,183,77,.13)}
+.hp-LOW{background:rgba(72,217,164,.15);color:var(--hok);border:1px solid rgba(72,217,164,.28);
+  text-shadow:0 0 10px rgba(72,217,164,.6);box-shadow:0 0 14px rgba(72,217,164,.13)}
+.hp-event{background:rgba(154,140,255,.17);color:#b3a6ff;border:1px solid rgba(154,140,255,.32);
+  text-shadow:0 0 10px rgba(154,140,255,.6);box-shadow:0 0 14px rgba(154,140,255,.14)}
 .hd-over{color:var(--hhigh);font-weight:700;text-shadow:0 0 14px rgba(255,107,129,.35)}
-.hd-soon{color:var(--hwarn);font-weight:700}
+.hd-soon{color:var(--hwarn);font-weight:700;text-shadow:0 0 12px rgba(255,183,77,.55)}
 .hd-norm{color:var(--hmute)}
 .hempty{color:var(--hmute);font-size:12px;text-align:center;padding:22px 8px;line-height:1.7}
 
 .hstreak{font-size:10.5px;font-weight:700;color:var(--hwarn);flex-shrink:0;
-  text-shadow:0 0 14px rgba(255,183,77,.4)}
-.hper{font-size:10px;font-weight:700;color:var(--hac);background:rgba(111,157,255,.12);
-  border:1px solid rgba(111,157,255,.22);border-radius:8px;padding:3px 8px;flex-shrink:0;
-  min-width:42px;text-align:center}
+  text-shadow:0 0 12px rgba(255,183,77,.75), 0 0 24px rgba(255,183,77,.35)}
+.hper{font-size:10px;font-weight:700;color:#8fb3ff;background:rgba(111,157,255,.15);
+  border:1px solid rgba(111,157,255,.30);border-radius:8px;padding:3px 8px;flex-shrink:0;
+  min-width:42px;text-align:center;
+  text-shadow:0 0 10px rgba(111,157,255,.7);box-shadow:0 0 14px rgba(111,157,255,.15)}
 .hlesson-sub{color:var(--hmute);font-size:11px}
 .hmemo{font-size:12.5px;line-height:1.9;color:var(--hdim);white-space:pre-wrap;
   max-height:160px;overflow-y:auto}
@@ -1319,6 +1329,28 @@ body.home-mode .content{padding:0;overflow:visible}
     <div style="border-top:1px solid var(--border);padding-top:14px;display:flex;gap:6px;flex-wrap:wrap">
       <button class="btn btn-ghost btn-sm" onclick="addCatGroup()">+ 그룹 추가</button>
       <button class="btn btn-ghost btn-sm" onclick="resetCats()" style="margin-left:auto">기본값으로 되돌리기</button>
+    </div>
+  </div>
+</div>
+
+<!-- LESSON QUICK MODAL -->
+<div class="overlay" id="lsnOverlay" onclick="closeLsnOutside(event)">
+  <div class="modal" style="width:400px">
+    <div class="modal-head">
+      <div class="modal-title" id="lsnTitle">진도 기록</div>
+      <button class="modal-close" onclick="closeLsnModal()">✕</button>
+    </div>
+    <div class="form-group">
+      <label class="form-label">진도 내용</label>
+      <input type="text" class="form-input" id="lsnInput" placeholder="예: 3단원 순열과 조합 p.72~78"
+        onkeydown="if(event.key==='Enter')saveLsnQuick()">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-danger" id="lsnDeleteBtn" onclick="deleteLsnQuick()" style="display:none">삭제</button>
+      <div class="modal-actions-right">
+        <button class="btn btn-ghost" onclick="closeLsnModal()">취소</button>
+        <button class="btn btn-primary" onclick="saveLsnQuick()">저장</button>
+      </div>
     </div>
   </div>
 </div>
@@ -4228,10 +4260,11 @@ window.renderHome = function(){
   const logs=window.classLogs.filter(l=>l.date===today);
   document.getElementById('hLesson').innerHTML = lessons.length ? lessons.map(ls=>{
     const log=logs.find(l=>String(l.period)===String(ls.period));
-    return `<div class="hrow" onclick="goToday()">
+    const done=!!log;
+    return `<div class="hrow" onclick="openLsnQuick('${ls.period}','${jsStr(ls.label||'')}','${jsStr(ls.s||'')}','${log?log.id:''}')">
       <span class="hper">${ls.period}교시</span>
-      <span class="hrow-title">${esc(ls.label||'')} <span class="hlesson-sub">${esc(ls.s||'')}</span></span>
-      ${log?`<span class="hpill hp-LOW">기록</span>`:''}</div>`;
+      <span class="hrow-title">${esc(ls.label||'')} <span class="hlesson-sub">${done?esc(log.unit):esc(ls.s||'')}</span></span>
+      ${done?`<span class="hpill hp-LOW">기록</span>`:`<span class="hpill" style="background:rgba(255,255,255,.06);color:var(--hmute);border:1px solid var(--hline)">입력</span>`}</div>`;
   }).join('') : `<div class="hempty">${hol?esc(hol):isVacation(today)?'방학 중':'오늘 수업이 없습니다'}</div>`;
 
   // 바로가기
@@ -4252,6 +4285,42 @@ window.renderHome = function(){
 };
 window.quickEvent = function(){ openModal(); setTaskKind('event'); };
 window.openAttModalToday = function(){ window.dailyDate=getTodayStr(); loadGroup('student'); openAttModal(); };
+
+// 홈에서 바로 진도 입력
+window._lsn=null;
+window.openLsnQuick = function(period, label, subject, logId){
+  window._lsn={period, label, logId};
+  const log=logId?window.classLogs.find(l=>l.id===logId):null;
+  document.getElementById('lsnTitle').textContent=`${period}교시 · ${label} ${subject}`;
+  document.getElementById('lsnInput').value=log?[log.unit,log.page].filter(Boolean).join(' '):'';
+  document.getElementById('lsnDeleteBtn').style.display=logId?'block':'none';
+  document.getElementById('lsnOverlay').classList.add('open');
+  setTimeout(()=>document.getElementById('lsnInput').focus(),100);
+};
+window.closeLsnModal = function(){ document.getElementById('lsnOverlay').classList.remove('open'); };
+window.closeLsnOutside = function(e){ if(e.target===document.getElementById('lsnOverlay')) closeLsnModal(); };
+window.saveLsnQuick = async function(){
+  const v=document.getElementById('lsnInput').value.trim();
+  if(!v){ toast('진도 내용을 입력하세요', true); return; }
+  const {period,label,logId}=window._lsn||{};
+  let classId=findClassIdByName(label);
+  try{
+    if(!classId && label){
+      const ref=await addDoc(collection(db,CLASS_COL), {name:label, order:window.classRooms.length});
+      classId=ref.id;
+    }
+    if(logId) await updateDoc(doc(db,CLASS_LOG_COL,logId), {unit:v, page:'', classId:classId||null, period:String(period)});
+    else await addDoc(collection(db,CLASS_LOG_COL), {classId:classId||null, date:getTodayStr(), unit:v, page:'', period:String(period), createdAt:serverTimestamp()});
+    toast('✅ 진도가 기록되었습니다');
+    closeLsnModal();
+  }catch(e){ toast('저장 실패: '+e.message, true); }
+};
+window.deleteLsnQuick = async function(){
+  const id=window._lsn&&window._lsn.logId; if(!id) return;
+  if(!confirm('이 진도 기록을 삭제할까요?')) return;
+  try{ await deleteDoc(doc(db,CLASS_LOG_COL,id)); closeLsnModal(); toast('🗑️ 삭제되었습니다'); }
+  catch(e){ toast('삭제 실패: '+e.message, true); }
+};
 
 // ── 매일 루틴 ─────────────────────────────────────────
 function routineKey(id,d){ return `${id}_${d}`; }
@@ -4372,7 +4441,7 @@ function initUI(){
 document.addEventListener('keydown', e=>{
   if(e.key==='Escape'){
     if(window.editBlock||window.editMemo) return;   // 기록 편집 중이면 해당 칸에서 처리
-    closeModal(); closeLinksModal(); closeTtModal(); closeStatModal(); closeTtZoom(); closeMissingModal(); closeCkModal(); closeSemesterModal(); closeHolidayModal(); closeCatModal(); closeAttModal(); closeAttStatModal();
+    closeModal(); closeLinksModal(); closeTtModal(); closeStatModal(); closeTtZoom(); closeMissingModal(); closeCkModal(); closeSemesterModal(); closeHolidayModal(); closeCatModal(); closeAttModal(); closeAttStatModal(); closeLsnModal();
   }
   if(e.key==='n'&&!e.target.matches('input,textarea,select')) openModal();
 });
