@@ -1526,12 +1526,14 @@ function startApp(){
     window.journals={};
     snap.docs.forEach(d=>{ window.journals[d.id]=d.data(); });
     renderCalendar(); if(isActive('daily')) refreshDailyFields();
+    homeTouch();
   });
   onSnapshot(collection(db,HOLIDAY_COL), snap=>{
     window.customHolidays={};
     snap.docs.forEach(d=>{ window.customHolidays[d.id]=d.data(); });
     renderCalendar();
     if(isActive('daily')) loadDaily(window.dailyDate);
+    homeTouch();
   });
   onSnapshot(collection(db,CFG_COL), snap=>{
     window.config={};
@@ -1541,12 +1543,14 @@ function startApp(){
     renderCatSelect();
     if(document.getElementById('catOverlay').classList.contains('open')) renderCatList();
     if(!window.editMemo) renderMemo();
+    homeTouch();
   });
   onSnapshot(collection(db,SEM_COL), snap=>{
     window.semRanges={};
     snap.docs.forEach(d=>{ window.semRanges[d.id]=d.data(); });
     renderSemNote();
     if(isActive('daily')) renderDailyClass();
+    homeTouch();
   });
 
   onSnapshot(collection(db,ROUTINE_COL), snap=>{
@@ -1578,11 +1582,13 @@ window.loadGroup = function(g){
     if(!window.currentClassId && window.classRooms.length) window.currentClassId=window.classRooms[0].id;
     renderClass(); renderDailyClass();
     if(isActive('class')&&window.clsView==='cal') renderClassCal();
+    homeTouch();
   });
   onSnapshot(collection(db,CLASS_LOG_COL), snap=>{
     window.classLogs = snap.docs.map(d=>({id:d.id,...d.data()}));
     renderClass(); renderDailyClass();
     if(isActive('class')&&window.clsView==='cal') renderClassCal();
+    homeTouch();
   });
   onSnapshot(collection(db,CLASS_MEMO_COL), snap=>{
     window.classMemos={};
@@ -1605,11 +1611,13 @@ window.loadGroup = function(g){
       if(!window.dirtyStudent) renderStudentDetail();
     }
     if(isActive('check')) renderCheck();
+    homeTouch();
   });
   onSnapshot(collection(db,ATT_COL), snap=>{
     window.attendance = snap.docs.map(d=>({id:d.id,...d.data()}));
     if(isActive('daily')) renderDailyAtt();
     if(document.getElementById('attStatOverlay').classList.contains('open')) renderAttStat();
+    homeTouch();
   });
   }
   if(g==='check'){
@@ -1652,12 +1660,14 @@ window.loadGroup = function(g){
     snap.docs.forEach(d=>{ window.timetables[d.id]=d.data(); });
     if(isActive('timetable')) renderTimetable();
     if(isActive('daily')) renderDailyClass();
+    homeTouch();
   });
   }
   if(g==='links'){
   onSnapshot(collection(db,LINK_COL), snap=>{
     window.quickLinks = snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(a.order||0)-(b.order||0));
     renderLinks();
+    homeTouch();
   });
   }
   if(g==='ttimg'){
@@ -1682,6 +1692,7 @@ const TAB_GROUP={class:'class', student:'student', check:'check', club:'club', t
 const GROUP_EXTRA={timetable:['ttimg'], student:['stunote']};
 
 function isActive(v){ return document.getElementById('view-'+v)?.classList.contains('active'); }
+function homeTouch(){ if(isActive('home')) renderHome(); }
 
 // ── HELPERS ──────────────────────────────────────────
 function prioColor(p){ return {HIGH:'var(--high)',MID:'var(--mid)',LOW:'var(--low)'}[p]||'var(--text-muted)'; }
