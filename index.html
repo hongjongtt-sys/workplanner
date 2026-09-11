@@ -308,9 +308,9 @@ body.home-mode .content{padding:0;overflow:visible}
 .hcard-memo{grid-column:span 3}
 .hcard-head{
   display:flex;align-items:center;justify-content:space-between;gap:8px;
-  font-size:10.5px;font-weight:700;color:#a8b3c6;margin-bottom:14px;
-  letter-spacing:.14em;text-transform:uppercase;
-  text-shadow:0 0 10px rgba(150,185,255,.45), 0 0 22px rgba(111,157,255,.22);
+  font-size:13.5px;font-weight:700;color:#cfdcf2;margin-bottom:14px;
+  letter-spacing:.04em;
+  text-shadow:0 0 12px rgba(175,205,255,.85), 0 0 30px rgba(111,157,255,.45);
 }
 .hcount{font-size:10px;font-weight:700;color:#8fb3ff;background:rgba(111,157,255,.16);
   border:1px solid rgba(111,157,255,.30);padding:2px 9px;border-radius:11px;letter-spacing:0;
@@ -322,15 +322,17 @@ body.home-mode .content{padding:0;overflow:visible}
 
 /* 시계 */
 .hcard-clock{
-  display:flex;flex-direction:column;justify-content:center;
+  display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;
   background:linear-gradient(155deg, rgba(111,157,255,.22), rgba(255,255,255,.02) 58%);
   border-color:rgba(111,157,255,.32);
   box-shadow:0 1px 0 rgba(255,255,255,.07) inset, 0 14px 40px rgba(0,0,0,.42), 0 0 46px rgba(111,157,255,.16);
 }
-.hflip{display:flex;align-items:center;gap:9px;perspective:600px}
+.hflip{display:flex;align-items:center;justify-content:center;gap:clamp(6px,.8vw,12px);perspective:800px;width:100%}
 .fgroup{display:flex;gap:5px}
 .fdigit{
-  position:relative;width:68px;height:94px;border-radius:15px;overflow:hidden;
+  position:relative;
+  width:clamp(58px,7.4vw,96px);height:clamp(80px,10.2vw,132px);
+  border-radius:clamp(12px,1.3vw,18px);overflow:hidden;flex-shrink:0;
   background:linear-gradient(180deg,#2b323f 0%,#20262f 49%,#1a1f27 51%,#141920 100%);
   border:1px solid rgba(255,255,255,.10);
   box-shadow:0 6px 18px rgba(0,0,0,.5), 0 0 26px rgba(111,157,255,.14), inset 0 1px 0 rgba(255,255,255,.10);
@@ -338,7 +340,7 @@ body.home-mode .content{padding:0;overflow:visible}
 }
 .fdigit::after{content:'';position:absolute;left:0;right:0;top:50%;height:1px;background:rgba(0,0,0,.62);z-index:2}
 .fval{
-  font-size:64px;line-height:1;font-weight:300;color:#fff;
+  font-size:clamp(54px,6.9vw,90px);line-height:1;font-weight:300;color:#fff;
   font-variant-numeric:tabular-nums;
   text-shadow:0 0 10px rgba(190,215,255,.95), 0 0 26px rgba(120,165,255,.75), 0 0 56px rgba(95,140,255,.5);
   transform-origin:center center;
@@ -349,18 +351,25 @@ body.home-mode .content{padding:0;overflow:visible}
   55%{opacity:1;filter:blur(0)}
   100%{transform:rotateX(0) scale(1);opacity:1}
 }
-.fsep{font-size:40px;color:rgba(160,180,215,.55);font-weight:300;text-shadow:0 0 16px rgba(120,165,255,.5);padding-bottom:6px}
-.fsec .fdigit{width:44px;height:60px;border-radius:11px}
-.fsec .fval{font-size:36px;text-shadow:0 0 9px rgba(160,195,255,.85), 0 0 24px rgba(111,157,255,.55)}
-.fsec{align-self:flex-end;padding-bottom:6px}
-.hdate{font-size:13px;color:#b6c2d6;margin-top:12px;font-weight:500;letter-spacing:.01em;
-  text-shadow:0 0 12px rgba(160,195,255,.45)}
-.hmeta{font-size:11.5px;color:var(--hmute);margin-top:7px;letter-spacing:.01em}
+.fsep{font-size:clamp(32px,4vw,52px);color:rgba(170,190,225,.6);font-weight:300;
+  text-shadow:0 0 18px rgba(120,165,255,.6);padding-bottom:.5vw}
+.fsec .fdigit{width:clamp(38px,4.7vw,60px);height:clamp(52px,6.4vw,82px);border-radius:clamp(9px,1vw,13px)}
+.fsec .fval{font-size:clamp(32px,4.2vw,54px);text-shadow:0 0 9px rgba(160,195,255,.9), 0 0 26px rgba(111,157,255,.6)}
+.fsec{align-self:flex-end;padding-bottom:.6vw}
+.hdate{font-size:clamp(15px,1.55vw,21px);color:#c6d2e6;margin-top:clamp(12px,1.4vw,20px);
+  font-weight:500;letter-spacing:.02em;
+  text-shadow:0 0 14px rgba(170,200,255,.6), 0 0 32px rgba(111,157,255,.3)}
+.hnext{font-size:clamp(14px,1.35vw,18px);font-weight:600;color:#9ec0ff;margin-top:clamp(9px,1vw,14px);
+  letter-spacing:.01em;text-shadow:0 0 14px rgba(111,157,255,.75), 0 0 30px rgba(111,157,255,.35)}
+.hnext .nlbl{color:#7f8ea6;font-weight:500;text-shadow:none;margin-right:5px}
+.hnext .nsub{color:#7e93b5;font-weight:500;font-size:.86em;text-shadow:none}
+.hnext.now{color:#68e0b0;text-shadow:0 0 14px rgba(72,217,164,.8), 0 0 30px rgba(72,217,164,.35)}
+.hmeta{font-size:clamp(12px,1.1vw,14px);color:#8b96a8;margin-top:8px;letter-spacing:.01em}
 .hmeta b{color:var(--hwarn);font-weight:700;text-shadow:0 0 14px rgba(255,183,77,.4)}
 
 /* 빠른 추가 */
 .hquick{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.hcard-clock{padding:24px 28px}
+.hcard-clock{padding:clamp(20px,2.2vw,34px) clamp(18px,2vw,30px)}
 .hq-btn{
   display:flex;align-items:center;gap:8px;padding:10px 12px;
   background:var(--hcard2);border:1px solid var(--hline);border-radius:12px;
@@ -431,13 +440,16 @@ body.home-mode .content{padding:0;overflow:visible}
   .home{padding:20px 14px 92px}
   .home-grid{grid-template-columns:1fr;gap:12px}
   .hcard-wide,.hcard-memo{grid-column:span 1}
-  .fdigit{width:52px;height:72px;border-radius:12px}
-  .fval{font-size:48px}
-  .fsec .fdigit{width:34px;height:46px;border-radius:9px}
-  .fsec .fval{font-size:27px}
-  .fsep{font-size:30px}
-  .hflip{gap:7px}
-  .hcard-clock{padding:18px 17px}
+  .fdigit{width:58px;height:80px;border-radius:13px}
+  .fval{font-size:54px}
+  .fsec .fdigit{width:38px;height:52px;border-radius:10px}
+  .fsec .fval{font-size:31px}
+  .fsep{font-size:32px;padding-bottom:3px}
+  .fsec{padding-bottom:3px}
+  .hflip{gap:6px}
+  .hcard-clock{padding:22px 14px}
+  .hdate{font-size:15px}
+  .hcard-head{font-size:13px}
   .hcard{min-height:0;padding:16px 17px}
 }
 
@@ -867,6 +879,7 @@ body.home-mode .content{padding:0;overflow:visible}
           <div class="hcard hcard-clock hcard-wide">
             <div class="hflip" id="hClock"></div>
             <div class="hdate" id="hDate"></div>
+            <div class="hnext" id="hNext"></div>
             <div class="hmeta" id="hMeta"></div>
           </div>
 
@@ -4208,6 +4221,7 @@ function startClock(){
     const days=['일','월','화','수','목','금','토'];
     const dEl=document.getElementById('hDate');
     if(dEl) dEl.textContent=`${n.getFullYear()}년 ${n.getMonth()+1}월 ${n.getDate()}일 ${days[n.getDay()]}요일`;
+    if(n.getSeconds()===0) renderNextLesson();
   };
   tick();
   clearInterval(clockTimer);
@@ -4284,6 +4298,7 @@ window.renderHome = function(){
       }).join('')
     : `<div class="hempty">월간 화면 아래에서 메모를 남길 수 있습니다</div>`;
 
+  renderNextLesson();
   renderRoutine();
 };
 window.quickEvent = function(){ openModal(); setTaskKind('event'); };
@@ -4325,6 +4340,47 @@ window.deleteLsnQuick = async function(){
   catch(e){ toast('삭제 실패: '+e.message, true); }
 };
 
+// 교시별 시작·종료 시각 (분) — 1:08:10~09:00 … 점심 12:00~13:00, 청소 14:50~15:10
+const PERIOD_TIME={
+  1:[490,540],   // 08:10~09:00
+  2:[550,600],   // 09:10~10:00
+  3:[610,660],   // 10:10~11:00
+  4:[670,720],   // 11:10~12:00
+  5:[780,830],   // 13:00~13:50
+  6:[840,890],   // 14:00~14:50
+  7:[910,960]    // 15:10~16:00
+};
+function renderNextLesson(){
+  const el=document.getElementById('hNext'); if(!el) return;
+  const today=getTodayStr();
+  if(holidayName(today)||isVacation(today)||isWeekend(today)){ el.innerHTML=''; return; }
+  const lessons=lessonsOn(today);
+  if(!lessons.length){ el.innerHTML=''; return; }
+  const n=new Date(), mins=n.getHours()*60+n.getMinutes();
+  let cur=null, next=null;
+  for(const ls of lessons){
+    const t=PERIOD_TIME[ls.period]; if(!t) continue;
+    if(mins>=t[0]&&mins<t[1]){ cur=ls; break; }
+  }
+  if(!cur){
+    for(const ls of lessons){
+      const t=PERIOD_TIME[ls.period]; if(!t) continue;
+      if(t[0]>mins){ next=ls; break; }
+    }
+  }
+  if(cur){
+    el.className='hnext now';
+    el.innerHTML=`<span class="nlbl">지금</span>${cur.period}교시 ${esc(cur.label||'')} <span class="nsub">${esc(cur.s||'')}</span>`;
+  } else if(next){
+    const t=PERIOD_TIME[next.period];
+    const left=t[0]-mins;
+    el.className='hnext';
+    el.innerHTML=`<span class="nlbl">다음</span>${next.period}교시 ${esc(next.label||'')} <span class="nsub">${esc(next.s||'')}${left<=60?` · ${left}분 뒤`:''}</span>`;
+  } else {
+    el.className='hnext';
+    el.innerHTML=`<span class="nlbl">오늘 수업</span><span class="nsub">모두 끝났습니다</span>`;
+  }
+}
 // ── 매일 루틴 ─────────────────────────────────────────
 function routineKey(id,d){ return `${id}_${d}`; }
 function routineStreak(id){
