@@ -289,9 +289,9 @@ body.home-mode .content{padding:0;overflow:visible}
 .home::before{
   content:''; position:absolute; inset:0; pointer-events:none;
   background:
-    radial-gradient(760px 420px at 12% -8%, rgba(111,157,255,.16), transparent 62%),
-    radial-gradient(640px 380px at 92% 4%, rgba(72,217,164,.10), transparent 60%),
-    radial-gradient(900px 500px at 50% 108%, rgba(139,124,255,.10), transparent 64%);
+    radial-gradient(820px 460px at 10% -10%, rgba(111,157,255,.30), transparent 64%),
+    radial-gradient(680px 400px at 94% 2%, rgba(72,217,164,.18), transparent 62%),
+    radial-gradient(980px 540px at 52% 112%, rgba(150,124,255,.20), transparent 66%);
 }
 .home>*{position:relative}
 .home-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;max-width:1280px;margin:0 auto}
@@ -321,15 +321,36 @@ body.home-mode .content{padding:0;overflow:visible}
 /* 시계 */
 .hcard-clock{
   display:flex;flex-direction:column;justify-content:center;
-  background:linear-gradient(155deg, rgba(111,157,255,.14), rgba(255,255,255,.02) 55%);
-  border-color:rgba(111,157,255,.20);
+  background:linear-gradient(155deg, rgba(111,157,255,.22), rgba(255,255,255,.02) 58%);
+  border-color:rgba(111,157,255,.32);
+  box-shadow:0 1px 0 rgba(255,255,255,.07) inset, 0 14px 40px rgba(0,0,0,.42), 0 0 46px rgba(111,157,255,.16);
 }
-.hclock{
-  font-size:60px;line-height:1;font-weight:300;letter-spacing:.02em;
+.hflip{display:flex;align-items:center;gap:9px;perspective:600px}
+.fgroup{display:flex;gap:5px}
+.fdigit{
+  position:relative;width:50px;height:68px;border-radius:12px;overflow:hidden;
+  background:linear-gradient(180deg,#2b323f 0%,#20262f 49%,#1a1f27 51%,#141920 100%);
+  border:1px solid rgba(255,255,255,.10);
+  box-shadow:0 6px 18px rgba(0,0,0,.5), 0 0 26px rgba(111,157,255,.14), inset 0 1px 0 rgba(255,255,255,.10);
+  display:flex;align-items:center;justify-content:center;
+}
+.fdigit::after{content:'';position:absolute;left:0;right:0;top:50%;height:1px;background:rgba(0,0,0,.62);z-index:2}
+.fval{
+  font-size:46px;line-height:1;font-weight:300;color:#fff;
   font-variant-numeric:tabular-nums;
-  color:#fff;
-  text-shadow:0 0 22px rgba(130,175,255,.55), 0 0 54px rgba(111,157,255,.28);
+  text-shadow:0 0 10px rgba(190,215,255,.95), 0 0 26px rgba(120,165,255,.75), 0 0 56px rgba(95,140,255,.5);
+  transform-origin:center center;
 }
+.fdigit.flip .fval{animation:flipIn .42s cubic-bezier(.3,.9,.35,1)}
+@keyframes flipIn{
+  0%{transform:rotateX(-88deg) scale(.94);opacity:.15;filter:blur(1px)}
+  55%{opacity:1;filter:blur(0)}
+  100%{transform:rotateX(0) scale(1);opacity:1}
+}
+.fsep{font-size:30px;color:rgba(160,180,215,.55);font-weight:300;text-shadow:0 0 16px rgba(120,165,255,.5);padding-bottom:4px}
+.fsec .fdigit{width:34px;height:46px;border-radius:9px}
+.fsec .fval{font-size:26px;text-shadow:0 0 8px rgba(160,195,255,.8), 0 0 20px rgba(111,157,255,.5)}
+.fsec{align-self:flex-end;padding-bottom:4px}
 .hdate{font-size:13px;color:var(--hdim);margin-top:12px;font-weight:500;letter-spacing:.01em}
 .hmeta{font-size:11.5px;color:var(--hmute);margin-top:7px;letter-spacing:.01em}
 .hmeta b{color:var(--hwarn);font-weight:700;text-shadow:0 0 14px rgba(255,183,77,.4)}
@@ -399,7 +420,11 @@ body.home-mode .content{padding:0;overflow:visible}
   .home{padding:20px 14px 92px}
   .home-grid{grid-template-columns:1fr;gap:12px}
   .hcard-wide,.hcard-memo{grid-column:span 1}
-  .hclock{font-size:48px}
+  .fdigit{width:42px;height:58px}
+  .fval{font-size:38px}
+  .fsec .fdigit{width:29px;height:40px}
+  .fsec .fval{font-size:22px}
+  .hflip{gap:7px}
   .hcard{min-height:0;padding:16px 17px}
 }
 
@@ -827,7 +852,7 @@ body.home-mode .content{padding:0;overflow:visible}
         <div class="home-grid">
 
           <div class="hcard hcard-clock">
-            <div class="hclock" id="hClock">--:--</div>
+            <div class="hflip" id="hClock"></div>
             <div class="hdate" id="hDate"></div>
             <div class="hmeta" id="hMeta"></div>
           </div>
@@ -4118,18 +4143,40 @@ window.renderClassCal = function(){
 
 // ── HOME ─────────────────────────────────────────────
 let clockTimer=null;
+function buildClock(){
+  const el=document.getElementById('hClock'); if(!el||el.dataset.built) return;
+  const grp=(cls,n)=>`<div class="fgroup ${cls}">`+
+    Array.from({length:n},(_,i)=>`<div class="fdigit"><span class="fval">0</span></div>`).join('')+`</div>`;
+  el.innerHTML = grp('fh',2)+`<span class="fsep">:</span>`+grp('fm',2)+`<span class="fsep">:</span>`+grp('fsec',2);
+  el.dataset.built='1';
+}
+function setDigits(sel, str){
+  const g=document.querySelector('#hClock .'+sel); if(!g) return;
+  [...str].forEach((ch,i)=>{
+    const d=g.children[i]; if(!d) return;
+    const v=d.querySelector('.fval');
+    if(v.textContent===ch) return;
+    v.textContent=ch;
+    d.classList.remove('flip');
+    void d.offsetWidth;          // 애니메이션 재시작
+    d.classList.add('flip');
+  });
+}
 function startClock(){
+  buildClock();
   const tick=()=>{
-    const n=new Date();
     const el=document.getElementById('hClock'); if(!el) return;
-    el.textContent=`${pad2(n.getHours())}:${pad2(n.getMinutes())}`;
+    const n=new Date();
+    setDigits('fh', pad2(n.getHours()));
+    setDigits('fm', pad2(n.getMinutes()));
+    setDigits('fsec', pad2(n.getSeconds()));
     const days=['일','월','화','수','목','금','토'];
-    document.getElementById('hDate').textContent=
-      `${n.getFullYear()}년 ${n.getMonth()+1}월 ${n.getDate()}일 ${days[n.getDay()]}요일`;
+    const dEl=document.getElementById('hDate');
+    if(dEl) dEl.textContent=`${n.getFullYear()}년 ${n.getMonth()+1}월 ${n.getDate()}일 ${days[n.getDay()]}요일`;
   };
   tick();
   clearInterval(clockTimer);
-  clockTimer=setInterval(tick, 10000);
+  clockTimer=setInterval(tick, 1000);
 }
 window.renderHome = function(){
   if(!document.getElementById('hClock')) return;
