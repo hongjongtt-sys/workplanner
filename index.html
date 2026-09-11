@@ -272,6 +272,76 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:0
 .att-stat-sum .att-st-name{background:var(--surface2)!important}
 .att-stat-nav{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap}
 
+/* ── HOME (dark) ───────────────────────────────────── */
+#view-home.active{display:block;margin:-22px;padding:0}
+.home{
+  --hbg:#14161a; --hcard:#1c1f25; --hcard2:#23262e;
+  --hline:#2c3038; --htext:#eef0f4; --hdim:#8b929e; --hmute:#666d79;
+  --hac:#5b8cff; --hok:#3ecf8e; --hwarn:#f5a524; --hhigh:#f4566a;
+  background:var(--hbg); color:var(--htext);
+  min-height:calc(100vh - 58px); padding:26px 24px 34px;
+}
+.home-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;max-width:1180px;margin:0 auto}
+.hcard{background:var(--hcard);border:1px solid var(--hline);border-radius:16px;padding:16px 18px;min-height:132px}
+.hcard-wide{grid-column:span 2}
+.hcard-memo{grid-column:span 3}
+.hcard-head{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:12.5px;font-weight:700;color:var(--hdim);margin-bottom:12px;letter-spacing:.2px}
+.hcount{font-size:11px;font-weight:700;color:var(--hac);background:rgba(91,140,255,.14);padding:2px 9px;border-radius:12px}
+.hbtn-add{background:none;border:1px solid var(--hline);color:var(--hdim);border-radius:8px;padding:3px 10px;font-size:11px;font-weight:600;cursor:pointer;font-family:'Pretendard',sans-serif}
+.hbtn-add:hover{border-color:var(--hac);color:var(--hac)}
+
+.hcard-clock{display:flex;flex-direction:column;justify-content:center;background:linear-gradient(150deg,#1d222c,#181b21)}
+.hclock{font-family:'Instrument Serif',serif;font-size:52px;line-height:1;letter-spacing:1px;font-variant-numeric:tabular-nums}
+.hdate{font-size:13px;color:var(--hdim);margin-top:8px;font-weight:500}
+.hmeta{font-size:11.5px;color:var(--hmute);margin-top:6px}
+.hmeta b{color:var(--hwarn);font-weight:700}
+
+.hquick{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.hq-btn{display:flex;align-items:center;gap:7px;padding:9px 11px;background:var(--hcard2);border:1px solid var(--hline);border-radius:10px;color:var(--htext);font-size:12.5px;font-weight:600;cursor:pointer;font-family:'Pretendard',sans-serif;transition:all .12s}
+.hq-btn:hover{border-color:var(--hac);background:rgba(91,140,255,.1)}
+.hq-btn span{font-size:14px}
+.hlinks{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px}
+.hlink{font-size:11px;color:var(--hdim);background:var(--hcard2);border:1px solid var(--hline);border-radius:12px;padding:3px 10px;cursor:pointer}
+.hlink:hover{border-color:var(--hac);color:var(--hac)}
+
+.hlist{display:flex;flex-direction:column;gap:6px;max-height:196px;overflow-y:auto}
+.hrow{display:flex;align-items:center;gap:9px;padding:8px 10px;background:var(--hcard2);border:1px solid var(--hline);border-radius:10px;font-size:12.5px;cursor:pointer;transition:all .12s}
+.hrow:hover{border-color:var(--hac)}
+.hrow-title{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hrow.done .hrow-title{text-decoration:line-through;color:var(--hmute)}
+.hchk{width:18px;height:18px;flex-shrink:0;border:2px solid var(--hmute);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;color:transparent;background:transparent}
+.hchk.on{background:var(--hok);border-color:var(--hok);color:#10231a}
+.hpill{font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;white-space:nowrap;flex-shrink:0}
+.hp-HIGH{background:rgba(244,86,106,.16);color:var(--hhigh)}
+.hp-MID{background:rgba(245,165,36,.16);color:var(--hwarn)}
+.hp-LOW{background:rgba(62,207,142,.16);color:var(--hok)}
+.hp-event{background:rgba(139,124,255,.18);color:#a99bff}
+.hd-over{color:var(--hhigh);font-weight:700}
+.hd-soon{color:var(--hwarn);font-weight:700}
+.hd-norm{color:var(--hmute)}
+.hempty{color:var(--hmute);font-size:12px;text-align:center;padding:18px 8px}
+
+.hstreak{font-size:11px;font-weight:700;color:var(--hwarn);flex-shrink:0}
+.hper{font-size:10.5px;font-weight:700;color:var(--hac);background:rgba(91,140,255,.12);border-radius:8px;padding:2px 7px;flex-shrink:0;min-width:38px;text-align:center}
+.hlesson-sub{color:var(--hmute);font-size:11px}
+.hmemo{font-size:12.5px;line-height:1.8;color:var(--hdim);white-space:pre-wrap;max-height:150px;overflow-y:auto}
+.hmemo .mchk{color:var(--hok);font-weight:700}
+.hmemo .mdone{text-decoration:line-through;color:var(--hmute)}
+.home ::-webkit-scrollbar-thumb{background:#3a3f49}
+
+@media (max-width:1000px){
+  .home-grid{grid-template-columns:repeat(2,1fr)}
+  .hcard-wide,.hcard-memo{grid-column:span 2}
+}
+@media (max-width:768px){
+  #view-home.active{margin:-14px;margin-bottom:-80px}
+  .home{padding:18px 14px 90px}
+  .home-grid{grid-template-columns:1fr;gap:11px}
+  .hcard-wide,.hcard-memo{grid-column:span 1}
+  .hclock{font-size:44px}
+  .hcard{min-height:0}
+}
+
 /* CLASS CALENDAR */
 .cal-head-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;flex-wrap:wrap}
 .cls-legend{display:flex;gap:5px;flex-wrap:wrap}
@@ -555,7 +625,8 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:0
 <header>
   <div class="logo">Work<em>Flow</em></div>
   <div class="header-center">
-    <div class="tab active" onclick="switchTab('month')">📅 월간</div>
+    <div class="tab active" onclick="switchTab('home')">🏠 홈</div>
+    <div class="tab" onclick="switchTab('month')">📅 월간</div>
     <div class="tab" onclick="switchTab('daily')">📝 일간</div>
     <div class="tab" onclick="switchTab('todo')">✅ 할 일</div>
     <div class="tab" onclick="switchTab('class')">📖 수업 진도</div>
@@ -577,7 +648,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:0
   <div class="content">
 
     <!-- MONTH -->
-    <div class="view active" id="view-month">
+    <div class="view" id="view-month">
       <div class="page-header">
         <div class="page-title">월간</div>
         <div class="cal-nav">
@@ -687,6 +758,69 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:0
         <button class="filter-chip" onclick="setFilter('done',this)">✅ 완료 · 초과</button>
       </div>
       <div class="todo-list" id="todoList"></div>
+    </div>
+
+    <!-- HOME -->
+    <div class="view active" id="view-home">
+      <div class="home">
+        <div class="home-grid">
+
+          <div class="hcard hcard-clock">
+            <div class="hclock" id="hClock">--:--</div>
+            <div class="hdate" id="hDate"></div>
+            <div class="hmeta" id="hMeta"></div>
+          </div>
+
+          <div class="hcard">
+            <div class="hcard-head"><span>⚡ 빠른 추가</span></div>
+            <div class="hquick">
+              <button class="hq-btn" onclick="openModal()"><span>✅</span>업무</button>
+              <button class="hq-btn" onclick="quickEvent()"><span>📌</span>일정</button>
+              <button class="hq-btn" onclick="goToday()"><span>📝</span>오늘 기록</button>
+              <button class="hq-btn" onclick="openAttModalToday()"><span>🙋</span>출결</button>
+            </div>
+            <div class="hlinks" id="hLinks"></div>
+          </div>
+
+          <div class="hcard hcard-wide">
+            <div class="hcard-head">
+              <span>📋 오늘 할 일</span>
+              <span class="hcount" id="hTodoCount"></span>
+            </div>
+            <div class="hlist" id="hTodo"></div>
+          </div>
+
+          <div class="hcard">
+            <div class="hcard-head">
+              <span>🔥 매일 루틴</span>
+              <button class="hbtn-add" onclick="addRoutine()">+ 추가</button>
+            </div>
+            <div class="hlist" id="hRoutine"></div>
+          </div>
+
+          <div class="hcard">
+            <div class="hcard-head"><span>⏰ 마감 임박</span></div>
+            <div class="hlist" id="hUpcoming"></div>
+          </div>
+
+          <div class="hcard hcard-wide">
+            <div class="hcard-head">
+              <span>🕐 오늘 수업</span>
+              <span class="hcount" id="hLessonCount"></span>
+            </div>
+            <div class="hlist" id="hLesson"></div>
+          </div>
+
+          <div class="hcard hcard-memo">
+            <div class="hcard-head">
+              <span>🗒 메모</span>
+              <button class="hbtn-add" onclick="switchTab('month')">월간에서 편집</button>
+            </div>
+            <div class="hmemo" id="hMemo"></div>
+          </div>
+
+        </div>
+      </div>
     </div>
 
     <!-- CLASS -->
@@ -824,7 +958,8 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:0
 
 <div class="mobile-nav">
   <div class="mobile-nav-inner">
-    <div class="mobile-tab active" onclick="switchTab('month')"><div class="mobile-tab-icon">📅</div>월간</div>
+    <div class="mobile-tab active" onclick="switchTab('home')"><div class="mobile-tab-icon">🏠</div>홈</div>
+    <div class="mobile-tab" onclick="switchTab('month')"><div class="mobile-tab-icon">📅</div>월간</div>
     <div class="mobile-tab" onclick="switchTab('daily')"><div class="mobile-tab-icon">📝</div>일간</div>
     <div class="mobile-tab" onclick="switchTab('todo')"><div class="mobile-tab-icon">✅</div>할 일</div>
     <div class="mobile-tab" onclick="switchTab('class')"><div class="mobile-tab-icon">📖</div>진도</div>
@@ -1254,6 +1389,8 @@ const CK_ITEM_COL = "checkItems";
 const CK_MARK_COL = "checkMarks";
 const SEM_COL = "semesters";
 const ATT_COL = "attendance";
+const ROUTINE_COL = "routines";
+const ROUTINE_CHK_COL = "routineChecks";
 const CLUB_MEM_COL = "clubMembers";
 const CLUB_ACT_COL = "clubActivities";
 const CLUB_ITEM_COL = "clubItems";
@@ -1274,6 +1411,8 @@ window.checkItems = [];
 window.checkMarks = {};
 window.semRanges = {};
 window.attendance = [];
+window.routines = [];
+window.routineChecks = {};
 window.clubMembers = [];
 window.clubActs = [];
 window.clubItems = [];
@@ -1316,7 +1455,7 @@ function startApp(){
   setSyncState('syncing');
   onSnapshot(collection(db,COL), snap=>{
     window.tasks = snap.docs.map(d=>({id:d.id,...d.data()}));
-    purgeOldDone(); renderAll(); setSyncState('ok');
+    purgeOldDone(); renderAll(); if(isActive('home')) renderHome(); setSyncState('ok');
     document.getElementById('loadingScreen').style.display='none';
   }, err=>{
     setSyncState('error'); toast('⚠️ 동기화 오류: '+err.message, true);
@@ -1349,8 +1488,17 @@ function startApp(){
     if(isActive('daily')) renderDailyClass();
   });
 
-  // 첫 화면에 필요없는 데이터는 해당 탭을 열 때 불러옵니다
-  loadGroup('links');
+  onSnapshot(collection(db,ROUTINE_COL), snap=>{
+    window.routines = snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(a.order||0)-(b.order||0));
+    if(isActive('home')) renderHome();
+  });
+  onSnapshot(collection(db,ROUTINE_CHK_COL), snap=>{
+    window.routineChecks={};
+    snap.docs.forEach(d=>{ window.routineChecks[d.id]=true; });
+    if(isActive('home')) renderHome();
+  });
+  // 홈에서 오늘 수업·출결을 보여주기 위해 필요한 데이터
+  loadGroup('links'); loadGroup('timetable'); loadGroup('class'); loadGroup('student');
 }
 
 // ── 지연 로딩 ─────────────────────────────────────────
@@ -1396,14 +1544,6 @@ window.loadGroup = function(g){
       if(!window.dirtyStudent) renderStudentDetail();
     }
     if(isActive('check')) renderCheck();
-  });
-  onSnapshot(collection(db,STU_NOTE_COL), snap=>{
-    window.studentNotes={};
-    snap.docs.forEach(d=>{ window.studentNotes[d.id]=d.data(); });
-    if(isActive('student')){
-      renderStudentList();
-      if(!window.dirtyStudent) renderStudentDetail();   // 작성 중이면 건드리지 않음
-    }
   });
   onSnapshot(collection(db,ATT_COL), snap=>{
     window.attendance = snap.docs.map(d=>({id:d.id,...d.data()}));
@@ -1452,11 +1592,6 @@ window.loadGroup = function(g){
     if(isActive('timetable')) renderTimetable();
     if(isActive('daily')) renderDailyClass();
   });
-  onSnapshot(collection(db,TT_IMG_COL), snap=>{
-    window.ttImages={};
-    snap.docs.forEach(d=>{ window.ttImages[d.id]=d.data(); });
-    if(isActive('timetable')) renderTtImage();
-  });
   }
   if(g==='links'){
   onSnapshot(collection(db,LINK_COL), snap=>{
@@ -1464,8 +1599,26 @@ window.loadGroup = function(g){
     renderLinks();
   });
   }
+  if(g==='ttimg'){
+  onSnapshot(collection(db,TT_IMG_COL), snap=>{
+    window.ttImages={};
+    snap.docs.forEach(d=>{ window.ttImages[d.id]=d.data(); });
+    if(isActive('timetable')) renderTtImage();
+  });
+  }
+  if(g==='stunote'){
+  onSnapshot(collection(db,STU_NOTE_COL), snap=>{
+    window.studentNotes={};
+    snap.docs.forEach(d=>{ window.studentNotes[d.id]=d.data(); });
+    if(isActive('student')){
+      renderStudentList();
+      if(!window.dirtyStudent) renderStudentDetail();   // 작성 중이면 건드리지 않음
+    }
+  });
+  }
 };
 const TAB_GROUP={class:'class', student:'student', check:'check', club:'club', timetable:'timetable', daily:'daily'};
+const GROUP_EXTRA={timetable:['ttimg'], student:['stunote']};
 
 function isActive(v){ return document.getElementById('view-'+v)?.classList.contains('active'); }
 
@@ -1534,19 +1687,21 @@ window.switchTab = async function(view){
   if(window.dirtyMemo) await flushMemo();
   document.querySelectorAll('.tab,.mobile-tab').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
-  const map={month:0,daily:1,todo:2,class:3,student:4,check:5,club:6,timetable:7};
+  const map={home:0,month:1,daily:2,todo:3,class:4,student:5,check:6,club:7,timetable:8};
   document.querySelectorAll('.tab')[map[view]]?.classList.add('active');
   document.querySelectorAll('.mobile-tab')[map[view]]?.classList.add('active');
   document.getElementById('view-'+view).classList.add('active');
   if(TAB_GROUP[view]) loadGroup(TAB_GROUP[view]);
+  (GROUP_EXTRA[view]||[]).forEach(g=>loadGroup(g));
   // 업무 추가 버튼은 월간·일간·할 일에서만 (모바일에서 저장 버튼을 가리지 않도록)
-  document.body.classList.toggle('fab-on', ['month','daily','todo'].includes(view));
+  document.body.classList.toggle('fab-on', ['home','month','daily','todo'].includes(view));
   if(view==='daily'){ if(!window.dailyDate) window.dailyDate=getTodayStr(); loadDaily(window.dailyDate); }
   else if(view==='timetable') renderTimetable();
   else if(view==='class'){ if(window.clsView==='cal') renderClassCal(); else renderClass(); }
   else if(view==='student') renderStudent();
   else if(view==='check') renderCheck();
   else if(view==='club') renderClub();
+  else if(view==='home') renderHome();
   else renderAll();
 };
 // 월간 안에서만 이번 달로 복귀
@@ -3888,6 +4043,149 @@ window.renderClassCal = function(){
   el.innerHTML=html;
 };
 
+// ── HOME ─────────────────────────────────────────────
+let clockTimer=null;
+function startClock(){
+  const tick=()=>{
+    const n=new Date();
+    const el=document.getElementById('hClock'); if(!el) return;
+    el.textContent=`${pad2(n.getHours())}:${pad2(n.getMinutes())}`;
+    const days=['일','월','화','수','목','금','토'];
+    document.getElementById('hDate').textContent=
+      `${n.getFullYear()}년 ${n.getMonth()+1}월 ${n.getDate()}일 ${days[n.getDay()]}요일`;
+  };
+  tick();
+  clearInterval(clockTimer);
+  clockTimer=setInterval(tick, 10000);
+}
+window.renderHome = function(){
+  if(!document.getElementById('hClock')) return;
+  startClock();
+  const today=getTodayStr();
+
+  // 오늘 정보
+  const hol=holidayName(today), hk=holidayKind(today);
+  const meta=[];
+  if(hol) meta.push(`<b>${esc(hol)}</b>`);
+  else if(isVacation(today)) meta.push('<b>방학 중</b>');
+  const att=window.attendance.filter(a=>a.date===today).length;
+  if(att) meta.push(`출결 특이사항 ${att}명`);
+  document.getElementById('hMeta').innerHTML=meta.join(' · ')||'';
+
+  // 오늘 할 일
+  const all=tasksOn(today);
+  const events=all.filter(isEvent), tasks=all.filter(t=>!isEvent(t));
+  const undone=tasks.filter(t=>t.status!=='done').length;
+  document.getElementById('hTodoCount').textContent = tasks.length?`${tasks.length-undone}/${tasks.length}`:'';
+  const te=document.getElementById('hTodo');
+  te.innerHTML = all.length ? [
+    ...events.map(t=>`<div class="hrow" onclick="editTask('${t.id}')">
+      <span class="hpill hp-event">일정</span>
+      <span class="hrow-title">${esc(t.title)}</span></div>`),
+    ...tasks.map(t=>{
+      const done=t.status==='done';
+      return `<div class="hrow ${done?'done':''}" onclick="editTask('${t.id}')">
+        <span class="hchk ${done?'on':''}" onclick="event.stopPropagation();toggleDone(event,'${t.id}')">✓</span>
+        <span class="hrow-title">${esc(t.title)}</span>
+        <span class="hpill hp-${t.priority}">${prioLabel(t.priority)}</span></div>`;
+    })].join('') : `<div class="hempty">오늘 할 일이 없습니다</div>`;
+
+  // 마감 임박
+  const up=window.tasks.filter(t=>!t._hidden&&!isEvent(t)&&t.deadline&&t.status!=='done'&&daysUntil(t.deadline)<=7)
+    .sort((a,b)=>a.deadline<b.deadline?-1:1).slice(0,6);
+  document.getElementById('hUpcoming').innerHTML = up.length ? up.map(t=>{
+    const d=daysUntil(t.deadline);
+    const cls=d<0?'hd-over':d<=2?'hd-soon':'hd-norm';
+    const txt=d<0?`${Math.abs(d)}일 초과`:d===0?'오늘':`D-${d}`;
+    return `<div class="hrow" onclick="editTask('${t.id}')">
+      <span class="hrow-title">${esc(t.title)}</span>
+      <span class="${cls}" style="font-size:11px">${txt}</span></div>`;
+  }).join('') : `<div class="hempty">임박한 마감이 없습니다</div>`;
+
+  // 오늘 수업
+  const lessons=(hol||isVacation(today))?[]:lessonsOn(today);
+  document.getElementById('hLessonCount').textContent = lessons.length?`${lessons.length}교시`:'';
+  const logs=window.classLogs.filter(l=>l.date===today);
+  document.getElementById('hLesson').innerHTML = lessons.length ? lessons.map(ls=>{
+    const log=logs.find(l=>String(l.period)===String(ls.period));
+    return `<div class="hrow" onclick="goToday()">
+      <span class="hper">${ls.period}교시</span>
+      <span class="hrow-title">${esc(ls.label||'')} <span class="hlesson-sub">${esc(ls.s||'')}</span></span>
+      ${log?`<span class="hpill hp-LOW">기록</span>`:''}</div>`;
+  }).join('') : `<div class="hempty">${hol?esc(hol):isVacation(today)?'방학 중':'오늘 수업이 없습니다'}</div>`;
+
+  // 바로가기
+  document.getElementById('hLinks').innerHTML =
+    window.quickLinks.slice(0,6).map(l=>`<span class="hlink" onclick="openLink('${jsStr(l.url)}')">🔗 ${esc(l.name)}</span>`).join('');
+
+  // 메모
+  const mt=memoText();
+  document.getElementById('hMemo').innerHTML = mt.trim()
+    ? mt.split('\n').map(line=>{
+        const p=parseLine(line);
+        if(p) return `<div class="${p.done?'mdone':''}"><span class="mchk">${p.done?'☑':'☐'}</span> ${esc(p.text)}</div>`;
+        return `<div>${esc(line)||'&nbsp;'}</div>`;
+      }).join('')
+    : `<div class="hempty">월간 화면 아래에서 메모를 남길 수 있습니다</div>`;
+
+  renderRoutine();
+};
+window.quickEvent = function(){ openModal(); setTaskKind('event'); };
+window.openAttModalToday = function(){ window.dailyDate=getTodayStr(); loadGroup('student'); openAttModal(); };
+
+// ── 매일 루틴 ─────────────────────────────────────────
+function routineKey(id,d){ return `${id}_${d}`; }
+function routineStreak(id){
+  let n=0; const d=new Date();
+  for(;;){
+    const k=routineKey(id, dk(d.getFullYear(), d.getMonth()+1, d.getDate()));
+    if(window.routineChecks[k]) n++;
+    else break;
+    d.setDate(d.getDate()-1);
+  }
+  return n;
+}
+function renderRoutine(){
+  const el=document.getElementById('hRoutine'); if(!el) return;
+  const today=getTodayStr();
+  if(!window.routines.length){
+    el.innerHTML=`<div class="hempty">+ 추가로 매일 할 일을 등록하세요<br><span style="font-size:11px">예: 물 2리터, 30분 걷기</span></div>`;
+    return;
+  }
+  el.innerHTML=window.routines.map(r=>{
+    const on=!!window.routineChecks[routineKey(r.id,today)];
+    const st=routineStreak(r.id);
+    return `<div class="hrow ${on?'done':''}">
+      <span class="hchk ${on?'on':''}" onclick="toggleRoutine('${r.id}')">✓</span>
+      <span class="hrow-title" onclick="toggleRoutine('${r.id}')">${esc(r.icon||'')} ${esc(r.name)}</span>
+      ${st>1?`<span class="hstreak">${st}일🔥</span>`:''}
+      <span class="hbtn-add" onclick="deleteRoutine('${r.id}')" style="padding:1px 7px">✕</span>
+    </div>`;
+  }).join('');
+}
+window.toggleRoutine = async function(id){
+  const k=routineKey(id, getTodayStr());
+  try{
+    if(window.routineChecks[k]) await deleteDoc(doc(db,ROUTINE_CHK_COL,k));
+    else await setDoc(doc(db,ROUTINE_CHK_COL,k), {routineId:id, date:getTodayStr()});
+  }catch(e){ toast('오류: '+e.message, true); }
+};
+window.addRoutine = async function(){
+  const name=prompt('매일 할 일을 입력하세요\n예: 물 2리터 마시기, 30분 걷기',''); if(name===null) return;
+  if(!name.trim()){ toast('내용을 입력하세요', true); return; }
+  const icon=prompt('아이콘 (이모지, 없으면 비워두세요)','✅'); if(icon===null) return;
+  try{
+    await addDoc(collection(db,ROUTINE_COL), {name:name.trim(), icon:icon.trim(), order:Date.now()});
+    toast('✅ 루틴이 추가되었습니다');
+  }catch(e){ toast('추가 실패: '+e.message, true); }
+};
+window.deleteRoutine = async function(id){
+  const r=window.routines.find(x=>x.id===id);
+  if(!confirm(`'${r?r.name:''}' 루틴을 삭제할까요?`)) return;
+  try{ await deleteDoc(doc(db,ROUTINE_COL,id)); toast('🗑️ 삭제되었습니다'); }
+  catch(e){ toast('삭제 실패: '+e.message, true); }
+};
+
 // ── LINKS ────────────────────────────────────────────
 function renderLinks(){
   const side=document.getElementById('sideLinks');
@@ -3945,6 +4243,7 @@ function initUI(){
     `${d.getFullYear()}.${pad2(d.getMonth()+1)}.${pad2(d.getDate())} (${days[d.getDay()]})`;
   renderCatSelect('');
   renderMemo();
+  renderHome();
   loadDaily(getTodayStr());
   renderTimetable();
 }
