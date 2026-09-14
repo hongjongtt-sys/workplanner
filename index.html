@@ -712,6 +712,303 @@ body.home-mode .content{padding:0;overflow:visible}
   .class-add-form{grid-template-columns:1fr 1fr}
   .extra-row{grid-template-columns:60px 1fr}
 }
+/* ══════════════════════════════════════════════════════
+   DARK GLASS THEME  (학생카드·동아리 탭 제외)
+   ══════════════════════════════════════════════════════ */
+body.dark-ui{
+  --bg:#0b0d12;
+  --surface:rgba(255,255,255,.05);
+  --surface2:rgba(255,255,255,.075);
+  --border:rgba(255,255,255,.11);
+  --border2:rgba(255,255,255,.19);
+  --accent:#6f9dff; --accent-light:rgba(111,157,255,.15);
+  --text:#e9edf5; --text-muted:#a8b3c6; --text-dim:#79839a;
+  --high:#ff6b81; --high-bg:rgba(255,107,129,.14);
+  --mid:#ffb74d;  --mid-bg:rgba(255,183,77,.13);
+  --low:#48d9a4;  --low-bg:rgba(72,217,164,.13);
+  --done:#9b7cff; --done-bg:rgba(155,124,255,.15);
+  --shadow:0 1px 2px rgba(0,0,0,.4);
+  --shadow-md:0 10px 28px rgba(0,0,0,.45);
+  background:#0b0d12; color:var(--text);
+}
+/* 모서리 빛 번짐 */
+body.dark-ui::before{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:
+    radial-gradient(880px 500px at 6% -10%, rgba(111,157,255,.30), transparent 64%),
+    radial-gradient(760px 440px at 98% 2%, rgba(72,217,164,.20), transparent 62%),
+    radial-gradient(1000px 560px at 50% 112%, rgba(155,124,255,.24), transparent 66%);
+}
+body.dark-ui header,body.dark-ui .app,body.dark-ui .mobile-nav,
+body.dark-ui .overlay,body.dark-ui .toast-wrap{position:relative;z-index:1}
+
+/* 헤더 */
+body.dark-ui header{
+  background:rgba(16,19,26,.82);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+  border-bottom:1px solid var(--border);box-shadow:0 4px 24px rgba(0,0,0,.35);
+}
+body.dark-ui .logo{
+  background:linear-gradient(100deg,#6f9dff,#9b7cff 45%,#48d9a4);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 0 12px rgba(111,157,255,.5));
+}
+body.dark-ui .logo em{color:transparent}
+body.dark-ui .tab{color:var(--text-dim)}
+body.dark-ui .tab:hover{background:rgba(255,255,255,.06);color:var(--text)}
+body.dark-ui .tab.active{background:rgba(111,157,255,.16);color:#a9c6ff;
+  box-shadow:0 0 18px rgba(111,157,255,.22) inset}
+body.dark-ui .today-label,body.dark-ui .icon-btn{
+  background:rgba(255,255,255,.06);border-color:var(--border);color:var(--text-muted)}
+body.dark-ui .today-label:hover,body.dark-ui .icon-btn:hover{
+  background:rgba(111,157,255,.16);color:#a9c6ff;border-color:rgba(111,157,255,.4)}
+
+/* 사이드바 / 본문 */
+body.dark-ui .sidebar{
+  background:rgba(255,255,255,.035);border-left:1px solid var(--border);
+  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
+body.dark-ui .page-title{
+  text-shadow:0 0 14px rgba(150,185,255,.5), 0 0 30px rgba(111,157,255,.25)}
+
+/* 유리 카드 — 상단 3px 그라데이션 띠 */
+body.dark-ui .task-card,body.dark-ui .daily-block,body.dark-ui .panel,
+body.dark-ui .tt-panel,body.dark-ui .habit-card,body.dark-ui .journal-wrap,
+body.dark-ui .ck-scroll,body.dark-ui .act-item,body.dark-ui .stat-box{
+  background:rgba(255,255,255,.05);
+  border:1px solid var(--border);
+  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  box-shadow:0 1px 0 rgba(255,255,255,.05) inset,0 10px 26px rgba(0,0,0,.32);
+}
+body.dark-ui .daily-block,body.dark-ui .panel,body.dark-ui .tt-panel{
+  position:relative;overflow:hidden}
+body.dark-ui .daily-block::before,body.dark-ui .panel::before,body.dark-ui .tt-panel::before{
+  content:'';position:absolute;left:0;right:0;top:0;height:3px;
+  background:linear-gradient(90deg,#6f9dff,#9b7cff 50%,#48d9a4);opacity:.85}
+body.dark-ui .task-card:hover,body.dark-ui .stat-box:hover{
+  border-color:rgba(111,157,255,.4);transform:translateY(-1px);
+  box-shadow:0 12px 30px rgba(0,0,0,.4),0 0 26px rgba(111,157,255,.16)}
+
+/* 버튼 */
+body.dark-ui .btn-primary{
+  background:linear-gradient(120deg,#6f9dff,#9b7cff);color:#fff;
+  box-shadow:0 4px 18px rgba(111,157,255,.35)}
+body.dark-ui .btn-primary:hover{
+  transform:translateY(-1px);box-shadow:0 8px 26px rgba(111,157,255,.5)}
+body.dark-ui .btn-ghost,body.dark-ui .filter-chip,body.dark-ui .class-tab-btn,
+body.dark-ui .att-btn,body.dark-ui .type-btn,body.dark-ui .stu-chip,
+body.dark-ui .carry-btn,body.dark-ui .cal-nav button,body.dark-ui .ws-btn{
+  background:rgba(255,255,255,.055);border-color:var(--border);color:var(--text-muted)}
+body.dark-ui .btn-ghost:hover,body.dark-ui .filter-chip:hover,body.dark-ui .class-tab-btn:hover,
+body.dark-ui .att-btn:hover,body.dark-ui .type-btn:hover,body.dark-ui .stu-chip:hover,
+body.dark-ui .carry-btn:hover,body.dark-ui .cal-nav button:hover{
+  background:rgba(111,157,255,.15);color:#a9c6ff;border-color:rgba(111,157,255,.42)}
+body.dark-ui .filter-chip.active,body.dark-ui .class-tab-btn.active{
+  background:linear-gradient(120deg,#6f9dff,#9b7cff);color:#fff;border-color:transparent;
+  box-shadow:0 3px 16px rgba(111,157,255,.4)}
+body.dark-ui .att-btn.active,body.dark-ui .type-btn.active{
+  background:rgba(111,157,255,.18);border-color:rgba(111,157,255,.55);color:#a9c6ff;
+  box-shadow:0 0 18px rgba(111,157,255,.2)}
+body.dark-ui .btn-danger{background:rgba(255,107,129,.15);color:var(--high);
+  border-color:rgba(255,107,129,.32)}
+body.dark-ui .btn-danger:hover{background:rgba(255,107,129,.25)}
+
+/* 입력 */
+body.dark-ui .form-input,body.dark-ui .form-select,body.dark-ui .form-textarea,
+body.dark-ui .daily-textarea,body.dark-ui .class-memo-textarea,
+body.dark-ui .journal-textarea,body.dark-ui .act-add textarea,
+body.dark-ui .lesson-row input,body.dark-ui .tt-grid input{
+  background:rgba(255,255,255,.05);border-color:var(--border);color:var(--text)}
+body.dark-ui .form-input:focus,body.dark-ui .form-select:focus,
+body.dark-ui .lesson-row input:focus,body.dark-ui .act-add textarea:focus{
+  border-color:var(--accent);box-shadow:0 0 0 3px rgba(111,157,255,.18),0 0 20px rgba(111,157,255,.2)}
+body.dark-ui .form-select option{background:#171a22;color:var(--text)}
+body.dark-ui ::placeholder{color:#6a7488}
+
+/* 모달 */
+body.dark-ui .modal{
+  background:rgba(22,25,33,.96);border:1px solid var(--border);
+  backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);
+  box-shadow:0 24px 70px rgba(0,0,0,.6)}
+body.dark-ui .modal-title{
+  text-shadow:0 0 14px rgba(150,185,255,.45)}
+body.dark-ui .modal-close{background:rgba(255,255,255,.06);border-color:var(--border);color:var(--text-muted)}
+body.dark-ui .overlay{background:rgba(4,6,10,.62)}
+
+/* 달력 */
+body.dark-ui .cal-grid{background:var(--border);border-color:var(--border)}
+body.dark-ui .cal-label{background:rgba(255,255,255,.06);color:var(--text-muted)}
+body.dark-ui .cal-cell{background:rgba(20,23,31,.85)}
+body.dark-ui .cal-cell:hover{background:rgba(111,157,255,.13)}
+body.dark-ui .cal-cell.today{background:rgba(111,157,255,.18);
+  box-shadow:inset 0 0 0 2.5px rgba(111,157,255,.8),0 0 22px rgba(111,157,255,.22) inset}
+body.dark-ui .cal-cell.today .cal-date span:first-child{
+  background:linear-gradient(120deg,#6f9dff,#9b7cff);box-shadow:0 0 14px rgba(111,157,255,.6)}
+body.dark-ui .cal-cell.holiday{background:rgba(255,107,129,.10)}
+body.dark-ui .cal-cell.schoolday{background:rgba(255,255,255,.055)}
+body.dark-ui .cal-hol{background:rgba(255,107,129,.20);color:#ff9aa8}
+body.dark-ui .cal-hol.evt{background:rgba(255,255,255,.10);color:var(--text-muted)}
+body.dark-ui .cal-cell.other{opacity:.28}
+
+/* 체크 표시류 */
+body.dark-ui .check-btn,body.dark-ui .mini-check,body.dark-ui .chk-box,body.dark-ui .ck-mark{
+  background:rgba(255,255,255,.06);border-color:var(--border2)}
+body.dark-ui .check-btn.checked,body.dark-ui .mini-check.checked{
+  background:var(--done);border-color:var(--done);color:#1a1030;
+  box-shadow:0 0 14px rgba(155,124,255,.5)}
+body.dark-ui .chk-box.on,body.dark-ui .ck-mark.on{
+  background:var(--low);border-color:var(--low);color:#07281c;
+  box-shadow:0 0 14px rgba(72,217,164,.45)}
+
+/* 배지 */
+body.dark-ui .badge-high{background:rgba(255,107,129,.16);color:var(--high);
+  box-shadow:0 0 12px rgba(255,107,129,.16)}
+body.dark-ui .badge-mid{background:rgba(255,183,77,.15);color:var(--mid)}
+body.dark-ui .badge-low{background:rgba(72,217,164,.15);color:var(--low)}
+body.dark-ui .badge-done,body.dark-ui .badge-event{background:rgba(155,124,255,.18);color:#bda9ff}
+body.dark-ui .badge-cat{background:rgba(255,255,255,.07);color:var(--text-muted);border-color:var(--border)}
+body.dark-ui .badge-alarm{background:rgba(255,183,77,.16);color:var(--mid)}
+
+/* 블록 머리 */
+body.dark-ui .daily-block-head{border-bottom-color:var(--border)}
+body.dark-ui .dh-morning{background:rgba(111,157,255,.14);color:#9ec0ff}
+body.dark-ui .dh-closing{background:rgba(72,217,164,.13);color:#6fe3b6}
+body.dark-ui .dh-free{background:rgba(255,183,77,.13);color:#ffcb7a}
+body.dark-ui .dh-task{background:rgba(255,255,255,.06);color:var(--text-muted)}
+body.dark-ui .dh-class{background:rgba(155,124,255,.15);color:#bda9ff}
+body.dark-ui .dh-att{background:rgba(72,217,164,.12);color:#6fe3b6}
+body.dark-ui .dh-memo{background:rgba(255,150,90,.13);color:#ffb08a}
+body.dark-ui .panel-head{background:rgba(255,255,255,.05);border-bottom-color:var(--border)}
+body.dark-ui .panel-head.accent{background:rgba(111,157,255,.14);color:#9ec0ff}
+body.dark-ui .class-memo-head{background:rgba(111,157,255,.14);color:#9ec0ff}
+
+/* 리스트 항목 */
+body.dark-ui .dtask,body.dark-ui .att-item,body.dark-ui .lesson-row,
+body.dark-ui .class-log-item,body.dark-ui .extra-item,body.dark-ui .stat-list-item,
+body.dark-ui .link-item,body.dark-ui .side-link,body.dark-ui .journal-recent-item,
+body.dark-ui .mem-item,body.dark-ui .doc-row,body.dark-ui .hrow{
+  background:rgba(255,255,255,.05);border-color:var(--border)}
+body.dark-ui .dtask:hover,body.dark-ui .att-item:hover,body.dark-ui .class-log-item:hover,
+body.dark-ui .stat-list-item:hover,body.dark-ui .link-item:hover,body.dark-ui .side-link:hover,
+body.dark-ui .journal-recent-item:hover,body.dark-ui .doc-row:hover{
+  background:rgba(111,157,255,.12);border-color:rgba(111,157,255,.4);
+  transform:translateY(-1px);box-shadow:0 6px 18px rgba(0,0,0,.3)}
+body.dark-ui .lesson-row.saved{background:rgba(72,217,164,.12);border-color:rgba(72,217,164,.3)}
+body.dark-ui .lesson-row.nonprog{background:rgba(255,255,255,.03)}
+body.dark-ui .extra-item{background:rgba(255,183,77,.10);border-color:rgba(255,183,77,.25)}
+body.dark-ui .blk-empty,body.dark-ui .blk-view{color:var(--text)}
+body.dark-ui .overdue-banner{background:rgba(255,107,129,.13);border-color:rgba(255,107,129,.3);color:#ff9aa8}
+
+/* 출결 */
+body.dark-ui .att-t-결석{background:rgba(255,107,129,.18);color:#ff9aa8}
+body.dark-ui .att-t-지각{background:rgba(255,183,77,.18);color:#ffcb7a}
+body.dark-ui .att-t-조퇴{background:rgba(111,157,255,.20);color:#a9c6ff}
+body.dark-ui .att-t-결과{background:rgba(155,124,255,.20);color:#bda9ff}
+body.dark-ui .att-num,body.dark-ui .att-reason,body.dark-ui .lesson-period,body.dark-ui .mem-cls,
+body.dark-ui .ck-stu-num,body.dark-ui .stu-num{
+  background:rgba(255,255,255,.07);border-color:var(--border);color:var(--text-muted)}
+body.dark-ui .att-stat-table th,body.dark-ui .att-stat-table td{border-color:var(--border)}
+body.dark-ui .att-stat-table thead th{background:rgba(255,255,255,.07);color:var(--text-muted)}
+body.dark-ui .att-th-결석{background:rgba(255,107,129,.18)!important;color:#ff9aa8!important}
+body.dark-ui .att-th-지각{background:rgba(255,183,77,.18)!important;color:#ffcb7a!important}
+body.dark-ui .att-th-조퇴{background:rgba(111,157,255,.20)!important;color:#a9c6ff!important}
+body.dark-ui .att-th-결과{background:rgba(155,124,255,.20)!important;color:#bda9ff!important}
+body.dark-ui .att-st-name{background:rgba(20,23,31,.96)!important}
+body.dark-ui .att-stat-table thead .att-st-name{background:rgba(255,255,255,.07)!important}
+body.dark-ui .att-st-total,body.dark-ui .att-stat-sum,
+body.dark-ui .att-stat-sum .att-st-name{background:rgba(255,255,255,.07)!important}
+body.dark-ui .att-stat-table td.att-ex{background:rgba(255,255,255,.02);color:var(--text-dim)}
+body.dark-ui .att-pick,body.dark-ui .class-add-form{background:rgba(255,255,255,.04)}
+body.dark-ui .att-pick-item{border-bottom-color:var(--border)}
+body.dark-ui .att-pick-item:hover,body.dark-ui .att-pick-item.on{background:rgba(111,157,255,.16);color:#a9c6ff}
+body.dark-ui .doc-ok{background:rgba(72,217,164,.16);color:var(--low)}
+body.dark-ui .doc-wait{background:rgba(255,255,255,.07);color:var(--text-muted)}
+body.dark-ui .doc-soon{background:rgba(255,183,77,.18);color:#ffcb7a}
+body.dark-ui .doc-over{background:rgba(255,107,129,.18);color:#ff9aa8}
+body.dark-ui .att-item:has(.doc-soon){background:rgba(255,183,77,.10);border-color:rgba(255,183,77,.28)}
+body.dark-ui .att-item:has(.doc-over){background:rgba(255,107,129,.10);border-color:rgba(255,107,129,.28)}
+body.dark-ui .doc-panel{background:rgba(255,107,129,.09);border-color:rgba(255,107,129,.28)}
+body.dark-ui .doc-panel.ok{background:rgba(72,217,164,.12);border-color:rgba(72,217,164,.3);color:var(--low)}
+body.dark-ui .doc-panel-head{color:#ff9aa8}
+body.dark-ui .doc-check{background:rgba(255,255,255,.05);border-color:var(--border)}
+body.dark-ui .miss-names{background:rgba(255,255,255,.05);border-color:var(--border);color:var(--text-muted)}
+body.dark-ui .hol-badge{background:rgba(255,107,129,.18);border-color:rgba(255,107,129,.35);color:#ff9aa8}
+body.dark-ui .hol-badge.evt{background:rgba(255,255,255,.08);border-color:var(--border);color:var(--text-muted)}
+
+/* 체크리스트 */
+body.dark-ui .ck-table th,body.dark-ui .ck-table td{border-color:var(--border)}
+body.dark-ui .ck-table thead th{background:rgba(255,255,255,.07);color:var(--text-muted)}
+body.dark-ui .ck-th-stu{background:rgba(255,255,255,.07)!important}
+body.dark-ui .ck-td-stu{background:rgba(20,23,31,.96)}
+body.dark-ui .ck-row:hover .ck-td-stu,body.dark-ui .ck-row:hover td{background:rgba(111,157,255,.12)}
+body.dark-ui .ck-cell:hover{background:rgba(111,157,255,.2)!important}
+body.dark-ui .ck-sum-row td{background:rgba(255,255,255,.07);color:var(--text-muted)}
+
+/* 시간표 */
+body.dark-ui .tt-grid th,body.dark-ui .tt-grid td{border-color:var(--border)}
+body.dark-ui .tt-grid th{background:rgba(255,255,255,.07);color:var(--text-muted)}
+body.dark-ui .tt-teacher th,body.dark-ui .tt-teacher td.tt-period{
+  background:rgba(255,107,129,.14);color:#ff9aa8}
+body.dark-ui .tt-class th,body.dark-ui .tt-class td.tt-period{
+  background:rgba(111,157,255,.16);color:#a9c6ff}
+body.dark-ui .tt-cell:hover{background:rgba(111,157,255,.16)}
+body.dark-ui .tt-cell-sub{color:var(--text)}
+body.dark-ui .tt-drop{background:rgba(255,255,255,.035);border-color:var(--border2)}
+body.dark-ui .tt-drop:hover,body.dark-ui .tt-drop.over{
+  background:rgba(111,157,255,.12);border-color:var(--accent)}
+body.dark-ui .tt-img-wrap{background:rgba(255,255,255,.05);border-color:var(--border)}
+
+/* 기타 */
+body.dark-ui .empty,body.dark-ui .ws-empty{color:var(--text-dim)}
+body.dark-ui .mobile-nav{
+  background:rgba(16,19,26,.92);border-top:1px solid var(--border);
+  backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+body.dark-ui .mobile-tab{color:var(--text-dim)}
+body.dark-ui .mobile-tab.active{color:#a9c6ff}
+body.dark-ui .mobile-fab{
+  background:linear-gradient(120deg,#6f9dff,#9b7cff);
+  box-shadow:0 6px 26px rgba(111,157,255,.5)}
+body.dark-ui .toast{background:rgba(30,34,44,.96);color:var(--text);
+  border:1px solid var(--border);box-shadow:0 10px 30px rgba(0,0,0,.5)}
+body.dark-ui ::-webkit-scrollbar-thumb{background:rgba(255,255,255,.15)}
+body.dark-ui .cat-group,body.dark-ui .cat-chip,body.dark-ui .cat-add{
+  background:rgba(255,255,255,.05);border-color:var(--border)}
+body.dark-ui .cat-group-head{background:rgba(255,255,255,.06);border-bottom-color:var(--border)}
+body.dark-ui .class-log-date{color:var(--text-muted)}
+body.dark-ui .cls-dot{filter:brightness(1.5)}
+body.dark-ui .stat-num{filter:drop-shadow(0 0 12px currentColor)}
+body.dark-ui .upcoming-item{border-bottom-color:var(--border)}
+body.dark-ui .sidebar-label{color:var(--text-dim)}
+body.dark-ui .blk-edit-bar,body.dark-ui .stu-save-bar{border-top-color:var(--border)}
+
+/* 홈은 자체 배경 사용 */
+body.dark-ui.home-mode::before{display:none}
+
+/* 로그인·로딩 화면 */
+#loginScreen{background:#0b0d12}
+#loginScreen::before{content:'';position:absolute;inset:0;pointer-events:none;
+  background:
+    radial-gradient(700px 420px at 12% -8%, rgba(111,157,255,.28), transparent 64%),
+    radial-gradient(620px 380px at 92% 4%, rgba(72,217,164,.18), transparent 62%),
+    radial-gradient(760px 460px at 50% 110%, rgba(155,124,255,.22), transparent 66%)}
+.login-box{position:relative;background:rgba(255,255,255,.05);
+  border:1px solid rgba(255,255,255,.11);
+  backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+  box-shadow:0 20px 60px rgba(0,0,0,.5)}
+.login-logo{background:linear-gradient(100deg,#6f9dff,#9b7cff 45%,#48d9a4);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 0 14px rgba(111,157,255,.55))}
+.login-logo em{color:transparent}
+.login-sub{color:#a8b3c6}
+#loginPw{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.13);color:#e9edf5}
+#loginPw:focus{border-color:#6f9dff;box-shadow:0 0 0 3px rgba(111,157,255,.18)}
+#loginPw::placeholder{color:#6a7488}
+#loginBtn{background:linear-gradient(120deg,#6f9dff,#9b7cff);
+  box-shadow:0 4px 20px rgba(111,157,255,.4)}
+.login-hint{color:#79839a}
+body.dark-ui #loadingScreen{background:#0b0d12}
+body.dark-ui .loading-logo{background:linear-gradient(100deg,#6f9dff,#9b7cff 45%,#48d9a4);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 0 14px rgba(111,157,255,.5))}
+body.dark-ui .loading-logo em{color:transparent}
 </style>
 </head>
 <body>
@@ -1841,6 +2138,8 @@ window.switchTab = async function(view){
   // 업무 추가 버튼은 월간·일간·할 일에서만 (모바일에서 저장 버튼을 가리지 않도록)
   document.body.classList.toggle('fab-on', ['home','month','daily','todo'].includes(view));
   document.body.classList.toggle('home-mode', view==='home');
+  // 학생카드·동아리는 밝은 화면 유지 (긴 글 작성·명단 관리용)
+  document.body.classList.toggle('dark-ui', !['student','club'].includes(view));
   if(view==='daily'){ if(!window.dailyDate) window.dailyDate=getTodayStr(); loadDaily(window.dailyDate); }
   else if(view==='timetable') renderTimetable();
   else if(view==='class'){ if(window.clsView==='cal') renderClassCal(); else renderClass(); }
@@ -4487,6 +4786,7 @@ window.deleteLink = async function(id){
 function initUI(){
   document.body.classList.add('fab-on');   // 시작 화면은 홈
   document.body.classList.add('home-mode');
+  document.body.classList.add('dark-ui');
   const d=new Date(), days=['일','월','화','수','목','금','토'];
   document.getElementById('todayLabel').textContent=
     `${d.getFullYear()}.${pad2(d.getMonth()+1)}.${pad2(d.getDate())} (${days[d.getDay()]})`;
