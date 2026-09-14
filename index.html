@@ -739,8 +739,10 @@ body.dark-ui::before{
     radial-gradient(760px 440px at 98% 2%, rgba(72,217,164,.20), transparent 62%),
     radial-gradient(1000px 560px at 50% 112%, rgba(155,124,255,.24), transparent 66%);
 }
-body.dark-ui header,body.dark-ui .app,body.dark-ui .mobile-nav,
-body.dark-ui .overlay,body.dark-ui .toast-wrap{position:relative;z-index:1}
+body.dark-ui header,body.dark-ui .app,body.dark-ui .mobile-nav{position:relative;z-index:1}
+body.dark-ui .overlay{z-index:200}
+body.dark-ui .toast-wrap{z-index:300}
+body.dark-ui .tt-zoom{z-index:400}
 
 /* 헤더 */
 body.dark-ui header{
@@ -981,6 +983,30 @@ body.dark-ui .blk-edit-bar,body.dark-ui .stu-save-bar{border-top-color:var(--bor
 
 /* 홈은 자체 배경 사용 */
 body.dark-ui.home-mode::before{display:none}
+
+/* 학생카드 · 동아리 — 카드는 어둡게, 글 쓰는 칸만 밝게 */
+body.dark-ui .stu-listwrap,body.dark-ui #stuDetail,
+body.dark-ui .stu-list,body.dark-ui .club-tabs{background:transparent}
+body.dark-ui .stu-item:hover{background:rgba(255,255,255,.06)}
+body.dark-ui .stu-item.active{background:rgba(111,157,255,.16);border-color:rgba(111,157,255,.45)}
+body.dark-ui .stu-item.active .stu-num{background:linear-gradient(120deg,#6f9dff,#9b7cff);color:#fff}
+body.dark-ui .stu-detail-head{border-bottom-color:var(--border)}
+body.dark-ui .stu-detail-name{text-shadow:0 0 14px rgba(150,185,255,.45)}
+body.dark-ui .stu-dot{background:var(--mid);box-shadow:0 0 10px rgba(255,183,77,.6)}
+
+/* 글 쓰는 칸은 밝게 유지 (장시간 작성용) */
+body.dark-ui .stu-textarea{
+  background:#fbfbf9;color:#1a1916;
+  border:1px solid var(--border);border-radius:12px;
+  margin:10px 16px;width:calc(100% - 32px);
+  min-height:calc(100vh - 330px);
+  box-shadow:0 6px 20px rgba(0,0,0,.3) inset}
+body.dark-ui .stu-textarea::placeholder{color:#9a988f}
+body.dark-ui .act-add textarea{background:#fbfbf9;color:#1a1916}
+body.dark-ui .act-add textarea::placeholder{color:#9a988f}
+body.dark-ui .act-body{color:var(--text)}
+body.dark-ui .act-date{color:#9ec0ff}
+body.dark-ui .mem-name{color:var(--text)}
 
 /* 로그인·로딩 화면 */
 #loginScreen{background:#0b0d12}
@@ -2138,8 +2164,7 @@ window.switchTab = async function(view){
   // 업무 추가 버튼은 월간·일간·할 일에서만 (모바일에서 저장 버튼을 가리지 않도록)
   document.body.classList.toggle('fab-on', ['home','month','daily','todo'].includes(view));
   document.body.classList.toggle('home-mode', view==='home');
-  // 학생카드·동아리는 밝은 화면 유지 (긴 글 작성·명단 관리용)
-  document.body.classList.toggle('dark-ui', !['student','club'].includes(view));
+  document.body.classList.add('dark-ui');
   if(view==='daily'){ if(!window.dailyDate) window.dailyDate=getTodayStr(); loadDaily(window.dailyDate); }
   else if(view==='timetable') renderTimetable();
   else if(view==='class'){ if(window.clsView==='cal') renderClassCal(); else renderClass(); }
