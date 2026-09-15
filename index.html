@@ -984,6 +984,16 @@ body.dark-ui .blk-edit-bar,body.dark-ui .stu-save-bar{border-top-color:var(--bor
 /* 홈은 자체 배경 사용 */
 body.dark-ui.home-mode::before{display:none}
 
+/* 날짜 이동 선택기 */
+.jump-wrap{position:relative;display:inline-flex}
+.jump-input{
+  position:absolute;left:0;top:0;width:100%;height:100%;
+  opacity:0;cursor:pointer;border:none;padding:0;
+}
+.jump-input::-webkit-calendar-picker-indicator{
+  position:absolute;left:0;top:0;width:100%;height:100%;
+  margin:0;padding:0;cursor:pointer;opacity:0}
+
 /* 학생카드 · 동아리 — 카드는 어둡게, 글 쓰는 칸만 밝게 */
 body.dark-ui .stu-listwrap,body.dark-ui #stuDetail,
 body.dark-ui .stu-list,body.dark-ui .club-tabs{background:transparent}
@@ -1091,7 +1101,11 @@ body.dark-ui .loading-logo em{color:transparent}
           <span class="cal-month-label" id="calMonthLabel"></span>
           <button onclick="changeMonth(1)">›</button>
           <button onclick="changeYear(1)" title="다음 해">»</button>
-          <button onclick="goThisMonth()" style="margin-left:4px">이번 달</button>
+          <span class="jump-wrap">
+            <button onclick="toggleJump('month')" title="날짜로 이동">📅</button>
+            <input type="month" class="jump-input" id="jumpMonth" onchange="jumpToMonth(this.value)">
+          </span>
+          <button onclick="goThisMonth()" style="margin-left:4px">오늘</button>
         </div>
       </div>
       <div class="cal-scroll-wrap"><div class="cal-grid" id="calGrid"></div></div>
@@ -1276,7 +1290,11 @@ body.dark-ui .loading-logo em{color:transparent}
             <span class="cal-month-label" id="clsMonthLabel"></span>
             <button onclick="clsMonth(1)">›</button>
             <button onclick="clsMonth(12)" title="다음 해">»</button>
-            <button onclick="clsThisMonth()" style="margin-left:4px">이번 달</button>
+            <span class="jump-wrap">
+              <button onclick="toggleJump('cls')" title="날짜로 이동">📅</button>
+              <input type="month" class="jump-input" id="jumpCls" onchange="jumpClsMonth(this.value)">
+            </span>
+            <button onclick="clsThisMonth()" style="margin-left:4px">오늘</button>
           </div>
           <div class="cls-legend" id="clsLegend"></div>
         </div>
@@ -2174,10 +2192,30 @@ window.switchTab = async function(view){
   else if(view==='home') renderHome();
   else renderAll();
 };
-// 월간 안에서만 이번 달로 복귀
+// 월간 안에서 오늘이 있는 달로
 window.goThisMonth = function(){
   window.calDate=new Date();
   renderCalendar();
+};
+// 📅 눌러 특정 연·월로 이동
+window.toggleJump = function(kind){
+  const el=document.getElementById(kind==='month'?'jumpMonth':'jumpCls');
+  if(!el) return;
+  const d = kind==='month' ? window.calDate : window.clsDate;
+  el.value=`${d.getFullYear()}-${pad2(d.getMonth()+1)}`;
+  if(el.showPicker) el.showPicker(); else el.click();
+};
+window.jumpToMonth = function(v){
+  if(!v) return;
+  const [y,m]=v.split('-').map(Number);
+  window.calDate=new Date(y,m-1,1);
+  renderCalendar();
+};
+window.jumpClsMonth = function(v){
+  if(!v) return;
+  const [y,m]=v.split('-').map(Number);
+  window.clsDate=new Date(y,m-1,1);
+  renderClassCal();
 };
 // 헤더 날짜 → 오늘 일간으로
 window.goToday = function(){
