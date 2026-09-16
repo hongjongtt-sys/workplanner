@@ -678,10 +678,12 @@ body.home-mode .content{padding:0;overflow:visible}
 @keyframes toastIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
 
 .mobile-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);padding:8px 0 env(safe-area-inset-bottom);z-index:100;box-shadow:0 -4px 20px rgba(0,0,0,.06)}
-.mobile-nav-inner{display:flex;justify-content:space-around}
-.mobile-tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 0;cursor:pointer;color:var(--text-dim);font-size:10px;font-weight:500}
+.mobile-nav-inner{display:flex;justify-content:space-between;padding:0 2px}
+.mobile-tab{flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;gap:2px;
+  padding:6px 1px;cursor:pointer;color:var(--text-dim);font-size:9px;font-weight:600;
+  letter-spacing:-.03em;white-space:nowrap;overflow:hidden}
 .mobile-tab.active{color:var(--accent)}
-.mobile-tab-icon{font-size:19px}
+.mobile-tab-icon{font-size:17px;line-height:1}
 .mobile-fab{display:none;position:fixed;bottom:78px;right:20px;width:52px;height:52px;background:var(--accent);color:#fff;border:none;border-radius:50%;font-size:24px;cursor:pointer;box-shadow:0 4px 20px rgba(37,99,235,.4);z-index:99;align-items:center;justify-content:center}
 
 ::-webkit-scrollbar{width:4px;height:4px}
@@ -739,7 +741,9 @@ body.dark-ui::before{
     radial-gradient(760px 440px at 98% 2%, rgba(72,217,164,.20), transparent 62%),
     radial-gradient(1000px 560px at 50% 112%, rgba(155,124,255,.24), transparent 66%);
 }
-body.dark-ui header,body.dark-ui .app,body.dark-ui .mobile-nav{position:relative;z-index:1}
+body.dark-ui .app{position:relative;z-index:1}
+body.dark-ui header{z-index:100}
+body.dark-ui .mobile-nav{z-index:100}
 body.dark-ui .overlay{z-index:200}
 body.dark-ui .toast-wrap{z-index:300}
 body.dark-ui .tt-zoom{z-index:400}
@@ -1417,7 +1421,7 @@ body.dark-ui .loading-logo em{color:transparent}
     <div class="mobile-tab" onclick="switchTab('todo')"><div class="mobile-tab-icon">✅</div>할 일</div>
     <div class="mobile-tab" onclick="switchTab('class')"><div class="mobile-tab-icon">📖</div>진도</div>
     <div class="mobile-tab" onclick="switchTab('student')"><div class="mobile-tab-icon">👤</div>학생</div>
-    <div class="mobile-tab" onclick="switchTab('check')"><div class="mobile-tab-icon">☑️</div>제출물</div>
+    <div class="mobile-tab" onclick="switchTab('check')"><div class="mobile-tab-icon">☑️</div>제출</div>
     <div class="mobile-tab" onclick="switchTab('club')"><div class="mobile-tab-icon">🎯</div>동아리</div>
     <div class="mobile-tab" onclick="switchTab('timetable')"><div class="mobile-tab-icon">🕐</div>시간표</div>
   </div>
@@ -1686,6 +1690,33 @@ body.dark-ui .loading-logo em{color:transparent}
     <div style="border-top:1px solid var(--border);padding-top:14px;display:flex;gap:6px;flex-wrap:wrap">
       <button class="btn btn-ghost btn-sm" onclick="addCatGroup()">+ 그룹 추가</button>
       <button class="btn btn-ghost btn-sm" onclick="resetCats()" style="margin-left:auto">기본값으로 되돌리기</button>
+    </div>
+  </div>
+</div>
+
+<!-- EXTRA LESSON MODAL -->
+<div class="overlay" id="exOverlay" onclick="closeExOutside(event)">
+  <div class="modal" style="width:400px">
+    <div class="modal-head">
+      <div class="modal-title">보강 · 대체수업 수정</div>
+      <button class="modal-close" onclick="closeExModal()">✕</button>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">교시</label>
+        <input type="text" class="form-input" id="exEditPeriod" placeholder="예: 5"></div>
+      <div class="form-group" style="grid-column:span 1"></div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">수업명</label>
+      <input type="text" class="form-input" id="exEditTitle" placeholder="예: 1-4 보강, 3학년 자습감독"
+        onkeydown="if(event.key==='Enter')saveExEdit()">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-danger" onclick="deleteExFromModal()">삭제</button>
+      <div class="modal-actions-right">
+        <button class="btn btn-ghost" onclick="closeExModal()">취소</button>
+        <button class="btn btn-primary" onclick="saveExEdit()">저장</button>
+      </div>
     </div>
   </div>
 </div>
@@ -2583,10 +2614,13 @@ function renderDailyClass(){
     .sort((a,b)=>(parseInt(a.period)||99)-(parseInt(b.period)||99));
   if(extras.length){
     html += `<div style="font-size:11px;color:var(--text-dim);margin:12px 0 6px">보강 · 대체수업</div>`;
-    html += extras.map(l=>`<div class="extra-item">
+    html += extras.map(l=>`<div class="extra-item" onclick="editExtraLesson('${l.id}')" style="cursor:pointer">
         <div class="lesson-period">${esc(String(l.period||'-'))}${l.period?'교시':''}</div>
         <div>${esc(l.title)}</div>
-        <button class="dclass-del" onclick="deleteExtraLesson('${l.id}')">✕</button>
+        <div style="display:flex;gap:3px">
+          <button class="dclass-del" onclick="event.stopPropagation();editExtraLesson('${l.id}')">✏️</button>
+          <button class="dclass-del" onclick="event.stopPropagation();deleteExtraLesson('${l.id}')">✕</button>
+        </div>
       </div>`).join('');
   }
 
@@ -2621,6 +2655,34 @@ window.addExtraLesson = async function(){
     document.getElementById('exTitle').value='';
     toast('✅ 추가되었습니다');
   }catch(e){ toast('저장 실패: '+e.message, true); }
+};
+window._exEdit=null;
+window.editExtraLesson = function(id){
+  const l=window.extraLessons.find(x=>x.id===id); if(!l) return;
+  window._exEdit=id;
+  document.getElementById('exEditPeriod').value=l.period||'';
+  document.getElementById('exEditTitle').value=l.title||'';
+  document.getElementById('exOverlay').classList.add('open');
+  setTimeout(()=>document.getElementById('exEditTitle').focus(),100);
+};
+window.closeExModal = function(){ document.getElementById('exOverlay').classList.remove('open'); };
+window.closeExOutside = function(e){ if(e.target===document.getElementById('exOverlay')) closeExModal(); };
+window.saveExEdit = async function(){
+  if(!window._exEdit) return;
+  const period=document.getElementById('exEditPeriod').value.trim();
+  const title=document.getElementById('exEditTitle').value.trim();
+  if(!title){ toast('수업명을 입력하세요', true); return; }
+  try{
+    await updateDoc(doc(db,EXTRA_COL,window._exEdit), {period, title});
+    toast('✏️ 수정되었습니다');
+    closeExModal();
+  }catch(e){ toast('수정 실패: '+e.message, true); }
+};
+window.deleteExFromModal = async function(){
+  const id=window._exEdit; if(!id) return;
+  if(!confirm('삭제할까요?')) return;
+  try{ await deleteDoc(doc(db,EXTRA_COL,id)); closeExModal(); toast('🗑️ 삭제되었습니다'); }
+  catch(e){ toast('삭제 실패: '+e.message, true); }
 };
 window.deleteExtraLesson = async function(id){
   if(!confirm('삭제할까요?')) return;
@@ -4863,7 +4925,7 @@ function initUI(){
 document.addEventListener('keydown', e=>{
   if(e.key==='Escape'){
     if(window.editBlock||window.editMemo) return;   // 기록 편집 중이면 해당 칸에서 처리
-    closeModal(); closeLinksModal(); closeTtModal(); closeStatModal(); closeTtZoom(); closeMissingModal(); closeCkModal(); closeSemesterModal(); closeHolidayModal(); closeCatModal(); closeAttModal(); closeAttStatModal(); closeLsnModal();
+    closeModal(); closeLinksModal(); closeTtModal(); closeStatModal(); closeTtZoom(); closeMissingModal(); closeCkModal(); closeSemesterModal(); closeHolidayModal(); closeCatModal(); closeAttModal(); closeAttStatModal(); closeLsnModal(); closeExModal();
   }
   if(e.key==='n'&&!e.target.matches('input,textarea,select')) openModal();
 });
