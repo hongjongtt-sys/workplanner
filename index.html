@@ -611,6 +611,8 @@ body.home-mode .content{padding:0;overflow:visible}
 .lesson-row{display:grid;grid-template-columns:52px 1.1fr 2.4fr auto;gap:8px;align-items:center;padding:7px 9px;border-radius:9px;margin-bottom:5px;background:var(--surface2);border:1px solid var(--border);font-size:12px}
 .extra-row{display:grid;grid-template-columns:78px 1fr auto;gap:7px;align-items:center}
 .extra-item{display:grid;grid-template-columns:62px 1fr auto;gap:8px;align-items:center;padding:7px 9px;border-radius:8px;margin-bottom:5px;background:#fffbeb;border:1px solid #fde68a;font-size:12px}
+.memo-left{font-size:10px;color:var(--text-dim);background:var(--surface2);border-radius:9px;
+  padding:1px 7px;flex-shrink:0;white-space:nowrap}
 .btn-linklike{background:none;border:none;color:var(--accent);font-size:12px;font-weight:600;cursor:pointer;font-family:'Pretendard',sans-serif;padding:2px 0}
 .btn-linklike:hover{text-decoration:underline}
 .class-add-form{padding:10px 12px;border-top:1px solid var(--border);display:grid;grid-template-columns:126px 1fr auto;gap:6px;align-items:center;background:var(--bg)}
@@ -4186,7 +4188,7 @@ window.renderMemo = function(){
     el.innerHTML=`<textarea class="daily-textarea" id="ta_memo" placeholder="떠오르는 것을 자유롭게 적어두세요. 나중에 일간이나 할 일로 옮기면 됩니다."
       oninput="memoInput()" onkeydown="memoKey(event)">${esc(text)}</textarea>
       <div class="blk-edit-bar">
-        <span class="blk-hint">줄 앞에 <b>[]</b> 를 넣으면 체크 항목이 됩니다 · <b>Ctrl+Enter</b> 로 저장</span>
+        <span class="blk-hint">줄 앞에 <b>[]</b> 를 넣으면 체크 항목 · 체크하면 <b>24시간 뒤 자동 삭제</b> · <b>Ctrl+Enter</b> 저장</span>
         <span style="display:flex;gap:6px">
           <button class="btn btn-ghost btn-sm" onclick="cancelMemo()">취소</button>
           <button class="btn btn-primary btn-sm" onclick="commitMemo()">저장</button>
@@ -4203,9 +4205,13 @@ window.renderMemo = function(){
   const lines=text.split('\n');
   const html=lines.map((line,i)=>{
     const p=parseLine(line);
-    if(p) return `<div class="chk-line ${p.done?'done':''}">
+    if(p){
+      const left=p.done?memoLeftText(p.text):'';
+      return `<div class="chk-line ${p.done?'done':''}">
       <span class="chk-box ${p.done?'on':''}" onclick="toggleMemoCheck(${i})">${p.done?'✓':''}</span>
-      <span class="chk-text" onclick="startMemo()">${esc(p.text)||'&nbsp;'}</span></div>`;
+      <span class="chk-text" onclick="startMemo()">${esc(p.text)||'&nbsp;'}</span>
+      ${left?`<span class="memo-left">${left}</span>`:''}</div>`;
+    }
     return `<div class="plain-line" onclick="startMemo()">${esc(line)||'&nbsp;'}</div>`;
   }).join('');
   el.innerHTML=`<div class="blk-view">${html}<div class="blk-tail" onclick="startMemo()"></div></div>`;
@@ -4233,14 +4239,47 @@ window.commitMemo = async function(){
   renderMemo();
   toast('✓ 저장되었습니다');
 };
+function memoChecked(){ return (window.config.memo&&window.config.memo.checkedAt)||{}; }
 window.toggleMemoCheck = async function(idx){
   const lines=memoText().split('\n');
   const p=parseLine(lines[idx]); if(!p) return;
+  const marks={...memoChecked()};
+  if(p.done) delete marks[p.text];              // 체크 해제 → 타이머 취소
+  else marks[p.text]=new Date().toISOString();  // 체크 → 24시간 타이머 시작
   lines[idx]=`${p.indent}[${p.done?' ':'x'}] ${p.text}`;
-  await saveMemo(lines.join('\n'));
+  await saveMemo(lines.join('\n'), marks);
 };
-async function saveMemo(content){
-  try{ await setDoc(doc(db,CFG_COL,'memo'), {content, updatedAt:new Date().toISOString()}); }
+// 체크한 지 24시간 지난 줄은 자동으로 지움
+async function purgeMemo(){
+  const text=memoText(); if(!text.trim()) return;
+  const marks=memoChecked();
+  if(!Object.keys(marks).length) return;
+  const now=Date.now();
+  const keep=[], newMarks={};
+  let removed=0;
+  text.split('\n').forEach(line=>{
+    const p=parseLine(line);
+    if(p&&p.done&&marks[p.text]){
+      if(now-new Date(marks[p.text]).getTime()>=86400000){ removed++; return; }
+      newMarks[p.text]=marks[p.text];
+    }
+    keep.push(line);
+  });
+  if(!removed) return;
+  await saveMemo(keep.join('\n'), newMarks);
+  toast(`🗑️ 완료된 메모 ${removed}개가 정리되었습니다`);
+}
+// 체크 후 남은 시간 표시
+function memoLeftText(text){
+  const at=memoChecked()[text]; if(!at) return '';
+  const left=86400000-(Date.now()-new Date(at).getTime());
+  if(left<=0) return '';
+  const h=Math.floor(left/3600000), m=Math.floor(left%3600000/60000);
+  return h>0?`${h}시간 뒤 삭제`:`${m}분 뒤 삭제`;
+}
+async function saveMemo(content, checkedAt){
+  const marks = checkedAt!==undefined ? checkedAt : memoChecked();
+  try{ await setDoc(doc(db,CFG_COL,'memo'), {content, checkedAt:marks, updatedAt:new Date().toISOString()}); }
   catch(e){ toast('저장 실패: '+e.message, true); }
 }
 async function flushMemo(){
@@ -4648,7 +4687,7 @@ function startClock(){
     const days=['일','월','화','수','목','금','토'];
     const dEl=document.getElementById('hDate');
     if(dEl) dEl.textContent=`${n.getFullYear()}년 ${n.getMonth()+1}월 ${n.getDate()}일 ${days[n.getDay()]}요일`;
-    if(n.getSeconds()===0) renderNextLesson();
+    if(n.getSeconds()===0){ renderNextLesson(); purgeMemo(); }
   };
   tick();
   clearInterval(clockTimer);
@@ -4920,6 +4959,7 @@ function initUI(){
     `${d.getFullYear()}.${pad2(d.getMonth()+1)}.${pad2(d.getDate())} (${days[d.getDay()]})`;
   renderCatSelect('');
   renderMemo();
+  purgeMemo();
   renderHome();
   loadDaily(getTodayStr());
   renderTimetable();
