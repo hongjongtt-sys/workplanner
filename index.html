@@ -4752,7 +4752,7 @@ window.renderHome = function(){
 
   // 바로가기
   document.getElementById('hLinks').innerHTML =
-    window.quickLinks.slice(0,6).map(l=>`<span class="hlink" onclick="openLink('${jsStr(l.url)}')">🔗 ${esc(l.name)}</span>`).join('');
+    window.quickLinks.map(l=>`<span class="hlink" onclick="openLink('${jsStr(l.url)}')">🔗 ${esc(l.name)}</span>`).join('');
 
   // 메모
   const mt=memoText();
