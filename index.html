@@ -4746,23 +4746,24 @@ window.renderHome = function(){
   // 오늘 수업
   const lessons=(hol||isVacation(today))?[]:lessonsOn(today);
   const exList=(window.extraLessons||[]).filter(l=>l.date===today)
-    .sort((a,b)=>(parseInt(a.period,10)||99)-(parseInt(b.period,10)||99));
-  const totalCnt=lessons.length+exList.length;
-  document.getElementById('hLessonCount').textContent = totalCnt?`${totalCnt}교시`:'';
+    .map(l=>({extra:true, period:parseInt(l.period,10), title:l.title||''}));
+  // 시간표 수업 + 보강을 교시 순으로 병합 (교시 없는 보강은 맨 뒤)
+  const allLsn=lessons.concat(exList)
+    .sort((a,b)=>(a.period||99)-(b.period||99));
+  document.getElementById('hLessonCount').textContent = allLsn.length?`${allLsn.length}교시`:'';
   const logs=window.classLogs.filter(l=>l.date===today);
-  const lsnHtml = lessons.map(ls=>{
+  document.getElementById('hLesson').innerHTML = allLsn.length ? allLsn.map(ls=>{
+    if(ls.extra) return `<div class="hrow" onclick="openDaily('${today}')">
+      <span class="hper">${ls.period?ls.period+'교시':'-'}</span>
+      <span class="hrow-title">${esc(ls.title)}</span>
+      <span class="hpill hp-EX">보강</span></div>`;
     const log=logs.find(l=>String(l.period)===String(ls.period));
     const done=!!log;
     return `<div class="hrow" onclick="openLsnQuick('${ls.period}','${jsStr(ls.label||'')}','${jsStr(ls.s||'')}','${log?log.id:''}')">
       <span class="hper">${ls.period}교시</span>
       <span class="hrow-title">${esc(ls.label||'')} <span class="hlesson-sub">${done?esc(log.unit):esc(ls.s||'')}</span></span>
       ${done?`<span class="hpill hp-LOW">기록</span>`:`<span class="hpill" style="background:rgba(255,255,255,.06);color:var(--hmute);border:1px solid var(--hline)">입력</span>`}</div>`;
-  }).join('') + exList.map(l=>`<div class="hrow" onclick="openDaily('${today}')">
-      <span class="hper">${esc(String(l.period||'-'))}${l.period?'교시':''}</span>
-      <span class="hrow-title">${esc(l.title||'')}</span>
-      <span class="hpill hp-EX">보강</span></div>`).join('');
-  document.getElementById('hLesson').innerHTML = totalCnt ? lsnHtml
-    : `<div class="hempty">${hol?esc(hol):isVacation(today)?'방학 중':'오늘 수업이 없습니다'}</div>`;
+  }).join('') : `<div class="hempty">${hol?esc(hol):isVacation(today)?'방학 중':'오늘 수업이 없습니다'}</div>`;
 
   // 바로가기
   document.getElementById('hLinks').innerHTML =
