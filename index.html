@@ -1218,6 +1218,7 @@ body.dark-ui .loading-logo em{color:transparent}
         <button class="filter-chip" onclick="setFilter('LOW',this)">🟢 낮음</button>
         <button class="filter-chip" onclick="setFilter('ongoing',this)">⏳ 진행중</button>
         <button class="filter-chip" onclick="setFilter('done',this)">✅ 완료 · 초과</button>
+        <button class="filter-chip" onclick="setFilter('event',this)">📌 일정</button>
       </div>
       <div class="todo-list" id="todoList"></div>
     </div>
@@ -2731,6 +2732,7 @@ window.openModalForDaily = function(){
 // ── TODO ─────────────────────────────────────────────
 function getVisible(){
   return window.tasks.filter(t=>{
+    if(window.currentFilter==='event') return isEvent(t);   // 📌 일정 필터
     if(isEvent(t)) return false;               // 일정은 할 일 목록에서 제외
     if(window.currentFilter==='done') return t.status==='done'||t._hidden;
     if(t._hidden) return false;
@@ -2741,7 +2743,7 @@ function getVisible(){
 }
 window.setFilter = function(f, btn){
   window.currentFilter=f;
-  document.querySelectorAll('.filter-chip').forEach(b=>{ if(b.id&&b.id.startsWith('ttSem')) return; b.classList.remove('active'); });
+  btn.parentElement.querySelectorAll('.filter-chip').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
   renderTodo();
 };
@@ -2760,6 +2762,7 @@ window.renderTodo = function(){
   document.getElementById('overdueBanner').innerHTML = overdue.length
     ? `<div class="overdue-banner">⚠️ 마감 기한이 지난 업무 ${overdue.length}개가 있습니다</div>` : '';
 
+  if(window.currentFilter==='event'){ el.innerHTML=renderEventList(items); return; }
   if(!items.length){
     el.innerHTML=`<div class="empty"><div class="empty-icon">📭</div><p>업무가 없습니다</p><small>+ 업무 버튼으로 시작하세요</small></div>`;
     return;
@@ -2793,6 +2796,41 @@ window.renderTodo = function(){
     </div>`;
   }).join('');
 };
+
+// 📌 일정 목록: 날짜 없음 → 다가오는 일정 → 지난 일정
+function renderEventList(items){
+  if(!items.length) return `<div class="empty"><div class="empty-icon">📌</div><p>등록된 일정이 없습니다</p><small>+ 업무 버튼에서 '일정'을 선택해 등록하세요</small></div>`;
+  const today=getTodayStr();
+  const dd=['일','월','화','수','목','금','토'];
+  const fmt=d=>{ const [y,m,dy]=d.split('-').map(Number); return `${y}.${m}.${dy}(${dd[new Date(y,m-1,dy).getDay()]})`; };
+  const noDate=[], up=[], past=[];
+  items.forEach(t=>{
+    const s=t.start||t.deadline, e=t.deadline||t.start;
+    if(!s) noDate.push(t); else if(e<today) past.push(t); else up.push(t);
+  });
+  const key=t=>t.start||t.deadline;
+  up.sort((a,b)=>key(a)<key(b)?-1:1); past.sort((a,b)=>key(a)<key(b)?1:-1);
+  const card=(t,dim)=>{
+    const s=t.start||t.deadline, e=t.deadline||t.start;
+    const when = !s ? `<span class="deadline-text overdue">⚠️ 날짜 없음 — 달력에 표시되지 않습니다</span>`
+      : `<span class="deadline-text">📅 ${fmt(s)}${e&&e!==s?' ~ '+fmt(e):''}</span>`;
+    const dday = s&&e>=today ? (s<=today?'진행 중':`D-${daysUntil(s)}`) : '';
+    return `<div class="task-card p-done" style="${dim?'opacity:.55':''}" onclick="editTask('${t.id}')">
+      <div style="font-size:18px;text-align:center">📌</div>
+      <div>
+        <div class="task-title">${esc(t.title)}</div>
+        <div class="task-meta">
+          ${t.category?`<span class="badge badge-cat">${esc(t.category)}</span>`:''}
+          ${when}
+          ${t.note?`<span style="font-size:11px;color:var(--text-dim)">💬 ${esc(t.note)}</span>`:''}
+        </div>
+      </div>
+      <div style="font-size:12px;font-weight:600;color:var(--accent);white-space:nowrap">${dday}</div>
+    </div>`;
+  };
+  const sec=(title,arr,dim)=>arr.length?`<div style="font-size:12px;color:var(--text-dim);margin:14px 2px 8px">${title} · ${arr.length}</div>`+arr.map(t=>card(t,dim)).join(''):'';
+  return sec('⚠️ 날짜 미입력',noDate,false)+sec('다가오는 일정',up,false)+sec('지난 일정',past,true);
+}
 
 // ── HOLIDAYS ─────────────────────────────────────────
 // 2026: 제헌절·노동절 공휴일 재지정 반영 / 2027: 예정 (확정 시 확인 권장)
