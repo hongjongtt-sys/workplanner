@@ -2181,8 +2181,14 @@ function purgeOldDone(){
     }
   });
 }
+// 시작·종료가 뒤바뀌어 저장된 경우에도 올바른 순서로
+function taskRange(t){
+  let s=t.start||t.deadline, e=t.deadline||t.start;
+  if(s&&e&&s>e){ const x=s; s=e; e=x; }
+  return [s,e];
+}
 function taskCoversDate(t, dateStr){
-  const s=t.start||t.deadline, e=t.deadline||t.start;
+  const [s,e]=taskRange(t);
   if(!s || dateStr<s || dateStr>e) return false;
   if(s===e) return true;                       // 하루짜리는 항상 표시
   const span=t.span||'all';
@@ -2296,7 +2302,7 @@ function renderCalendar(){
       <div class="cal-date"><span style="${dateClr}">${d}</span>${hasNote?'<span class="cal-note-mark">📝</span>':''}</div>
       ${hol?`<div class="cal-hol ${hkind==='event'?'evt':''}">${esc(hol)}</div>`:''}
       ${shown.map(t=>{
-        const s=t.start||t.deadline, e=t.deadline||t.start;
+        const [s,e]=taskRange(t);
         const ev=isEvent(t);
         const marker = ev ? '📌 ' : s===e?'● ' : s===key?'▶ ' : e===key?'⏹ ' : '▬ ';
         const c=ev?'var(--done)':prioColor(t.priority);
@@ -2805,13 +2811,14 @@ function renderEventList(items){
   const fmt=d=>{ const [y,m,dy]=d.split('-').map(Number); return `${y}.${m}.${dy}(${dd[new Date(y,m-1,dy).getDay()]})`; };
   const noDate=[], up=[], past=[];
   items.forEach(t=>{
-    const s=t.start||t.deadline, e=t.deadline||t.start;
+    const [s,e]=taskRange(t);
     if(!s) noDate.push(t); else if(e<today) past.push(t); else up.push(t);
   });
-  const key=t=>t.start||t.deadline;
+  const key=t=>taskRange(t)[0];
   up.sort((a,b)=>key(a)<key(b)?-1:1); past.sort((a,b)=>key(a)<key(b)?1:-1);
   const card=(t,dim)=>{
-    const s=t.start||t.deadline, e=t.deadline||t.start;
+    const [s,e]=taskRange(t);
+    const swapped=t.start&&t.deadline&&t.start>t.deadline;
     const when = !s ? `<span class="deadline-text overdue">⚠️ 날짜 없음 — 달력에 표시되지 않습니다</span>`
       : `<span class="deadline-text">📅 ${fmt(s)}${e&&e!==s?' ~ '+fmt(e):''}</span>`;
     const dday = s&&e>=today ? (s<=today?'진행 중':`D-${daysUntil(s)}`) : '';
@@ -2822,6 +2829,7 @@ function renderEventList(items){
         <div class="task-meta">
           ${t.category?`<span class="badge badge-cat">${esc(t.category)}</span>`:''}
           ${when}
+          ${swapped?`<span class="deadline-text near">↔️ 시작·종료 뒤바뀜 (저장하면 자동 교정)</span>`:''}
           ${t.note?`<span style="font-size:11px;color:var(--text-dim)">💬 ${esc(t.note)}</span>`:''}
         </div>
       </div>
@@ -3111,6 +3119,10 @@ window.saveTask = async function(){
     assignee:document.getElementById('fAssignee').value.trim(),
     note:document.getElementById('fNote').value.trim(),
   };
+  if(data.start && data.deadline && data.start>data.deadline){
+    const x=data.start; data.start=data.deadline; data.deadline=x;
+    toast('↔️ 시작일과 종료일이 바뀌어 있어 순서를 바로잡았습니다', false, 3500);
+  }
   if(!isEv && data.status==='done'){
     data.progress=100;
     if(!window.editId||(window.tasks.find(t=>t.id===window.editId)?.status!=='done')) data.doneAt=getTodayStr();
