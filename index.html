@@ -417,6 +417,14 @@ body.home-mode .content{padding:0;overflow:visible}
   text-shadow:0 0 10px rgba(255,183,77,.6);box-shadow:0 0 14px rgba(255,183,77,.13)}
 .hp-LOW{background:rgba(72,217,164,.15);color:var(--hok);border:1px solid rgba(72,217,164,.28);
   text-shadow:0 0 10px rgba(72,217,164,.6);box-shadow:0 0 14px rgba(72,217,164,.13)}
+.note-presets{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.note-chip{display:inline-flex;align-items:center;gap:2px;font-size:12px;padding:4px 4px 4px 10px;border-radius:14px;
+  border:1px solid var(--border);background:var(--surface);color:var(--text-muted);cursor:pointer;transition:all .15s;font-family:inherit}
+.note-chip:hover{border-color:var(--accent);color:var(--accent)}
+.note-chip.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.note-chip .nx{font-size:10px;opacity:.5;padding:1px 5px;border-radius:50%}
+.note-chip .nx:hover{opacity:1;background:rgba(255,107,129,.25);color:#ff6b81}
+.note-presets-empty{font-size:10.5px;color:var(--text-dim)}
 .hp-EX{background:rgba(155,124,255,.16);color:#c9b4ff;border:1px solid rgba(155,124,255,.35);
   text-shadow:0 0 10px rgba(155,124,255,.55);box-shadow:0 0 14px rgba(155,124,255,.13)}
 .hp-event{background:rgba(154,140,255,.17);color:#b3a6ff;border:1px solid rgba(154,140,255,.32);
@@ -823,6 +831,11 @@ body.dark-ui .filter-chip.active,body.dark-ui .class-tab-btn.active{
 body.dark-ui .att-btn.active,body.dark-ui .type-btn.active{
   background:rgba(111,157,255,.18);border-color:rgba(111,157,255,.55);color:#a9c6ff;
   box-shadow:0 0 18px rgba(111,157,255,.2)}
+body.dark-ui .note-chip{background:rgba(255,255,255,.055);border-color:var(--border);color:var(--text-muted)}
+body.dark-ui .note-chip:hover{background:rgba(111,157,255,.15);color:#a9c6ff;border-color:rgba(111,157,255,.42)}
+body.dark-ui .note-chip.on{background:rgba(111,157,255,.18);border-color:rgba(111,157,255,.55);color:#a9c6ff;
+  box-shadow:0 0 18px rgba(111,157,255,.2)}
+body.dark-ui #attNoteSave:disabled{opacity:.45;cursor:default}
 body.dark-ui .btn-danger{background:rgba(255,107,129,.15);color:var(--high);
   border-color:rgba(255,107,129,.32)}
 body.dark-ui .btn-danger:hover{background:rgba(255,107,129,.25)}
@@ -1792,7 +1805,11 @@ body.dark-ui .loading-logo em{color:transparent}
     </div>
     <div class="form-group">
       <label class="form-label">비고</label>
-      <input type="text" class="form-input" id="attNote" placeholder="예: 병원 진료, 현장체험학습" oninput="updateDocNote()">
+      <div style="display:flex;gap:6px">
+        <input type="text" class="form-input" id="attNote" placeholder="예: 병원 진료, 현장체험학습" oninput="updateDocNote();renderNotePresets()" style="flex:1;min-width:0">
+        <button type="button" class="btn btn-ghost btn-sm" id="attNoteSave" onclick="addNotePreset()" title="자주 쓰는 비고로 저장" style="white-space:nowrap">☆ 저장</button>
+      </div>
+      <div class="note-presets" id="attNotePresets"></div>
     </div>
     <div class="modal-actions">
       <button class="btn btn-danger" id="attDeleteBtn" onclick="deleteAttFromModal()" style="display:none">삭제</button>
@@ -1999,6 +2016,7 @@ function startApp(){
     renderCatSelect();
     if(document.getElementById('catOverlay').classList.contains('open')) renderCatList();
     if(!window.editMemo) renderMemo();
+    if(document.getElementById('attOverlay')?.classList.contains('open')) renderNotePresets();
     homeTouch();
   });
   onSnapshot(collection(db,SEM_COL), snap=>{
@@ -4446,7 +4464,7 @@ window.openAttModal = function(){
   document.getElementById('attNote').value='';
   document.getElementById('attDeleteBtn').style.display='none';
   document.getElementById('attDoc').checked=false;
-  renderAttPick(); renderAttBtns(); fillPeriodSelects('조회','종례'); updateDocNote();
+  renderAttPick(); renderAttBtns(); fillPeriodSelects('조회','종례'); updateDocNote(); renderNotePresets();
   document.getElementById('attOverlay').classList.add('open');
   setTimeout(()=>document.getElementById('attSearch').focus(),100);
 };
@@ -4459,7 +4477,7 @@ window.editAtt = function(id){
   document.getElementById('attNote').value=a.note||'';
   document.getElementById('attDeleteBtn').style.display='block';
   document.getElementById('attDoc').checked=!!a.doc;
-  renderAttPick(); renderAttBtns(); fillPeriodSelects(a.pStart||'조회', a.pEnd||'종례'); updateDocNote();
+  renderAttPick(); renderAttBtns(); fillPeriodSelects(a.pStart||'조회', a.pEnd||'종례'); updateDocNote(); renderNotePresets();
   document.getElementById('attOverlay').classList.add('open');
 };
 window.renderAttPick = function(){
@@ -4509,6 +4527,44 @@ window.updateDocNote = function(){
   const due=docDue(window.dailyDate);
   el.textContent=`제출 기한: ${due}까지 (출결일 포함 5일)`;
 };
+// ── 자주 쓰는 비고 ───────────────────────────────────
+function notePresets(){ return (window.config.attNotes&&window.config.attNotes.list)||[]; }
+async function saveNotePresets(list){
+  try{ await setDoc(doc(db,CFG_COL,'attNotes'), {list}); }
+  catch(e){ toast('저장 실패: '+e.message, true); }
+}
+window.renderNotePresets = function(){
+  const el=document.getElementById('attNotePresets'); if(!el) return;
+  const cur=(document.getElementById('attNote').value||'').trim();
+  const list=notePresets();
+  const btn=document.getElementById('attNoteSave');
+  const saved=cur&&list.includes(cur);
+  btn.textContent=saved?'★ 저장됨':'☆ 저장';
+  btn.disabled=!cur||saved;
+  el.innerHTML = list.length
+    ? list.map((n,i)=>`<span class="note-chip ${n===cur?'on':''}" onclick="pickNotePreset(${i})">${esc(n)}<span class="nx" title="목록에서 삭제" onclick="event.stopPropagation();delNotePreset(${i})">✕</span></span>`).join('')
+    : `<span class="note-presets-empty">자주 쓰는 비고를 입력하고 ☆ 저장을 누르면 여기에 버튼으로 생깁니다</span>`;
+};
+window.pickNotePreset = function(i){
+  const n=notePresets()[i]; if(n==null) return;
+  const inp=document.getElementById('attNote');
+  inp.value = inp.value.trim()===n ? '' : n;   // 같은 버튼 다시 누르면 지움
+  updateDocNote(); renderNotePresets();
+};
+window.addNotePreset = async function(){
+  const cur=(document.getElementById('attNote').value||'').trim();
+  if(!cur) return;
+  const list=notePresets();
+  if(list.includes(cur)) return;
+  await saveNotePresets([...list, cur]);
+  toast('⭐ 자주 쓰는 비고에 저장했습니다');
+};
+window.delNotePreset = async function(i){
+  const list=[...notePresets()]; if(i<0||i>=list.length) return;
+  list.splice(i,1);
+  await saveNotePresets(list);
+};
+
 window.closeAttModal = function(){ document.getElementById('attOverlay').classList.remove('open'); };
 window.closeAttOutside = function(e){ if(e.target===document.getElementById('attOverlay')) closeAttModal(); };
 window.saveAtt = async function(){
