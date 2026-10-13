@@ -434,6 +434,8 @@ body.home-mode .content{padding:0;overflow:visible}
 .att-rep-mark{font-size:11px;opacity:.75;flex-shrink:0}
 .att-warn{font-size:11.5px;color:var(--high);background:rgba(255,107,129,.1);border:1px solid rgba(255,107,129,.3);
   border-radius:9px;padding:7px 10px;margin-bottom:7px}
+.att-item.att-shadow{opacity:.55}
+.att-shadow-tag{font-size:10.5px;color:var(--text-dim);border:1px dashed var(--border);border-radius:6px;padding:1px 6px;white-space:nowrap}
 .att-future{font-size:11px;color:var(--text-dim)}
 .note-presets{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
 .note-chip{display:inline-flex;align-items:center;gap:2px;font-size:12px;padding:4px 4px 4px 10px;border-radius:14px;
@@ -4459,6 +4461,15 @@ function attPeriodText(a){
   return a.pStart===a.pEnd ? a.pStart : `${a.pStart} ~ ${a.pEnd||a.pStart}`;
 }
 
+// 같은 학생·같은 날 출석인정 + 다른 사유(질병·미인정·기타)가 함께 있으면
+// 나이스처럼 출석인정 기록은 항목별 통계에서도 제외
+function attShadowedIds(list){
+  const counted=new Set(list.filter(a=>(a.reason||'기타')!=='출석인정').map(a=>a.stuId+'|'+a.date));
+  return new Set(list.filter(a=>(a.reason||'기타')==='출석인정' && counted.has(a.stuId+'|'+a.date)).map(a=>a.id));
+}
+function attPrimaryOf(a){
+  return window.attendance.find(x=>x.stuId===a.stuId&&x.date===a.date&&(x.reason||'기타')!=='출석인정');
+}
 function attOn(dateStr){
   return window.attendance.filter(a=>a.date===dateStr)
     .sort((a,b)=>(parseInt(a.number)||999)-(parseInt(b.number)||999));
@@ -4478,17 +4489,20 @@ window.renderDailyAtt = function(){
   }
   const offDay=holidayKind(window.dailyDate)==='off'||isVacation(window.dailyDate)||isWeekend(window.dailyDate);
   const warn = offDay ? `<div class="att-warn">⚠️ 학교에 나오지 않는 날(공휴일·휴업일·방학·주말)에 출결 기록이 있습니다. 반복 출결로 생긴 기록이라면 삭제하세요.</div>` : '';
+  const shadow=attShadowedIds(list);
   el.innerHTML=warn+list.map(a=>{
       const s=window.students.find(x=>x.id===a.stuId);
       const no=a.stuNo||stuNo(s)||a.number||'';
       const pt=attPeriodText(a);
-      return `<div class="att-item" onclick="editAtt('${a.id}')">
+      const sh=shadow.has(a.id), pr=sh?attPrimaryOf(a):null;
+      return `<div class="att-item ${sh?'att-shadow':''}" onclick="editAtt('${a.id}')">
       <div class="att-num">${esc(String(no))}</div>
       <div class="att-name">${esc(a.name||'')}</div>
       <span class="att-tag att-t-${a.type}">${esc(attLabel(a))}</span>
       ${pt?`<span class="att-reason">${esc(pt)}</span>`:''}
       <span class="att-note">${a.note?'· '+esc(a.note):''}</span>
       ${a.repId?'<span class="att-rep-mark" title="요일 반복으로 등록된 기록">🔁</span>':''}
+      ${sh?`<span class="att-shadow-tag">통계 제외 · 같은 날 ${esc(pr?attLabel(pr):'')} 우선</span>`:''}
       ${(()=>{const st=docState(a); return st?`<span class="doc-badge doc-${st.k}">${docText(st)}</span>`:'';})()}
       <button class="att-del" onclick="event.stopPropagation();deleteAtt('${a.id}')">✕</button>
     </div>`;}).join('')
@@ -4824,7 +4838,9 @@ function renderAttStat(){
   const prefix=`${y}-${pad2(m)}`;
   const today=getTodayStr();
   const scoped=window.attendance.filter(a=>window.attStatAll||a.date.startsWith(prefix));
-  const rows=scoped.filter(a=>a.date<=today);               // 통계는 오늘까지만
+  const dated=scoped.filter(a=>a.date<=today);              // 통계는 오늘까지만
+  const shadow=attShadowedIds(dated);
+  const rows=dated.filter(a=>!shadow.has(a.id));            // 같은 날 다른 사유가 있으면 출석인정 제외
   const future=scoped.length-rows.length;                   // 미리 등록된 예정 기록
   document.getElementById('attStatLabel').textContent = window.attStatAll?'전체 기간':`${y}년 ${m}월`;
   document.getElementById('attStatScope').textContent = window.attStatAll?'전체 보기 중':'이번 달만';
@@ -4861,7 +4877,7 @@ function renderAttStat(){
         return ac?`<span class="att-reason">출석인정 ${ac} (합계 제외)</span>`:'';})()}
     </div>
     ${(()=>{
-      const miss=rows.filter(a=>{const st=docState(a); return st&&st.k!=='ok';})
+      const miss=dated.filter(a=>{const st=docState(a); return st&&st.k!=='ok';})
         .sort((x,y)=>x.date<y.date?-1:1);
       if(!miss.length) return `<div class="doc-panel ok">✓ 확인서 미제출 없음</div>`;
       return `<div class="doc-panel">
@@ -4908,7 +4924,8 @@ function renderAttStat(){
       </tbody>
     </table></div>
     <p style="font-size:11px;color:var(--text-dim);margin-top:10px">
-      기록이 있는 학생만 표시됩니다 · 인정=출석인정, 미인=미인정<br><b>계</b>는 구분별 합계이며, <b>출석인정은 제외</b>됩니다 (나이스 기준).</p>`;
+      기록이 있는 학생만 표시됩니다 · 인정=출석인정, 미인=미인정<br><b>계</b>는 구분별 합계이며, <b>출석인정은 제외</b>됩니다 (나이스 기준).
+      ${shadow.size?`<br>같은 날 질병·미인정·기타 출결이 함께 있어 집계에서 뺀 출석인정 기록 <b>${shadow.size}건</b>`:''}</p>`;
 }
 
 // ── 수업 진도 달력 ────────────────────────────────────
