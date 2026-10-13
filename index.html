@@ -4476,8 +4476,8 @@ window.renderDailyAtt = function(){
       <div style="text-align:center"><button class="btn-linklike" onclick="openAttStatModal()">📊 출결 통계 보기</button></div>`;
     return;
   }
-  const offDay=holidayKind(window.dailyDate)||isVacation(window.dailyDate)||isWeekend(window.dailyDate);
-  const warn = offDay ? `<div class="att-warn">⚠️ 휴업일·방학·주말에 출결 기록이 있습니다. 반복 출결로 생긴 기록이라면 삭제하세요.</div>` : '';
+  const offDay=holidayKind(window.dailyDate)==='off'||isVacation(window.dailyDate)||isWeekend(window.dailyDate);
+  const warn = offDay ? `<div class="att-warn">⚠️ 학교에 나오지 않는 날(공휴일·휴업일·방학·주말)에 출결 기록이 있습니다. 반복 출결로 생긴 기록이라면 삭제하세요.</div>` : '';
   el.innerHTML=warn+list.map(a=>{
       const s=window.students.find(x=>x.id===a.stuId);
       const no=a.stuNo||stuNo(s)||a.number||'';
@@ -4582,7 +4582,7 @@ function attRepDates(){
   while(d<=e && guard++<800){
     const wd=new Date(d+'T00:00:00').getDay();
     if(window.attRepDays.includes(wd)){
-      if(holidayKind(d)||isVacation(d)) skipped.push(d); else out.push(d);
+      if(holidayKind(d)==='off'||isVacation(d)) skipped.push(d); else out.push(d);   // '수업 없음'(행사일)은 등교일 → 포함
     }
     d=addDaysStr(d,1);
   }
@@ -4615,7 +4615,7 @@ window.updateAttRep = function(){
   const total=out.length*Math.max(n,1);
   const fmt=d=>{const [,m,dd]=d.split('-').map(Number); return `${m}/${dd}`;};
   info.innerHTML = `→ <b>${out.length}일</b>${n?` × <b>${n}명</b> = <b>${total}건</b>`:''} 등록`
-    + (skipped.length?`<br>공휴일·휴업일·방학 ${skipped.length}일 제외 (${skipped.slice(0,6).map(fmt).join(', ')}${skipped.length>6?' …':''})`:'')
+    + (skipped.length?`<br>공휴일·쉬는 날·방학 ${skipped.length}일 제외 (${skipped.slice(0,6).map(fmt).join(', ')}${skipped.length>6?' …':''})`:'')
     + (!n?'<br>학생을 선택하세요':'');
   btn.textContent = n&&out.length ? `${total}건 저장` : '저장';
 };
