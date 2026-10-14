@@ -436,6 +436,12 @@ body.home-mode .content{padding:0;overflow:visible}
   border-radius:9px;padding:7px 10px;margin-bottom:7px}
 .att-item.att-shadow{opacity:.55}
 .att-shadow-tag{font-size:10.5px;color:var(--text-dim);border:1px dashed var(--border);border-radius:6px;padding:1px 6px;white-space:nowrap}
+.att-stat-nav{flex-wrap:wrap;row-gap:8px}
+.att-stat-range{display:flex;align-items:center;gap:6px;margin-left:6px}
+.att-stat-range input{width:142px;padding:6px 8px;font-size:12.5px}
+@media(max-width:640px){.att-stat-range{order:5;width:100%;margin-left:0}.att-stat-range input{flex:1;width:auto}}
+.att-future .fd{display:inline-block;margin:2px 3px 0 0;padding:1px 6px;border-radius:6px;border:1px solid var(--border);cursor:pointer}
+.att-future .fd:hover{border-color:var(--accent);color:var(--accent)}
 .att-future{font-size:11px;color:var(--text-dim)}
 .note-presets{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
 .note-chip{display:inline-flex;align-items:center;gap:2px;font-size:12px;padding:4px 4px 4px 10px;border-radius:14px;
@@ -1868,10 +1874,16 @@ body.dark-ui .loading-logo em{color:transparent}
     </div>
     <div class="att-stat-nav">
       <button class="btn btn-ghost btn-sm" onclick="attStatMonth(-1)">‹</button>
-      <span id="attStatLabel" style="font-weight:700;font-size:14px"></span>
+      <span id="attStatLabel" style="font-weight:700;font-size:14px;min-width:92px;text-align:center"></span>
       <button class="btn btn-ghost btn-sm" onclick="attStatMonth(1)">›</button>
+      <div class="att-stat-range">
+        <input type="date" class="form-input" id="attStatS" onchange="setAttStatRange()">
+        <span style="color:var(--text-muted)">~</span>
+        <input type="date" class="form-input" id="attStatE" onchange="setAttStatRange()">
+      </div>
       <span style="flex:1"></span>
-      <button class="btn btn-ghost btn-sm" id="attStatScope" onclick="toggleAttScope()">이번 달</button>
+      <button class="btn btn-ghost btn-sm" onclick="attStatThisMonth()">이번 달</button>
+      <button class="btn btn-ghost btn-sm" onclick="attStatWhole()">전체 기간</button>
     </div>
     <div id="attStatBody"></div>
   </div>
@@ -4817,35 +4829,57 @@ window.deleteAttFromModal = async function(){
 };
 
 // ── 출결 통계 ─────────────────────────────────────────
-window.attStatYM=null; window.attStatAll=false;
+window.attStatYM=null; window.attStatRange={s:'',e:''};
+function monthLast(y,m){ return dk(y,m,new Date(y,m,0).getDate()); }
+// 월 기본 기간: 1일 ~ (오늘이 그 달 안이면 오늘, 아니면 말일)
+function attStatSetMonth(y,m){
+  window.attStatYM={y,m};
+  const s=dk(y,m,1), last=monthLast(y,m), today=getTodayStr();
+  window.attStatRange={s, e:(today>=s&&today<last)?today:last};
+}
 window.openAttStatModal = function(){
   const [y,m]=window.dailyDate.split('-').map(Number);
-  window.attStatYM={y,m}; window.attStatAll=false;
+  attStatSetMonth(y,m);
   renderAttStat();
   document.getElementById('attStatOverlay').classList.add('open');
+};
+window.setAttStatRange = function(){
+  let s=document.getElementById('attStatS').value, e=document.getElementById('attStatE').value;
+  if(s&&e&&s>e){ const x=s; s=e; e=x; }
+  window.attStatRange={s,e};
+  if(s){ const [y,m]=s.split('-').map(Number); window.attStatYM={y,m}; }
+  renderAttStat();
+};
+window.attStatThisMonth = function(){ const n=new Date(); attStatSetMonth(n.getFullYear(), n.getMonth()+1); renderAttStat(); };
+window.attStatWhole = function(){
+  const ds=window.attendance.map(a=>a.date).sort();
+  window.attStatRange={s:ds[0]||getTodayStr(), e:getTodayStr()};
+  renderAttStat();
 };
 window.closeAttStatModal = function(){ document.getElementById('attStatOverlay').classList.remove('open'); };
 window.closeAttStatOutside = function(e){ if(e.target===document.getElementById('attStatOverlay')) closeAttStatModal(); };
 window.attStatMonth = function(d){
   let {y,m}=window.attStatYM; m+=d;
   if(m<1){m=12;y--;} if(m>12){m=1;y++;}
-  window.attStatYM={y,m}; window.attStatAll=false; renderAttStat();
+  attStatSetMonth(y,m); renderAttStat();
 };
-window.toggleAttScope = function(){ window.attStatAll=!window.attStatAll; renderAttStat(); };
 window.goAttDate = function(date){ closeAttStatModal(); openDaily(date); };
 function renderAttStat(){
+  const {s:rs, e:re}=window.attStatRange;
   const {y,m}=window.attStatYM;
-  const prefix=`${y}-${pad2(m)}`;
-  const today=getTodayStr();
-  const scoped=window.attendance.filter(a=>window.attStatAll||a.date.startsWith(prefix));
-  const dated=scoped.filter(a=>a.date<=today);              // 통계는 오늘까지만
+  document.getElementById('attStatS').value=rs;
+  document.getElementById('attStatE').value=re;
+  const isMonth = rs===dk(y,m,1) && re && re.slice(0,7)===rs.slice(0,7);
+  document.getElementById('attStatLabel').textContent = isMonth ? `${y}년 ${m}월` : '기간 지정';
+  const dated=window.attendance.filter(a=>(!rs||a.date>=rs)&&(!re||a.date<=re));   // 선택 기간
   const shadow=attShadowedIds(dated);
   const rows=dated.filter(a=>!shadow.has(a.id));            // 같은 날 다른 사유가 있으면 출석인정 제외
-  const future=scoped.length-rows.length;                   // 미리 등록된 예정 기록
-  document.getElementById('attStatLabel').textContent = window.attStatAll?'전체 기간':`${y}년 ${m}월`;
-  document.getElementById('attStatScope').textContent = window.attStatAll?'전체 보기 중':'이번 달만';
+  // 종료일 다음 날 ~ 그 달 말일에 미리 등록된 기록 (날짜별로 표시)
+  const after=re?window.attendance.filter(a=>a.date>re && a.date<=monthLast(...re.split('-').map(Number).slice(0,2))):[];
   const el=document.getElementById('attStatBody');
-  const futNote = future ? `<div class="att-future" style="margin-bottom:10px">🔁 오늘 이후 예정 기록 ${future}건은 집계에서 제외됩니다</div>` : '';
+  const byDate={}; after.forEach(a=>{ byDate[a.date]=(byDate[a.date]||0)+1; });
+  const futNote = after.length ? `<div class="att-future" style="margin-bottom:10px">🔁 종료일 이후 이번 달에 미리 등록된 기록 <b>${after.length}건</b>은 집계에서 제외됩니다 (종료일을 늘리면 포함)<br>
+    ${Object.keys(byDate).sort().map(d=>{const [,mm,dd]=d.split('-').map(Number); return `<span class="fd" onclick="goAttDate('${d}')">${mm}/${dd}${byDate[d]>1?' ×'+byDate[d]:''}</span>`;}).join('')}</div>` : '';
   if(!rows.length){
     el.innerHTML=futNote+`<div class="empty"><div class="empty-icon">🙋</div><p>해당 기간 출결 기록이 없습니다</p></div>`;
     return;
