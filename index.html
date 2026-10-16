@@ -417,6 +417,62 @@ body.home-mode .content{padding:0;overflow:visible}
   text-shadow:0 0 10px rgba(255,183,77,.6);box-shadow:0 0 14px rgba(255,183,77,.13)}
 .hp-LOW{background:rgba(72,217,164,.15);color:var(--hok);border:1px solid rgba(72,217,164,.28);
   text-shadow:0 0 10px rgba(72,217,164,.6);box-shadow:0 0 14px rgba(72,217,164,.13)}
+/* ── 목표 ── */
+.goal-boards{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:14px}
+.goal-board-chip{font-size:12.5px;font-weight:600;padding:6px 13px;border-radius:18px;cursor:pointer;
+  border:1px solid var(--border);background:rgba(255,255,255,.05);color:var(--text-muted);font-family:inherit}
+.goal-board-chip.on{background:linear-gradient(120deg,#6f9dff,#9b7cff);color:#fff;border-color:transparent;box-shadow:0 3px 16px rgba(111,157,255,.35)}
+.goal-board-chip.add{border-style:dashed}
+.goal-meta{display:flex;align-items:center;flex-wrap:wrap;gap:8px;font-size:12px;color:var(--text-muted);margin-bottom:14px}
+.goal-meta b{color:var(--text)}
+.goal-crumb{display:flex;align-items:center;gap:8px;max-width:640px;margin:0 auto 10px;font-size:13px}
+.goal-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;max-width:640px;margin:0 auto}
+.goal-cell{aspect-ratio:1/1;border-radius:14px;padding:10px 8px;cursor:pointer;position:relative;overflow:hidden;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;min-width:0;
+  background:rgba(255,255,255,.05);border:1px solid var(--border);transition:all .15s;
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+.goal-cell:hover{border-color:rgba(111,157,255,.5);box-shadow:0 0 22px rgba(111,157,255,.18)}
+.goal-cell.center{background:linear-gradient(150deg,rgba(111,157,255,.28),rgba(155,124,255,.16));border-color:rgba(111,157,255,.5)}
+.goal-cell.center .gt{font-size:15px;text-shadow:0 0 14px rgba(150,185,255,.7)}
+.goal-cell.empty{border-style:dashed;background:transparent;color:var(--text-dim)}
+.goal-cell.empty .gt{font-weight:500;font-size:20px;opacity:.5}
+.goal-cell.done{border-color:rgba(72,217,164,.5);background:rgba(72,217,164,.09)}
+.goal-cell .gt{font-size:13px;font-weight:700;line-height:1.35;color:var(--text);word-break:keep-all;overflow-wrap:anywhere;
+  display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
+.goal-cell .gm{font-size:11px;margin-top:6px;color:var(--text-muted);display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
+.goal-cell .gk{position:absolute;top:6px;left:8px;font-size:10px;color:var(--text-dim)}
+.goal-cell .gbar{position:absolute;left:0;bottom:0;height:3px;background:linear-gradient(90deg,#48d9a4,#6f9dff)}
+.goal-cell .gok{color:#48d9a4;font-weight:700}
+.goal-tree{max-width:720px;margin:0 auto}
+.goal-tree .gt-core{font-size:16px;font-weight:800;padding:10px 4px;cursor:pointer}
+.goal-tree .gt-sub{border:1px solid var(--border);border-radius:12px;padding:10px 12px;margin-bottom:8px;background:rgba(255,255,255,.035)}
+.goal-tree .gt-subhead{display:flex;align-items:center;gap:8px;font-weight:700;font-size:13.5px;cursor:pointer}
+.goal-tree .gt-subhead .gm{margin-left:auto;font-size:11px;color:var(--text-muted);font-weight:600}
+.goal-tree .gt-item{display:flex;align-items:center;gap:8px;padding:6px 4px 6px 18px;font-size:12.5px;cursor:pointer;border-radius:8px}
+.goal-tree .gt-item:hover{background:rgba(111,157,255,.08)}
+.goal-tree .gt-item.done .tx{text-decoration:line-through;opacity:.6}
+.goal-tree .gt-add{font-size:11.5px;color:var(--text-dim);padding:5px 4px 2px 18px;cursor:pointer}
+.goal-chk{width:17px;height:17px;flex-shrink:0;border-radius:5px;border:1.5px solid var(--border2);display:inline-flex;align-items:center;justify-content:center;font-size:10px;color:transparent;cursor:pointer}
+.goal-chk.on{background:#48d9a4;border-color:#48d9a4;color:#0b0d12}
+.goal-kind{font-size:10px;padding:1px 6px;border-radius:6px;border:1px solid var(--border);color:var(--text-muted);white-space:nowrap}
+.goal-link{font-size:12px;padding:10px 12px;border-radius:10px;background:rgba(255,255,255,.04);border:1px solid var(--border);line-height:1.6}
+.goal-link .btns{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.badge-goal{background:rgba(155,124,255,.14);color:#c4b0ff;border:1px solid rgba(155,124,255,.32)}
+.hgoal{grid-column:1/-1;cursor:pointer;font-size:12.5px;color:var(--hdim);padding:12px 18px;border-radius:14px;
+  border:1px solid var(--hline);background:var(--hcard);display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+.hgoal:hover{border-color:rgba(155,124,255,.45)}
+.hgoal .hg-title{font-weight:700;color:#d6c8ff;text-shadow:0 0 12px rgba(155,124,255,.6)}
+.hgoal .hg-item b{color:#cfdcf2}
+.hgoal .hg-go{margin-left:auto;color:var(--hmute)}
+.hgoal-tag{font-size:9.5px;padding:2px 7px;border-radius:9px;background:rgba(155,124,255,.14);color:#c4b0ff;border:1px solid rgba(155,124,255,.3);white-space:nowrap}
+@media(max-width:768px){
+  .goal-grid{gap:6px}
+  .goal-cell{padding:6px 4px;border-radius:10px}
+  .goal-cell .gt{font-size:11.5px;-webkit-line-clamp:3}
+  .goal-cell.center .gt{font-size:12.5px}
+  .goal-cell .gm{font-size:9.5px;gap:3px;margin-top:3px}
+}
 .att-picked{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px}
 .att-picked:empty{display:none}
 .att-pchip{display:inline-flex;align-items:center;gap:3px;font-size:12px;font-weight:600;padding:3px 4px 3px 9px;border-radius:14px;
@@ -1130,6 +1186,7 @@ body.dark-ui .loading-logo em{color:transparent}
     <div class="tab" onclick="switchTab('month')">📅 월간</div>
     <div class="tab" onclick="switchTab('daily')">📝 일간</div>
     <div class="tab" onclick="switchTab('todo')">✅ 할 일</div>
+    <div class="tab" onclick="switchTab('goal')">🧭 목표</div>
     <div class="tab" onclick="switchTab('class')">📖 수업 진도</div>
     <div class="tab" onclick="switchTab('student')">👤 학생카드</div>
     <div class="tab" onclick="switchTab('check')">☑️ 체크리스트</div>
@@ -1266,6 +1323,19 @@ body.dark-ui .loading-logo em{color:transparent}
       <div class="todo-list" id="todoList"></div>
     </div>
 
+    <!-- GOAL -->
+    <div class="view" id="view-goal">
+      <div class="page-header">
+        <div class="page-title">목표</div>
+        <div class="filters" style="margin:0">
+          <button class="filter-chip active" id="goalViewGrid" onclick="setGoalView('grid')">▦ 격자</button>
+          <button class="filter-chip" id="goalViewList" onclick="setGoalView('list')">☰ 목록</button>
+        </div>
+      </div>
+      <div class="goal-boards" id="goalBoards"></div>
+      <div id="goalBody"></div>
+    </div>
+
     <!-- HOME -->
     <div class="view active" id="view-home">
       <div class="home">
@@ -1325,6 +1395,8 @@ body.dark-ui .loading-logo em{color:transparent}
             </div>
             <div class="hmemo" id="hMemo"></div>
           </div>
+
+          <div class="hgoal" id="hGoal" onclick="switchTab('goal')" style="display:none"></div>
 
         </div>
       </div>
@@ -1473,6 +1545,7 @@ body.dark-ui .loading-logo em{color:transparent}
     <div class="mobile-tab" onclick="switchTab('month')"><div class="mobile-tab-icon">📅</div>월간</div>
     <div class="mobile-tab" onclick="switchTab('daily')"><div class="mobile-tab-icon">📝</div>일간</div>
     <div class="mobile-tab" onclick="switchTab('todo')"><div class="mobile-tab-icon">✅</div>할 일</div>
+    <div class="mobile-tab" onclick="switchTab('goal')"><div class="mobile-tab-icon">🧭</div>목표</div>
     <div class="mobile-tab" onclick="switchTab('class')"><div class="mobile-tab-icon">📖</div>진도</div>
     <div class="mobile-tab" onclick="switchTab('student')"><div class="mobile-tab-icon">👤</div>학생</div>
     <div class="mobile-tab" onclick="switchTab('check')"><div class="mobile-tab-icon">☑️</div>제출</div>
@@ -1865,6 +1938,59 @@ body.dark-ui .loading-logo em{color:transparent}
   </div>
 </div>
 
+<!-- GOAL BOARD MODAL -->
+<div class="overlay" id="goalBoardOverlay" onclick="if(event.target===this)closeGoalBoard()">
+  <div class="modal" style="width:400px">
+    <div class="modal-head">
+      <div class="modal-title" id="goalBoardTitle">새 목표 판</div>
+      <button class="modal-close" onclick="closeGoalBoard()">✕</button>
+    </div>
+    <div class="form-group"><label class="form-label">판 이름</label>
+      <input type="text" class="form-input" id="gbTitle" placeholder="예: 2026 마무리, 2027학년도"></div>
+    <div class="form-group"><label class="form-label">기간</label>
+      <div style="display:flex;align-items:center;gap:8px">
+        <input type="date" class="form-input" id="gbStart" style="flex:1;min-width:0">
+        <span style="color:var(--text-muted)">~</span>
+        <input type="date" class="form-input" id="gbEnd" style="flex:1;min-width:0">
+      </div>
+      <div style="font-size:10.5px;color:var(--text-dim);margin-top:6px">반복 루틴의 달성 횟수는 이 기간 안에서만 셉니다</div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-danger" id="gbDelete" onclick="deleteGoalBoard()" style="display:none">판 삭제</button>
+      <div class="modal-actions-right">
+        <button class="btn btn-ghost" onclick="closeGoalBoard()">취소</button>
+        <button class="btn btn-primary" onclick="saveGoalBoard()">저장</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- GOAL CELL MODAL -->
+<div class="overlay" id="goalCellOverlay" onclick="if(event.target===this)closeGoalCell()">
+  <div class="modal" style="width:430px">
+    <div class="modal-head">
+      <div class="modal-title" id="gcTitle">세부목표</div>
+      <button class="modal-close" onclick="closeGoalCell()">✕</button>
+    </div>
+    <div class="form-group"><label class="form-label" id="gcLabel">내용</label>
+      <input type="text" class="form-input" id="gcText" placeholder="" onkeydown="if(event.key==='Enter'&&!event.isComposing)saveGoalCell()"></div>
+    <div id="gcItemPart">
+      <div class="form-group"><label class="form-label">종류</label>
+        <div class="att-btns" id="gcKinds"></div>
+        <div id="gcKindNote" style="font-size:10.5px;color:var(--text-dim);margin-top:6px"></div>
+      </div>
+      <div class="form-group" id="gcLinkPart"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-danger" id="gcClear" onclick="clearGoalCell()">칸 비우기</button>
+      <div class="modal-actions-right">
+        <button class="btn btn-ghost" onclick="closeGoalCell()">취소</button>
+        <button class="btn btn-primary" onclick="saveGoalCell()">저장</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- ATTENDANCE STATS MODAL -->
 <div class="overlay" id="attStatOverlay" onclick="closeAttStatOutside(event)">
   <div class="modal" style="width:860px">
@@ -1975,6 +2101,7 @@ const SEM_COL = "semesters";
 const ATT_COL = "attendance";
 const ROUTINE_COL = "routines";
 const ROUTINE_CHK_COL = "routineChecks";
+const GOAL_COL = "goalBoards";
 const CLUB_MEM_COL = "clubMembers";
 const CLUB_ACT_COL = "clubActivities";
 const CLUB_ITEM_COL = "clubItems";
@@ -2039,7 +2166,7 @@ function startApp(){
   setSyncState('syncing');
   onSnapshot(collection(db,COL), snap=>{
     window.tasks = snap.docs.map(d=>({id:d.id,...d.data()}));
-    purgeOldDone(); renderAll(); if(isActive('home')) renderHome(); setSyncState('ok');
+    purgeOldDone(); renderAll(); if(isActive('home')) renderHome(); if(isActive('goal')) renderGoal(); setSyncState('ok');
     document.getElementById('loadingScreen').style.display='none';
   }, err=>{
     setSyncState('error'); toast('⚠️ 동기화 오류: '+err.message, true);
@@ -2080,11 +2207,20 @@ function startApp(){
   onSnapshot(collection(db,ROUTINE_COL), snap=>{
     window.routines = snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(a.order||0)-(b.order||0));
     if(isActive('home')) renderHome();
+    if(isActive('goal')) renderGoal();
   });
   onSnapshot(collection(db,ROUTINE_CHK_COL), snap=>{
     window.routineChecks={};
     snap.docs.forEach(d=>{ window.routineChecks[d.id]=true; });
     if(isActive('home')) renderHome();
+    if(isActive('goal')) renderGoal();
+  });
+  onSnapshot(collection(db,GOAL_COL), snap=>{
+    window.goalBoards = snap.docs.map(d=>({id:d.id,...d.data()}))
+      .sort((a,b)=>(b.start||'')<(a.start||'')?-1:1);
+    if(isActive('goal')) renderGoal();
+    if(isActive('todo')) renderTodo();
+    homeTouch();
   });
   // 홈에서 오늘 수업·출결을 보여주기 위해 필요한 데이터
   loadGroup('links'); loadGroup('timetable'); loadGroup('class'); loadGroup('student');
@@ -2290,7 +2426,7 @@ window.switchTab = async function(view){
   if(window.dirtyMemo) await flushMemo();
   document.querySelectorAll('.tab,.mobile-tab').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
-  const map={home:0,month:1,daily:2,todo:3,class:4,student:5,check:6,club:7,timetable:8};
+  const map={home:0,month:1,daily:2,todo:3,goal:4,class:5,student:6,check:7,club:8,timetable:9};
   document.querySelectorAll('.tab')[map[view]]?.classList.add('active');
   document.querySelectorAll('.mobile-tab')[map[view]]?.classList.add('active');
   document.getElementById('view-'+view).classList.add('active');
@@ -2307,6 +2443,7 @@ window.switchTab = async function(view){
   else if(view==='check') renderCheck();
   else if(view==='club') renderClub();
   else if(view==='home') renderHome();
+  else if(view==='goal') renderGoal();
   else renderAll();
 };
 // 월간 안에서 오늘이 있는 달로
@@ -2854,6 +2991,7 @@ window.renderTodo = function(){
         <div class="task-meta">
           <span class="badge ${prioBg(t.priority)}">${prioLabel(t.priority)}</span>
           <span class="badge badge-cat">${esc(t.category||'')}</span>
+          ${goalTagOf(t)?`<span class="badge badge-goal">🧭 ${esc(goalTagOf(t))}</span>`:''}
           ${t.assignee?`<span class="badge badge-cat">👤 ${esc(t.assignee)}</span>`:''}
           ${t.alarm>0?`<span class="badge badge-alarm">🔔 ${t.alarm}일 전</span>`:''}
           ${dueText?`<span class="deadline-text ${dueClass}">📅 ${dueText}</span>`:''}
@@ -5092,6 +5230,7 @@ window.renderHome = function(){
       return `<div class="hrow ${done?'done':''}" onclick="editTask('${t.id}')">
         <span class="hchk ${done?'on':''}" onclick="event.stopPropagation();toggleDone(event,'${t.id}')">✓</span>
         <span class="hrow-title">${esc(t.title)}</span>
+        ${goalTagOf(t)?`<span class="hgoal-tag">🧭 ${esc(goalTagOf(t))}</span>`:''}
         <span class="hpill hp-${t.priority}">${prioLabel(t.priority)}</span></div>`;
     })].join('') : `<div class="hempty">오늘 할 일이 없습니다</div>`;
 
@@ -5132,6 +5271,9 @@ window.renderHome = function(){
   // 바로가기
   document.getElementById('hLinks').innerHTML =
     window.quickLinks.map(l=>`<span class="hlink" onclick="openLink('${jsStr(l.url)}')">🔗 ${esc(l.name)}</span>`).join('');
+
+  // 목표 한 줄
+  renderHomeGoal();
 
   // 메모
   const mt=memoText();
@@ -5234,6 +5376,351 @@ function renderNextLesson(){
     el.innerHTML=`<span class="nlbl">오늘 수업</span><span class="nsub">모두 끝났습니다</span>`;
   }
 }
+// ── 목표 (만다라트) ─────────────────────────────────────
+window.goalBoards=[]; window.goalBoardId=null; window.goalSub=null; window.goalView='grid';
+const GRID_POS=[0,1,2,3,null,4,5,6,7];            // 3×3 칸 → 큰목표(0~7) 번호, 가운데는 null
+const GOAL_KINDS=[['task','한 번 하는 일'],['routine','반복 (루틴)'],['memo','메모']];
+function emptyItems(){ return Array.from({length:8},()=>({text:'',kind:'memo',done:false,taskId:'',routineId:''})); }
+function emptySubs(){ return Array.from({length:8},()=>({text:'',items:emptyItems()})); }
+function curGoalBoard(){
+  const bs=window.goalBoards; if(!bs.length) return null;
+  const sel=bs.find(b=>b.id===window.goalBoardId); if(sel) return sel;
+  const t=getTodayStr();
+  return bs.find(b=>b.start<=t&&t<=b.end) || bs[0];
+}
+function goalBoardFor(id){ return window.goalBoards.find(b=>b.id===id); }
+// 할 일·루틴에 붙는 꼬리표 (큰목표 이름)
+function goalTagOf(o){
+  if(!o||!o.goalBoard) return '';
+  const b=goalBoardFor(o.goalBoard); if(!b||!b.subs) return '';
+  const sub=b.subs[o.goalSub]; return sub&&sub.text ? sub.text : '';
+}
+function fmtMD(d){ if(!d) return ''; const [y,m,dd]=d.split('-').map(Number); return `${y}.${m}.${dd}`; }
+// 루틴 달성 횟수 (판 기간 안, 오늘까지)
+function routineCountIn(rid, b){
+  const t=getTodayStr(), e=b.end&&b.end<t?b.end:t;
+  let n=0; const pre=rid+'_';
+  for(const k in window.routineChecks){
+    if(!k.startsWith(pre)) continue;
+    const d=k.slice(pre.length);
+    if(d>=b.start && d<=e) n++;
+  }
+  return n;
+}
+function linkedTask(it){ return it.taskId ? window.tasks.find(t=>t.id===it.taskId) : null; }
+function linkedRoutine(it){ return it.routineId ? window.routines.find(r=>r.id===it.routineId) : null; }
+function itemDone(it){
+  if(it.kind==='task'){ const t=linkedTask(it); return t ? t.status==='done' : !!it.done; }
+  if(it.kind==='memo') return !!it.done;
+  return false;
+}
+// 큰목표 진행: 반복(루틴)은 완료 개념이 없어 횟수로 따로 표시
+function subStat(b, sub){
+  const items=(sub.items||[]).filter(it=>it.text);
+  const cnt=items.filter(it=>it.kind!=='routine');
+  const done=cnt.filter(itemDone).length;
+  const rt=items.filter(it=>it.kind==='routine'&&linkedRoutine(it)).reduce((a,it)=>a+routineCountIn(it.routineId,b),0);
+  const hasRt=items.some(it=>it.kind==='routine');
+  return {done, total:cnt.length, rt, hasRt, n:items.length};
+}
+async function patchBoard(b, patch){
+  try{ await updateDoc(doc(db,GOAL_COL,b.id), patch); }
+  catch(e){ toast('저장 실패: '+e.message, true); }
+}
+window.setGoalView = function(v){
+  window.goalView=v;
+  document.getElementById('goalViewGrid').classList.toggle('active', v==='grid');
+  document.getElementById('goalViewList').classList.toggle('active', v==='list');
+  renderGoal();
+};
+window.pickGoalBoard = function(id){ window.goalBoardId=id; window.goalSub=null; renderGoal(); };
+window.goalOpenSub = function(i){ window.goalSub=i; renderGoal(); };
+window.goalBack = function(){ window.goalSub=null; renderGoal(); };
+
+window.renderGoal = function(){
+  const bEl=document.getElementById('goalBoards'), body=document.getElementById('goalBody');
+  if(!bEl) return;
+  const b=curGoalBoard();
+  bEl.innerHTML = window.goalBoards.map(x=>
+      `<button class="goal-board-chip ${b&&x.id===b.id?'on':''}" onclick="pickGoalBoard('${x.id}')">${esc(x.title||'목표')}</button>`).join('')
+    + `<button class="goal-board-chip add" onclick="openGoalBoard()">＋ 새 판</button>`;
+  if(!b){
+    body.innerHTML=`<div class="empty"><div class="empty-icon">🧭</div><p>목표 판이 없습니다</p>
+      <small>＋ 새 판을 눌러 기간과 이름을 정하고 시작하세요</small></div>`;
+    return;
+  }
+  const t=getTodayStr();
+  const left=b.end?daysUntil(b.end):null;
+  const state = t<b.start ? `${daysUntil(b.start)}일 뒤 시작` : (left!==null&&left<0 ? '기간 종료' : (left!==null?`D-${left}`:''));
+  const meta=`<div class="goal-meta"><b>${esc(b.title||'')}</b> ${fmtMD(b.start)} ~ ${fmtMD(b.end)} ${state?'· '+state:''}
+    <button class="btn-linklike" onclick="openGoalBoard('${b.id}')">✏️ 판 설정</button></div>`;
+  const subs=b.subs||emptySubs();
+  if(window.goalView==='list'){ body.innerHTML=meta+goalListHtml(b, subs); return; }
+
+  if(window.goalSub===null){
+    body.innerHTML = meta + `<div class="goal-grid">` + GRID_POS.map(si=>{
+      if(si===null) return `<div class="goal-cell center" onclick="editGoalText('core')">
+          ${b.core?`<div class="gt">${esc(b.core)}</div>`:`<div class="gt" style="opacity:.6">핵심 목표</div><div class="gm">눌러서 입력</div>`}</div>`;
+      const sub=subs[si];
+      if(!sub.text) return `<div class="goal-cell empty" onclick="editGoalText('sub',${si})"><div class="gt">＋</div></div>`;
+      const st=subStat(b, sub);
+      const pct=st.total?Math.round(st.done/st.total*100):0;
+      return `<div class="goal-cell" onclick="goalOpenSub(${si})">
+        <div class="gt">${esc(sub.text)}</div>
+        <div class="gm">${st.total?`<span class="${st.done===st.total?'gok':''}">${st.done}/${st.total}</span>`:''}${st.hasRt?`<span>🔁 ${st.rt}</span>`:''}${!st.n?'<span>세부목표 없음</span>':''}</div>
+        ${st.total?`<div class="gbar" style="width:${pct}%"></div>`:''}</div>`;
+    }).join('') + `</div>
+    <p style="text-align:center;font-size:11px;color:var(--text-dim);margin-top:12px">가운데는 핵심 목표, 둘레는 큰 목표입니다 · 큰 목표를 누르면 세부목표로 들어갑니다</p>`;
+    return;
+  }
+  // 큰목표 하나 확대
+  const si=window.goalSub, sub=subs[si], items=sub.items||emptyItems();
+  body.innerHTML = meta + `<div class="goal-crumb"><button class="btn btn-ghost btn-sm" onclick="goalBack()">‹ 전체</button>
+      <span style="color:var(--text-muted)">${esc(b.core||'핵심 목표')}</span><span>›</span><b>${esc(sub.text)}</b></div>
+    <div class="goal-grid">` + GRID_POS.map(ii=>{
+      if(ii===null){
+        const st=subStat(b, sub);
+        return `<div class="goal-cell center" onclick="editGoalText('sub',${si})"><div class="gt">${esc(sub.text)}</div>
+          <div class="gm">${st.total?`<span>${st.done}/${st.total}</span>`:''}${st.hasRt?`<span>🔁 ${st.rt}</span>`:''}</div></div>`;
+      }
+      const it=items[ii];
+      if(!it.text) return `<div class="goal-cell empty" onclick="editGoalItem(${si},${ii})"><div class="gt">＋</div></div>`;
+      return goalItemCell(b, it, si, ii);
+    }).join('') + `</div>
+    <p style="text-align:center;font-size:11px;color:var(--text-dim);margin-top:12px">세부목표를 눌러 할 일이나 루틴으로 보낼 수 있습니다</p>`;
+};
+function goalItemCell(b, it, si, ii){
+  const done=itemDone(it);
+  let tag='', m='';
+  if(it.kind==='task'){
+    const t=linkedTask(it);
+    tag='📋'; m = t ? (done?'<span class="gok">✓ 완료</span>':`<span>할 일 · ${t.deadline?fmtMD(t.deadline).slice(5)+' 마감':'진행 중'}</span>`) : (done?'<span class="gok">✓ 완료</span>':'<span>할 일로 보내기 전</span>');
+  } else if(it.kind==='routine'){
+    tag='🔁'; m = linkedRoutine(it) ? `<span>${routineCountIn(it.routineId,b)}회 달성</span>` : '<span>루틴으로 보내기 전</span>';
+  } else { tag=''; m = done?'<span class="gok">✓ 완료</span>':''; }
+  return `<div class="goal-cell ${done?'done':''}" onclick="editGoalItem(${si},${ii})">
+    ${tag?`<span class="gk">${tag}</span>`:''}<div class="gt">${esc(it.text)}</div><div class="gm">${m}</div></div>`;
+}
+function goalListHtml(b, subs){
+  const chk=(it,si,ii)=>{
+    if(it.kind==='routine') return `<span class="goal-kind">🔁 ${linkedRoutine(it)?routineCountIn(it.routineId,b)+'회':'미연결'}</span>`;
+    const on=itemDone(it);
+    return `<span class="goal-chk ${on?'on':''}" onclick="event.stopPropagation();toggleGoalItem(${si},${ii})">✓</span>`;
+  };
+  let h=`<div class="goal-tree"><div class="gt-core" onclick="editGoalText('core')">🧭 ${esc(b.core||'핵심 목표 (눌러서 입력)')}</div>`;
+  subs.forEach((sub,si)=>{
+    if(!sub.text){ return; }
+    const st=subStat(b, sub);
+    h+=`<div class="gt-sub"><div class="gt-subhead" onclick="editGoalText('sub',${si})">${esc(sub.text)}
+      <span class="gm">${st.total?`${st.done}/${st.total}`:''}${st.hasRt?` · 🔁 ${st.rt}`:''}</span></div>`;
+    (sub.items||[]).forEach((it,ii)=>{
+      if(!it.text) return;
+      h+=`<div class="gt-item ${itemDone(it)?'done':''}" onclick="editGoalItem(${si},${ii})">${chk(it,si,ii)}
+        <span class="tx">${esc(it.text)}</span>${it.kind==='task'?'<span class="goal-kind">📋 할 일</span>':''}</div>`;
+    });
+    const free=(sub.items||[]).findIndex(it=>!it.text);
+    if(free>=0) h+=`<div class="gt-add" onclick="editGoalItem(${si},${free})">＋ 세부목표 추가</div>`;
+    h+=`</div>`;
+  });
+  const freeSub=subs.findIndex(x=>!x.text);
+  if(freeSub>=0) h+=`<div class="gt-add" style="padding-left:4px" onclick="editGoalText('sub',${freeSub})">＋ 큰 목표 추가</div>`;
+  return h+`</div>`;
+}
+// 목록 보기에서 바로 체크
+window.toggleGoalItem = async function(si, ii){
+  const b=curGoalBoard(); if(!b) return;
+  const it=b.subs[si].items[ii];
+  const t=it.kind==='task'?linkedTask(it):null;
+  if(t){ await toggleDone({stopPropagation(){}}, t.id); return; }
+  const subs=JSON.parse(JSON.stringify(b.subs));
+  subs[si].items[ii].done=!it.done;
+  await patchBoard(b, {subs});
+};
+
+// ── 판 만들기·설정 ──
+window.openGoalBoard = function(id){
+  const b=id?goalBoardFor(id):null;
+  window._gbEdit=b?b.id:null;
+  const t=getTodayStr(), y=Number(t.slice(0,4));
+  document.getElementById('goalBoardTitle').textContent=b?'판 설정':'새 목표 판';
+  document.getElementById('gbTitle').value=b?b.title||'':`${y} 목표`;
+  document.getElementById('gbStart').value=b?b.start||'':t;
+  document.getElementById('gbEnd').value=b?b.end||'':`${y}-12-31`;
+  document.getElementById('gbDelete').style.display=b?'block':'none';
+  document.getElementById('goalBoardOverlay').classList.add('open');
+};
+window.closeGoalBoard = function(){ document.getElementById('goalBoardOverlay').classList.remove('open'); };
+window.saveGoalBoard = async function(){
+  const title=document.getElementById('gbTitle').value.trim()||'목표';
+  let st=document.getElementById('gbStart').value, en=document.getElementById('gbEnd').value;
+  if(!st||!en){ toast('기간을 입력하세요', true); return; }
+  if(st>en){ const x=st; st=en; en=x; }
+  try{
+    if(window._gbEdit){ await updateDoc(doc(db,GOAL_COL,window._gbEdit), {title, start:st, end:en}); toast('✏️ 저장되었습니다'); }
+    else{
+      const r=await addDoc(collection(db,GOAL_COL), {title, start:st, end:en, core:'', subs:emptySubs(), createdAt:serverTimestamp()});
+      window.goalBoardId=r.id; window.goalSub=null; toast('🧭 새 판을 만들었습니다');
+    }
+    closeGoalBoard();
+  }catch(e){ toast('저장 실패: '+e.message, true); }
+};
+window.deleteGoalBoard = async function(){
+  const b=goalBoardFor(window._gbEdit); if(!b) return;
+  if(!confirm(`'${b.title}' 판을 삭제할까요?\n연결된 할 일과 루틴은 그대로 남습니다.`)) return;
+  try{ await deleteDoc(doc(db,GOAL_COL,b.id)); window.goalBoardId=null; window.goalSub=null; closeGoalBoard(); toast('🗑️ 삭제되었습니다'); }
+  catch(e){ toast('삭제 실패: '+e.message, true); }
+};
+
+// ── 칸 편집 (핵심·큰목표·세부목표 공용) ──
+window._gc=null;
+window.editGoalText = function(kind, si){
+  const b=curGoalBoard(); if(!b) return;
+  window._gc={kind, si};
+  const cur = kind==='core' ? (b.core||'') : (b.subs[si].text||'');
+  document.getElementById('gcTitle').textContent = kind==='core'?'핵심 목표':'큰 목표';
+  document.getElementById('gcLabel').textContent = kind==='core'?'이 기간의 가장 큰 목표':'큰 목표 (영역)';
+  document.getElementById('gcText').placeholder = kind==='core'?'예: 건강하고 여유 있는 2학기 마무리':'예: 수업, 학급, 체력, 임용';
+  document.getElementById('gcText').value=cur;
+  document.getElementById('gcItemPart').style.display='none';
+  document.getElementById('gcClear').style.display = kind==='sub'&&cur ? 'block' : 'none';
+  document.getElementById('gcClear').textContent='큰 목표 비우기';
+  document.getElementById('goalCellOverlay').classList.add('open');
+  setTimeout(()=>document.getElementById('gcText').focus(),80);
+};
+window.editGoalItem = function(si, ii){
+  const b=curGoalBoard(); if(!b) return;
+  const it=b.subs[si].items[ii];
+  window._gc={kind:'item', si, ii, k:it.kind||'memo', done:!!it.done};
+  document.getElementById('gcTitle').textContent=`세부목표 · ${b.subs[si].text}`;
+  document.getElementById('gcLabel').textContent='내용';
+  document.getElementById('gcText').placeholder='예: 공개수업 지도안 완성, 주 3회 홈트';
+  document.getElementById('gcText').value=it.text||'';
+  document.getElementById('gcItemPart').style.display='';
+  document.getElementById('gcClear').style.display = it.text ? 'block' : 'none';
+  document.getElementById('gcClear').textContent='칸 비우기';
+  renderGoalCellKind();
+  document.getElementById('goalCellOverlay').classList.add('open');
+  setTimeout(()=>document.getElementById('gcText').focus(),80);
+};
+window.setGoalCellKind = function(k){ window._gc.k=k; renderGoalCellKind(); };
+window.toggleGoalCellDone = function(){ window._gc.done=!window._gc.done; renderGoalCellKind(); };
+function renderGoalCellKind(){
+  const g=window._gc, b=curGoalBoard(); const it=b.subs[g.si].items[g.ii];
+  document.getElementById('gcKinds').innerHTML=GOAL_KINDS.map(([k,l])=>
+    `<button type="button" class="att-btn ${g.k===k?'active':''}" onclick="setGoalCellKind('${k}')">${l}</button>`).join('');
+  const note={task:'할 일 탭에 업무로 만들어 관리합니다. 완료하면 여기도 ✓',
+    routine:'홈의 매일 루틴에 넣어 체크합니다. 판 기간 동안의 달성 횟수가 보입니다',
+    memo:'따로 연결하지 않고 여기서 직접 체크합니다'}[g.k];
+  document.getElementById('gcKindNote').textContent=note;
+  const el=document.getElementById('gcLinkPart');
+  if(g.k==='task'){
+    const t=linkedTask(it);
+    el.innerHTML = t
+      ? `<div class="goal-link">📋 할 일과 연결됨: <b>${esc(t.title)}</b><br>
+          <span style="color:var(--text-muted)">${t.status==='done'?'✓ 완료':'진행 중'}${t.deadline?' · 마감 '+fmtMD(t.deadline):''}</span>
+          <div class="btns"><button type="button" class="btn btn-ghost btn-sm" onclick="closeGoalCell();editTask('${t.id}')">할 일 열기</button></div></div>`
+      : `<div class="goal-link">아직 할 일로 보내지 않았습니다
+          <div style="display:flex;align-items:center;gap:6px;margin-top:8px">
+            <span style="font-size:11.5px;color:var(--text-muted);white-space:nowrap">마감일(선택)</span>
+            <input type="date" class="form-input" id="gcDeadline" style="padding:6px 8px;font-size:12px">
+          </div>
+          <div class="btns"><button type="button" class="btn btn-primary btn-sm" onclick="sendGoalToTask()">📋 할 일로 보내기</button></div></div>`;
+  } else if(g.k==='routine'){
+    const r=linkedRoutine(it);
+    el.innerHTML = r
+      ? `<div class="goal-link">🔥 매일 루틴과 연결됨: <b>${esc(r.name)}</b><br>
+          <span style="color:var(--text-muted)">이 판 기간 ${routineCountIn(r.id,b)}회 달성</span></div>`
+      : `<div class="goal-link">아직 루틴으로 보내지 않았습니다
+          <div class="btns"><button type="button" class="btn btn-primary btn-sm" onclick="sendGoalToRoutine()">🔁 루틴으로 보내기</button></div></div>`;
+  } else {
+    el.innerHTML=`<label class="doc-check"><input type="checkbox" ${g.done?'checked':''} onchange="toggleGoalCellDone()"> 완료</label>`;
+  }
+}
+window.closeGoalCell = function(){ document.getElementById('goalCellOverlay').classList.remove('open'); };
+// 현재 입력값으로 칸 저장 (연결 정보는 유지). 저장 후 갱신된 subs 반환
+async function commitGoalCell(extra){
+  const g=window._gc, b=curGoalBoard(); if(!b) return null;
+  const text=document.getElementById('gcText').value.trim();
+  if(g.kind==='core'){ await patchBoard(b,{core:text}); return null; }
+  const subs=JSON.parse(JSON.stringify(b.subs||emptySubs()));
+  if(g.kind==='sub'){ subs[g.si].text=text; await patchBoard(b,{subs}); return subs; }
+  const it=subs[g.si].items[g.ii];
+  const prevKind=it.kind;
+  it.text=text; it.kind=g.k; it.done=g.k==='memo'?g.done:it.done;
+  // 종류를 바꾸면 기존 연결은 끊음 (할 일·루틴 자체는 남김)
+  if(prevKind!==g.k){ if(g.k!=='task') it.taskId=''; if(g.k!=='routine') it.routineId=''; }
+  Object.assign(it, extra||{});
+  await patchBoard(b,{subs});
+  // 연결된 할 일·루틴 이름도 함께 맞춤
+  const t=it.taskId&&window.tasks.find(x=>x.id===it.taskId);
+  if(t&&text&&t.title!==text) await updateDoc(doc(db,COL,t.id),{title:text}).catch(()=>{});
+  const r=it.routineId&&window.routines.find(x=>x.id===it.routineId);
+  if(r&&text&&r.name!==text) await updateDoc(doc(db,ROUTINE_COL,r.id),{name:text}).catch(()=>{});
+  return subs;
+}
+window.saveGoalCell = async function(){
+  const g=window._gc;
+  const text=document.getElementById('gcText').value.trim();
+  if(!text && g.kind!=='core'){ toast('내용을 입력하세요', true); return; }
+  await commitGoalCell();
+  closeGoalCell();
+  if(g.kind==='sub' && window.goalView==='grid' && window.goalSub===null){ /* 그대로 전체 화면 */ }
+};
+window.clearGoalCell = async function(){
+  const g=window._gc, b=curGoalBoard(); if(!b) return;
+  const subs=JSON.parse(JSON.stringify(b.subs));
+  if(g.kind==='sub'){
+    if(!confirm(`'${subs[g.si].text}' 큰 목표와 그 안의 세부목표를 모두 비울까요?\n연결된 할 일·루틴은 그대로 남습니다.`)) return;
+    subs[g.si]={text:'',items:emptyItems()};
+    if(window.goalSub===g.si) window.goalSub=null;
+  } else {
+    if(!confirm('이 칸을 비울까요?\n연결된 할 일·루틴은 그대로 남습니다.')) return;
+    subs[g.si].items[g.ii]={text:'',kind:'memo',done:false,taskId:'',routineId:''};
+  }
+  await patchBoard(b,{subs}); closeGoalCell();
+};
+window.sendGoalToTask = async function(){
+  const g=window._gc, b=curGoalBoard();
+  const text=document.getElementById('gcText').value.trim();
+  if(!text){ toast('내용을 먼저 입력하세요', true); return; }
+  const dl=document.getElementById('gcDeadline')?.value||'';
+  const t=getTodayStr();
+  const cat=document.getElementById('fCategory')?.options[0]?.value||'';
+  try{
+    const r=await addDoc(collection(db,COL), {title:text, kind:'task', priority:'MID', category:cat,
+      start:t, deadline:dl, status:'todo', span:'all', progress:0, alarm:0, assignee:'', note:'',
+      goalBoard:b.id, goalSub:g.si, goalItem:g.ii, createdAt:serverTimestamp()});
+    await commitGoalCell({taskId:r.id});
+    toast('📋 할 일 탭에 추가했습니다'); closeGoalCell();
+  }catch(e){ toast('실패: '+e.message, true); }
+};
+window.sendGoalToRoutine = async function(){
+  const g=window._gc, b=curGoalBoard();
+  const text=document.getElementById('gcText').value.trim();
+  if(!text){ toast('내용을 먼저 입력하세요', true); return; }
+  try{
+    const r=await addDoc(collection(db,ROUTINE_COL), {name:text, icon:'', order:Date.now(), goalBoard:b.id, goalSub:g.si, goalItem:g.ii});
+    await commitGoalCell({routineId:r.id});
+    toast('🔁 홈 매일 루틴에 추가했습니다'); closeGoalCell();
+  }catch(e){ toast('실패: '+e.message, true); }
+};
+// 홈 한 줄: 오늘이 기간 안에 있는 판
+function renderHomeGoal(){
+  const el=document.getElementById('hGoal'); if(!el) return;
+  const t=getTodayStr();
+  const b=window.goalBoards.find(x=>x.start<=t&&t<=x.end);
+  if(!b){ el.style.display='none'; return; }
+  const parts=(b.subs||[]).filter(s=>s.text).map(s=>{
+    const st=subStat(b,s);
+    const v=[st.total?`${st.done}/${st.total}`:'', st.hasRt?`🔁${st.rt}`:''].filter(Boolean).join(' ');
+    return `<span class="hg-item">${esc(s.text)} <b>${v||'-'}</b></span>`;
+  });
+  el.style.display='';
+  el.innerHTML=`<span class="hg-title">🧭 ${esc(b.title||'목표')}</span>
+    ${parts.length?parts.join('<span style="opacity:.4">·</span>'):'<span>큰 목표를 채워보세요</span>'}
+    <span class="hg-go">D-${daysUntil(b.end)} ›</span>`;
+}
+
 // ── 매일 루틴 ─────────────────────────────────────────
 function routineKey(id,d){ return `${id}_${d}`; }
 function routineStreak(id){
@@ -5259,6 +5746,7 @@ function renderRoutine(){
     return `<div class="hrow ${on?'done':''}">
       <span class="hchk ${on?'on':''}" onclick="toggleRoutine('${r.id}')">✓</span>
       <span class="hrow-title" onclick="toggleRoutine('${r.id}')">${esc(r.icon||'')} ${esc(r.name)}</span>
+      ${goalTagOf(r)?`<span class="hgoal-tag">🧭 ${esc(goalTagOf(r))}</span>`:''}
       ${st>1?`<span class="hstreak">${st}일🔥</span>`:''}
       <span class="hbtn-add" onclick="deleteRoutine('${r.id}')" style="padding:1px 7px">✕</span>
     </div>`;
