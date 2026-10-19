@@ -167,6 +167,19 @@ body.home-mode .content{padding:0;overflow:visible}
 .ring-bg{fill:none;stroke:var(--border);stroke-width:3}
 .ring-fg{fill:none;stroke-width:3;stroke-linecap:round;transition:stroke-dashoffset .5s ease}
 .ring-pct{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:9px;font-weight:700;color:var(--text-muted)}
+.task-card.is-overdue{border-color:rgba(255,107,129,.45);background:rgba(255,107,129,.06)}
+.od-actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.od-btn{font-size:11.5px;font-weight:600;padding:4px 10px;border-radius:8px;cursor:pointer;font-family:inherit;
+  border:1px solid var(--border);background:rgba(255,255,255,.05);color:var(--text-muted);white-space:nowrap}
+.od-btn:hover{border-color:var(--accent);color:var(--accent)}
+.od-btn.ok{border-color:rgba(72,217,164,.45);color:#48d9a4}
+.done-month{border:1px solid var(--border);border-radius:12px;margin-bottom:8px;overflow:hidden;background:rgba(255,255,255,.03)}
+.done-month-head{display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer;user-select:none;font-size:13.5px;font-weight:700}
+.done-month-head:hover{background:rgba(111,157,255,.07)}
+.dm-arrow{display:inline-block;transition:transform .15s;color:var(--text-muted);font-size:11px}
+.done-month.open .dm-arrow{transform:rotate(90deg)}
+.dm-count{margin-left:auto;font-size:11.5px;font-weight:600;color:var(--text-muted)}
+.done-month-body{display:flex;flex-direction:column;gap:6px;padding:0 10px 10px}
 .overdue-banner{background:var(--high-bg);border:1px solid #fecaca;border-radius:8px;padding:10px 14px;font-size:12px;color:var(--high);margin-bottom:14px}
 
 /* CLASS */
@@ -1010,6 +1023,8 @@ body.dark-ui .lesson-row.saved{background:rgba(72,217,164,.12);border-color:rgba
 body.dark-ui .lesson-row.nonprog{background:rgba(255,255,255,.03)}
 body.dark-ui .extra-item{background:rgba(255,183,77,.10);border-color:rgba(255,183,77,.25)}
 body.dark-ui .blk-empty,body.dark-ui .blk-view{color:var(--text)}
+body.dark-ui .task-card.is-overdue{border-color:rgba(255,107,129,.5);background:rgba(255,107,129,.08);
+  box-shadow:0 0 22px rgba(255,107,129,.12)}
 body.dark-ui .overdue-banner{background:rgba(255,107,129,.13);border-color:rgba(255,107,129,.3);color:#ff9aa8}
 
 /* 출결 */
@@ -1317,7 +1332,8 @@ body.dark-ui .loading-logo em{color:transparent}
         <button class="filter-chip" onclick="setFilter('MID',this)">🟡 중간</button>
         <button class="filter-chip" onclick="setFilter('LOW',this)">🟢 낮음</button>
         <button class="filter-chip" onclick="setFilter('ongoing',this)">⏳ 진행중</button>
-        <button class="filter-chip" onclick="setFilter('done',this)">✅ 완료 · 초과</button>
+        <button class="filter-chip" onclick="setFilter('done',this)">✅ 완료</button>
+        <button class="filter-chip" onclick="setFilter('skipped',this)">⏭ 넘긴 일</button>
         <button class="filter-chip" onclick="setFilter('event',this)">📌 일정</button>
       </div>
       <div class="todo-list" id="todoList"></div>
@@ -2363,7 +2379,7 @@ function ringColor(v){ return v>=80?'var(--low)':v>=40?'var(--mid)':'var(--accen
 function isEvent(t){ return t.kind==='event'; }
 function isOverdue(t){
   if(isEvent(t)) return false;
-  if(!t.deadline||t.status==='done') return false;
+  if(!t.deadline||t.status==='done'||t.skipped) return false;
   const [y,m,d]=t.deadline.split('-').map(Number);
   const dl=new Date(y,m-1,d); const td=new Date(); td.setHours(0,0,0,0);
   return dl<td;
@@ -2379,10 +2395,8 @@ function purgeOldDone(){
     t._hidden=false;
     if(isEvent(t)) return;                     // 일정은 숨기지 않음
     if(t.status==='done'&&t.doneAt&&(now-new Date(t.doneAt))>=86400000) t._hidden=true;
-    if(t.status!=='done'&&t.deadline){
-      const [y,m,d]=t.deadline.split('-').map(Number);
-      if(now>=new Date(y,m-1,d+1)) t._hidden=true;
-    }
+    if(t.skipped) t._hidden=true;              // 넘긴 일
+    // 마감이 지난 미완료 업무는 숨기지 않음 (목록 맨 위에 계속 표시)
   });
 }
 // 시작·종료가 뒤바뀌어 저장된 경우에도 올바른 순서로
@@ -2511,7 +2525,7 @@ function renderCalendar(){
         const ev=isEvent(t);
         const marker = ev ? '📌 ' : s===e?'● ' : s===key?'▶ ' : e===key?'⏹ ' : '▬ ';
         const c=ev?'var(--done)':prioColor(t.priority);
-        const doneStyle = (!ev&&t.status==='done') ? 'text-decoration:line-through;opacity:.55;' : '';
+        const doneStyle = (!ev&&(t.status==='done'||t.skipped)) ? 'text-decoration:line-through;opacity:.55;' : '';
         const bold = ev?'font-weight:700;':'';
         return `<div class="cal-dot" style="background:${c}18;color:${c};${bold}${doneStyle}">${marker}${esc(t.title)}</div>`;
       }).join('')}
@@ -2945,7 +2959,8 @@ function getVisible(){
   return window.tasks.filter(t=>{
     if(window.currentFilter==='event') return isEvent(t);   // 📌 일정 필터
     if(isEvent(t)) return false;               // 일정은 할 일 목록에서 제외
-    if(window.currentFilter==='done') return t.status==='done'||t._hidden;
+    if(window.currentFilter==='done') return t.status==='done';
+    if(window.currentFilter==='skipped') return !!t.skipped;
     if(t._hidden) return false;
     if(window.currentFilter==='all') return true;
     if(window.currentFilter==='ongoing') return t.status!=='done';
@@ -2974,17 +2989,25 @@ window.renderTodo = function(){
     ? `<div class="overdue-banner">⚠️ 마감 기한이 지난 업무 ${overdue.length}개가 있습니다</div>` : '';
 
   if(window.currentFilter==='event'){ el.innerHTML=renderEventList(items); return; }
+  if(window.currentFilter==='done'){ el.innerHTML=renderDoneAccordion(items); return; }
+  if(window.currentFilter==='skipped'){ el.innerHTML=renderSkippedList(items); return; }
   if(!items.length){
     el.innerHTML=`<div class="empty"><div class="empty-icon">📭</div><p>업무가 없습니다</p><small>+ 업무 버튼으로 시작하세요</small></div>`;
     return;
   }
-  el.innerHTML=items.map(t=>{
+  // 마감 지난 미완료 업무는 정렬과 상관없이 맨 위
+  items=[...items.filter(isOverdue), ...items.filter(t=>!isOverdue(t))];
+  el.innerHTML=items.map(t=>taskCardHtml(t)).join('');
+};
+function taskCardHtml(t){
     const R=14, C=2*Math.PI*R, prog=t.progress||0, off=C-(prog/100)*C;
     const done=t.status==='done';
     const due=t.deadline?daysUntil(t.deadline):null;
-    const dueText=due!==null?(due<0?`${Math.abs(due)}일 초과`:due===0?'오늘 마감':`D-${due}`):'';
-    const dueClass=due!==null&&due<0?'overdue':due!==null&&due<=2?'near':'';
-    return `<div class="task-card ${done?'p-done':'p-'+t.priority}" onclick="editTask('${t.id}')">
+    let dueText=due!==null?(due<0?`${Math.abs(due)}일 초과`:due===0?'오늘 마감':`D-${due}`):'';
+    let dueClass=due!==null&&due<0?'overdue':due!==null&&due<=2?'near':'';
+    if(done){ const [,dm,dd]=(t.doneAt||'').split('-').map(Number); dueText=t.doneAt?`${dm}/${dd} 완료`:''; dueClass=''; }
+    const od=isOverdue(t);
+    return `<div class="task-card ${done?'p-done':'p-'+t.priority} ${od?'is-overdue':''}" onclick="editTask('${t.id}')">
       <div class="check-btn ${done?'checked':''}" onclick="toggleDone(event,'${t.id}')">${done?'✓':''}</div>
       <div>
         <div class="task-title ${done?'done':''}">${esc(t.title)}</div>
@@ -2997,6 +3020,11 @@ window.renderTodo = function(){
           ${dueText?`<span class="deadline-text ${dueClass}">📅 ${dueText}</span>`:''}
           ${t.note?`<span style="font-size:11px;color:var(--text-dim)">💬 ${esc(t.note)}</span>`:''}
         </div>
+        ${od?`<div class="od-actions">
+          <button class="od-btn ok" onclick="event.stopPropagation();toggleDone(event,'${t.id}')">✓ 완료</button>
+          <button class="od-btn" onclick="event.stopPropagation();extendTask('${t.id}')">📅 연장</button>
+          <button class="od-btn" onclick="event.stopPropagation();skipTask('${t.id}')">⏭ 넘기기</button>
+        </div>`:''}
       </div>
       <div class="progress-ring-wrap">
         <svg width="40" height="40" viewBox="0 0 36 36">
@@ -3006,8 +3034,61 @@ window.renderTodo = function(){
         <div class="ring-pct">${prog}%</div>
       </div>
     </div>`;
-  }).join('');
+}
+// 마감 연장: 편집 창을 열고 마감일 칸으로
+window.extendTask = function(id){
+  editTask(id);
+  setTimeout(()=>{ const f=document.getElementById('fDeadline'); f.focus(); try{f.showPicker&&f.showPicker();}catch(e){} },150);
 };
+// 넘기기: 하지 않기로 한 일 — 지우지 않고 '넘긴 일'에 보관
+window.skipTask = async function(id){
+  try{ await updateDoc(doc(db,COL,id), {skipped:true, skippedAt:getTodayStr()}); toast('⏭ 넘긴 일로 옮겼습니다'); }
+  catch(e){ toast('오류: '+e.message, true); }
+};
+window.unskipTask = async function(id){
+  try{ await updateDoc(doc(db,COL,id), {skipped:false, skippedAt:null}); toast('↩️ 할 일로 되돌렸습니다'); }
+  catch(e){ toast('오류: '+e.message, true); }
+};
+// 완료 목록: 연·월별 아코디언 (이번 달은 기본으로 펼침)
+window.doneOpen=null;
+function doneMonthOf(t){ return (t.doneAt||t.deadline||t.start||'').slice(0,7) || '날짜 없음'; }
+window.toggleDoneMonth = function(ym){
+  if(window.doneOpen.has(ym)) window.doneOpen.delete(ym); else window.doneOpen.add(ym);
+  renderTodo();
+};
+function renderDoneAccordion(items){
+  if(!items.length) return `<div class="empty"><div class="empty-icon">✅</div><p>완료한 업무가 없습니다</p></div>`;
+  if(!window.doneOpen) window.doneOpen=new Set([getTodayStr().slice(0,7)]);
+  const by={};
+  items.forEach(t=>{ const k=doneMonthOf(t); (by[k]=by[k]||[]).push(t); });
+  const keys=Object.keys(by).sort((a,b)=>a<b?1:-1);     // 최근 달부터
+  return keys.map(k=>{
+    const open=window.doneOpen.has(k);
+    const label = k==='날짜 없음' ? k : `${k.slice(0,4)}년 ${Number(k.slice(5))}월`;
+    const list=by[k].sort((a,b)=>(b.doneAt||'')<(a.doneAt||'')?-1:1);
+    return `<div class="done-month ${open?'open':''}">
+      <div class="done-month-head" onclick="toggleDoneMonth('${k}')">
+        <span class="dm-arrow">▸</span><span class="dm-label">${label}</span><span class="dm-count">${list.length}건</span>
+      </div>
+      ${open?`<div class="done-month-body">${list.map(t=>taskCardHtml(t)).join('')}</div>`:''}
+    </div>`;
+  }).join('');
+}
+function renderSkippedList(items){
+  if(!items.length) return `<div class="empty"><div class="empty-icon">⏭</div><p>넘긴 업무가 없습니다</p>
+    <small>마감이 지난 업무에서 ⏭ 넘기기를 누르면 여기에 보관됩니다</small></div>`;
+  return items.sort((a,b)=>(b.skippedAt||'')<(a.skippedAt||'')?-1:1).map(t=>`
+    <div class="task-card p-done" style="opacity:.8" onclick="editTask('${t.id}')">
+      <div style="text-align:center;font-size:16px">⏭</div>
+      <div><div class="task-title" style="text-decoration:line-through;color:var(--text-dim)">${esc(t.title)}</div>
+        <div class="task-meta">
+          <span class="badge badge-cat">${esc(t.category||'')}</span>
+          ${t.deadline?`<span class="deadline-text">📅 마감 ${fmtMD(t.deadline)}</span>`:''}
+          ${t.skippedAt?`<span style="font-size:11px;color:var(--text-dim)">넘긴 날 ${fmtMD(t.skippedAt)}</span>`:''}
+        </div></div>
+      <button class="od-btn" onclick="event.stopPropagation();unskipTask('${t.id}')">↩️ 되돌리기</button>
+    </div>`).join('');
+}
 
 // 📌 일정 목록: 날짜 없음 → 다가오는 일정 → 지난 일정
 function renderEventList(items){
@@ -3236,7 +3317,7 @@ window.closeStatOutside = function(e){ if(e.target===document.getElementById('st
 function checkAlarms(){
   window.tasks.forEach(t=>{
     if(!t.deadline||!t.alarm) return;
-    if(!isEvent(t)&&t.status==='done') return;
+    if(!isEvent(t)&&(t.status==='done'||t.skipped)) return;
     if(daysUntil(t.deadline)===parseInt(t.alarm)){
       const key=`alarm_${t.id}_${t.deadline}`;
       if(!sessionStorage.getItem(key)){
@@ -5224,7 +5305,7 @@ window.renderHome = function(){
   document.getElementById('hMeta').innerHTML=meta.join(' · ')||'';
 
   // 오늘 할 일
-  const all=tasksOn(today);
+  const all=tasksOn(today).filter(t=>!t.skipped);
   const events=all.filter(isEvent), tasks=all.filter(t=>!isEvent(t));
   const undone=tasks.filter(t=>t.status!=='done').length;
   document.getElementById('hTodoCount').textContent = tasks.length?`${tasks.length-undone}/${tasks.length}`:'';
