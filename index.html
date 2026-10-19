@@ -3270,8 +3270,16 @@ window.openModal = function(){
   renderCatSelect('');
   const catSel=document.getElementById('fCategory');
   if(catSel.options.length) catSel.selectedIndex=0;
-  document.getElementById('fStart').value=getTodayStr();
-  document.getElementById('fDeadline').value='';
+  // 일간에서 열면 보고 있던 날짜로, 그 외에는 오늘로
+  const onDaily = isActive('daily') && window.dailyDate;
+  const d0 = onDaily ? window.dailyDate : getTodayStr();
+  document.getElementById('fStart').value=d0;
+  document.getElementById('fDeadline').value=onDaily ? d0 : '';
+  if(onDaily && d0!==getTodayStr()){
+    const [,mm,dd]=d0.split('-').map(Number);
+    const wd='일월화수목금토'[new Date(d0+'T00:00:00').getDay()];
+    document.getElementById('modalTitle').textContent=`새 업무 · ${mm}/${dd}(${wd})`;
+  }
   document.getElementById('fStatus').value='todo';
   document.getElementById('fSpan').value='all';
   document.getElementById('fProgress').value=0;
