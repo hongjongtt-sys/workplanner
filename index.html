@@ -3124,8 +3124,27 @@ function renderEventList(items){
     </div>`;
   };
   const sec=(title,arr,dim)=>arr.length?`<div style="font-size:12px;color:var(--text-dim);margin:14px 2px 8px">${title} · ${arr.length}</div>`+arr.map(t=>card(t,dim)).join(''):'';
-  return sec('⚠️ 날짜 미입력',noDate,false)+sec('다가오는 일정',up,false)+sec('지난 일정',past,true);
+  // 지난 일정: 끝난 날 기준 연·월 아코디언 (이번 달만 기본으로 펼침)
+  if(!window.evPastOpen) window.evPastOpen=new Set([today.slice(0,7)]);
+  const by={};
+  past.forEach(t=>{ const k=taskRange(t)[1].slice(0,7); (by[k]=by[k]||[]).push(t); });
+  const pastHtml = past.length ? `<div style="font-size:12px;color:var(--text-dim);margin:14px 2px 8px">지난 일정 · ${past.length}</div>`
+    + Object.keys(by).sort((a,b)=>a<b?1:-1).map(k=>{
+        const open=window.evPastOpen.has(k);
+        return `<div class="done-month ${open?'open':''}">
+          <div class="done-month-head" onclick="toggleEvMonth('${k}')">
+            <span class="dm-arrow">▸</span><span>${k.slice(0,4)}년 ${Number(k.slice(5))}월</span><span class="dm-count">${by[k].length}건</span>
+          </div>
+          ${open?`<div class="done-month-body">${by[k].map(t=>card(t,true)).join('')}</div>`:''}
+        </div>`;
+      }).join('') : '';
+  return sec('⚠️ 날짜 미입력',noDate,false)+sec('다가오는 일정',up,false)+pastHtml;
 }
+window.evPastOpen=null;
+window.toggleEvMonth = function(ym){
+  if(window.evPastOpen.has(ym)) window.evPastOpen.delete(ym); else window.evPastOpen.add(ym);
+  renderTodo();
+};
 
 // ── HOLIDAYS ─────────────────────────────────────────
 // 2026: 제헌절·노동절 공휴일 재지정 반영 / 2027: 예정 (확정 시 확인 권장)
