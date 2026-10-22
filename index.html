@@ -471,51 +471,6 @@ body.home-mode .content{padding:0;overflow:visible}
 .goal-link{font-size:12px;padding:10px 12px;border-radius:10px;background:rgba(255,255,255,.04);border:1px solid var(--border);line-height:1.6}
 .goal-link .btns{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
 .badge-goal{background:rgba(155,124,255,.14);color:#c4b0ff;border:1px solid rgba(155,124,255,.32)}
-.hcore{font-size:10px;font-weight:700;color:#ffd27a;letter-spacing:0;text-shadow:none;margin-left:4px}
-.hslot{font-size:10.5px;font-weight:700;color:var(--hmute);margin:8px 2px 4px;letter-spacing:.03em}
-.hslot:first-child{margin-top:0}
-.hrt-cue{font-size:10.5px;color:var(--hmute);margin-left:6px}
-.hrt-time{font-size:10px;font-weight:700;color:#8fb3ff;flex-shrink:0}
-.hrt-time.due{color:#ff9aa8}
-.hrt-edit{opacity:.0;transition:opacity .15s}
-.hrow:hover .hrt-edit{opacity:1}
-@media(hover:none){.hrt-edit{opacity:.7}}
-/* 일과 마무리 */
-.rv-sec{margin-bottom:14px}
-.rv-head{font-size:12px;font-weight:700;color:var(--text-muted);margin-bottom:6px;display:flex;justify-content:space-between}
-.rv-row{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:9px;border:1px solid var(--border);background:rgba(255,255,255,.04);margin-bottom:5px;font-size:12.5px}
-.rv-row.done{opacity:.5}
-.rv-row .tx{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.rv-chk{width:19px;height:19px;flex-shrink:0;border:1.5px solid var(--border2);border-radius:6px;display:inline-flex;align-items:center;justify-content:center;font-size:11px;color:transparent;cursor:pointer}
-.rv-chk.on{background:#48d9a4;border-color:#48d9a4;color:#08281d}
-.rv-empty{font-size:12px;color:var(--text-dim);padding:6px 2px}
-.rv-ok{font-size:12px;color:#48d9a4;padding:6px 2px}
-/* 미니 보기 */
-#miniRoot{display:none}
-body.mini-mode header, body.mini-mode .app, body.mini-mode .mobile-nav, body.mini-mode .mobile-fab, body.mini-mode .sidebar{display:none!important}
-body.mini-mode{overflow:auto!important}
-body.mini-mode #miniRoot{display:block;padding:12px 12px 14px;max-width:520px;margin:0 auto}
-.mn-top{display:flex;align-items:baseline;gap:10px;margin-bottom:4px}
-.mn-clock{font-size:30px;font-weight:800;letter-spacing:.02em;color:#e8f0ff;text-shadow:0 0 16px rgba(111,157,255,.7)}
-.mn-date{font-size:11.5px;color:var(--text-muted)}
-.mn-next{font-size:13px;margin-bottom:10px}
-.mn-next .hnext{margin-top:0;font-size:13.5px}
-.mn-card{border:1px solid var(--border);border-radius:13px;padding:10px 11px;margin-bottom:9px;background:rgba(255,255,255,.045);
-  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
-.mn-h{display:flex;justify-content:space-between;align-items:center;font-size:11.5px;font-weight:700;color:#cfdcf2;margin-bottom:6px;
-  text-shadow:0 0 10px rgba(150,185,255,.55)}
-.mn-h small{font-weight:600;color:var(--text-muted);text-shadow:none}
-.mn-row{display:flex;align-items:center;gap:8px;padding:5px 4px;font-size:12.5px;border-radius:7px;cursor:pointer}
-.mn-row:hover{background:rgba(111,157,255,.09)}
-.mn-row .tx{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.mn-row.done{opacity:.45}
-.mn-row.late .tx{color:#ffb4bf}
-.mn-sub{font-size:10.5px;color:var(--text-dim);flex-shrink:0}
-.mn-more{font-size:11px;color:var(--text-dim);padding:3px 4px;cursor:pointer}
-.mn-banner{display:block;width:100%;text-align:left;font-family:inherit;font-size:12.5px;font-weight:700;padding:9px 11px;border-radius:11px;margin-bottom:9px;cursor:pointer;
-  border:1px solid rgba(155,124,255,.45);background:rgba(155,124,255,.14);color:#d6c8ff}
-.mn-foot{display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--text-dim);margin-top:4px}
-.mn-foot button{font-family:inherit;font-size:11.5px;font-weight:600;background:none;border:1px solid var(--border);color:var(--text-muted);border-radius:8px;padding:4px 10px;cursor:pointer}
 .hgoal{grid-column:1/-1;cursor:pointer;font-size:12.5px;color:var(--hdim);padding:12px 18px;border-radius:14px;
   border:1px solid var(--hline);background:var(--hcard);display:flex;align-items:center;gap:10px;flex-wrap:wrap;
   backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
@@ -1410,7 +1365,7 @@ body.dark-ui .loading-logo em{color:transparent}
           </div>
 
           <div class="hcard">
-            <div class="hcard-head"><span>⚡ 빠른 추가</span><button class="hbtn-add" onclick="openMini()" title="작은 창으로 따로 띄우기">📌 미니 창</button></div>
+            <div class="hcard-head"><span>⚡ 빠른 추가</span></div>
             <div class="hquick">
               <button class="hq-btn" onclick="openModal()"><span>✅</span>업무</button>
               <button class="hq-btn" onclick="quickEvent()"><span>📌</span>일정</button>
@@ -1430,12 +1385,8 @@ body.dark-ui .loading-logo em{color:transparent}
 
           <div class="hcard">
             <div class="hcard-head">
-              <span>🔥 매일 루틴 <span class="hcore" id="hCore"></span></span>
-              <span style="display:flex;gap:5px">
-                <button class="hbtn-add" id="hNotiBtn" onclick="enableNoti()" style="display:none" title="루틴 시간에 윈도우 알림 받기">🔔 알림 켜기</button>
-                <button class="hbtn-add" onclick="openReview()" title="일과 마무리 점검">🌙 마무리</button>
-                <button class="hbtn-add" onclick="addRoutine()">+ 추가</button>
-              </span>
+              <span>🔥 매일 루틴</span>
+              <button class="hbtn-add" onclick="addRoutine()">+ 추가</button>
             </div>
             <div class="hlist" id="hRoutine"></div>
           </div>
@@ -2080,63 +2031,6 @@ body.dark-ui .loading-logo em{color:transparent}
   </div>
 </div>
 
-<!-- MINI VIEW (?mini) -->
-<div id="miniRoot"></div>
-
-<!-- ROUTINE MODAL -->
-<div class="overlay" id="rtOverlay" onclick="if(event.target===this)closeRoutineModal()">
-  <div class="modal" style="width:430px">
-    <div class="modal-head">
-      <div class="modal-title" id="rtTitle">루틴 추가</div>
-      <button class="modal-close" onclick="closeRoutineModal()">✕</button>
-    </div>
-    <div class="form-group"><label class="form-label">루틴</label>
-      <div style="display:flex;gap:6px">
-        <input type="text" class="form-input" id="rtIcon" style="width:58px;text-align:center" placeholder="🙂" maxlength="4">
-        <input type="text" class="form-input" id="rtName" style="flex:1;min-width:0" placeholder="예: 물 한 잔, 점심 후 10분 걷기">
-      </div></div>
-    <div class="form-group"><label class="form-label">시간대</label>
-      <div class="att-btns" id="rtSlots"></div></div>
-    <div class="form-group"><label class="form-label">계기 <span style="font-weight:400;color:var(--text-dim)">(선택 · 무엇을 하고 나서 할지)</span></label>
-      <input type="text" class="form-input" id="rtCue" placeholder="예: 1교시 끝나면, 종례 마치고, 일어나자마자"></div>
-    <div class="form-group"><label class="form-label">알림 시각 <span style="font-weight:400;color:var(--text-dim)">(선택)</span></label>
-      <div style="display:flex;align-items:center;gap:8px">
-        <input type="time" class="form-input" id="rtTime" style="width:140px">
-        <button type="button" class="btn btn-ghost btn-sm" onclick="document.getElementById('rtTime').value=''">지우기</button>
-      </div>
-      <div style="font-size:10.5px;color:var(--text-dim);margin-top:5px">WorkFlow가 열려 있으면 윈도우 알림이 뜹니다 · 수업 중이면 쉬는 시간에 알려줍니다</div></div>
-    <div class="form-group"><label class="form-label">요일</label>
-      <div class="att-btns" id="rtDays"></div></div>
-    <div class="form-group">
-      <label class="doc-check"><input type="checkbox" id="rtCore"> ⭐ 최소 루틴 <span style="font-size:11px;color:var(--text-dim)">— 바쁜 날에도 이것만은</span></label></div>
-    <div class="modal-actions">
-      <button class="btn btn-danger" id="rtDelete" onclick="deleteRoutine(window._rtEdit)" style="display:none">삭제</button>
-      <div class="modal-actions-right">
-        <button class="btn btn-ghost" onclick="closeRoutineModal()">취소</button>
-        <button class="btn btn-primary" onclick="saveRoutine()">저장</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- DAY REVIEW MODAL -->
-<div class="overlay" id="rvOverlay" onclick="if(event.target===this)closeReview()">
-  <div class="modal" style="width:480px">
-    <div class="modal-head">
-      <div class="modal-title" id="rvTitle">🌙 오늘 마무리</div>
-      <button class="modal-close" onclick="closeReview()">✕</button>
-    </div>
-    <div id="rvBody"></div>
-    <div class="modal-actions">
-      <span></span>
-      <div class="modal-actions-right">
-        <button class="btn btn-ghost" onclick="closeReview()">나중에</button>
-        <button class="btn btn-primary" onclick="finishReview()">✓ 마무리 완료</button>
-      </div>
-    </div>
-  </div>
-</div>
-
 <div class="toast-wrap" id="toastWrap"></div>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
@@ -2475,7 +2369,7 @@ const TAB_GROUP={class:'class', student:'student', check:'check', club:'club', t
 const GROUP_EXTRA={timetable:['ttimg'], student:['stunote']};
 
 function isActive(v){ return document.getElementById('view-'+v)?.classList.contains('active'); }
-function homeTouch(){ if(isActive('home')) renderHome(); if(document.getElementById('rvOverlay')?.classList.contains('open')) renderReview(); }
+function homeTouch(){ if(isActive('home')) renderHome(); }
 
 // ── HELPERS ──────────────────────────────────────────
 function prioColor(p){ return {HIGH:'var(--high)',MID:'var(--mid)',LOW:'var(--low)'}[p]||'var(--text-muted)'; }
@@ -5409,7 +5303,7 @@ function startClock(){
     const days=['일','월','화','수','목','금','토'];
     const dEl=document.getElementById('hDate');
     if(dEl) dEl.textContent=`${n.getFullYear()}년 ${n.getMonth()+1}월 ${n.getDate()}일 ${days[n.getDay()]}요일`;
-    if(n.getSeconds()===0){ renderNextLesson(); purgeMemo(); routineTick(); renderRoutine(); if(MINI) renderMini(); }
+    if(n.getSeconds()===0){ renderNextLesson(); purgeMemo(); }
   };
   tick();
   clearInterval(clockTimer);
@@ -5501,8 +5395,6 @@ window.renderHome = function(){
 
   renderNextLesson();
   renderRoutine();
-  if(MINI) renderMini();
-  if(document.getElementById('rvOverlay')?.classList.contains('open')) renderReview();
 };
 window.quickEvent = function(){ openModal(); setTaskKind('event'); };
 window.openAttModalToday = function(){ window.dailyDate=getTodayStr(); loadGroup('student'); openAttModal(); };
@@ -5938,337 +5830,57 @@ function renderHomeGoal(){
 }
 
 // ── 매일 루틴 ─────────────────────────────────────────
-const MINI = new URLSearchParams(location.search).has('mini');
-const SLOTS=[['morning','🌅 출근 전'],['school','🏫 학교'],['evening','🌙 퇴근 후']];
-const DAY_START=490, DAY_END=960;           // 08:10 ~ 16:00 (1교시 시작 ~ 7교시 끝)
-const REVIEW_MIN=960;                        // 일과 마무리 16:00
-function nowMin(){ const n=new Date(); return n.getHours()*60+n.getMinutes(); }
-function slotNow(){ const m=nowMin(); return m<DAY_START?'morning':m<DAY_END?'school':'evening'; }
 function routineKey(id,d){ return `${id}_${d}`; }
-function routineOn(r, d){
-  if(r.days==='weekday'){ const wd=new Date(d+'T00:00:00').getDay(); return wd>=1&&wd<=5; }
-  return true;
-}
-function routinesOn(d){ return window.routines.filter(r=>routineOn(r,d)); }
-function routineStreak(r){
-  let n=0; const d=new Date(), today=getTodayStr();
-  for(let guard=0; guard<400; guard++){
-    const ds=dk(d.getFullYear(), d.getMonth()+1, d.getDate());
-    d.setDate(d.getDate()-1);
-    if(!routineOn(r,ds)) continue;                         // 쉬는 요일은 건너뜀
-    if(window.routineChecks[routineKey(r.id,ds)]) n++;
-    else if(ds===today) continue;                          // 오늘은 아직 안 했어도 끊지 않음
+function routineStreak(id){
+  let n=0; const d=new Date();
+  for(;;){
+    const k=routineKey(id, dk(d.getFullYear(), d.getMonth()+1, d.getDate()));
+    if(window.routineChecks[k]) n++;
     else break;
+    d.setDate(d.getDate()-1);
   }
   return n;
-}
-function slotOrder(r){ const i=SLOTS.findIndex(x=>x[0]===r.slot); return i<0?9:i; }
-function sortRoutines(list){
-  return [...list].sort((a,b)=>slotOrder(a)-slotOrder(b) || (a.time||'99').localeCompare(b.time||'99') || (a.order||0)-(b.order||0));
-}
-function routineRowHtml(r, d, opt={}){
-  const on=!!window.routineChecks[routineKey(r.id,d)];
-  const st=routineStreak(r);
-  const late = !on && r.time && d===getTodayStr() && r.time<=pad2(new Date().getHours())+':'+pad2(new Date().getMinutes());
-  return `<div class="hrow ${on?'done':''}">
-    <span class="hchk ${on?'on':''}" onclick="toggleRoutineOn('${r.id}','${d}')">✓</span>
-    <span class="hrow-title" onclick="toggleRoutineOn('${r.id}','${d}')">${r.core?'⭐ ':''}${esc(r.icon||'')} ${esc(r.name)}${r.cue?`<span class="hrt-cue">${esc(r.cue)}</span>`:''}</span>
-    ${goalTagOf(r)?`<span class="hgoal-tag">🧭 ${esc(goalTagOf(r))}</span>`:''}
-    ${r.time?`<span class="hrt-time ${late?'due':''}">${r.time}</span>`:''}
-    ${st>1?`<span class="hstreak">${st}일🔥</span>`:''}
-    <span class="hbtn-add hrt-edit" onclick="editRoutine('${r.id}')" style="padding:1px 7px">✏️</span>
-  </div>`;
 }
 function renderRoutine(){
   const el=document.getElementById('hRoutine'); if(!el) return;
   const today=getTodayStr();
-  const nb=document.getElementById('hNotiBtn');
-  if(nb) nb.style.display = ('Notification' in window && Notification.permission!=='granted' && window.routines.some(r=>r.time)) ? '' : 'none';
-  const list=routinesOn(today);
-  const core=list.filter(r=>r.core), coreDone=core.filter(r=>window.routineChecks[routineKey(r.id,today)]).length;
-  const hc=document.getElementById('hCore');
-  if(hc) hc.textContent = core.length ? (coreDone===core.length?'⭐ 최소 루틴 완료':`⭐ ${coreDone}/${core.length}`) : '';
   if(!window.routines.length){
-    el.innerHTML=`<div class="hempty">+ 추가로 매일 할 일을 등록하세요<br><span style="font-size:11px">시간대와 계기를 정해두면 잊지 않게 됩니다</span></div>`;
+    el.innerHTML=`<div class="hempty">+ 추가로 매일 할 일을 등록하세요<br><span style="font-size:11px">예: 물 2리터, 30분 걷기</span></div>`;
     return;
   }
-  if(!list.length){ el.innerHTML=`<div class="hempty">오늘 해당하는 루틴이 없습니다<br><span style="font-size:11px">평일 루틴은 주말에 숨겨집니다</span></div>`; return; }
-  const groups=[...SLOTS, ['', '시간대 없음']];
-  const hasSlot=list.some(r=>r.slot);
-  el.innerHTML = groups.map(([k,l])=>{
-    const g=sortRoutines(list.filter(r=>(r.slot||'')===k));
-    if(!g.length) return '';
-    return (hasSlot?`<div class="hslot">${l}</div>`:'') + g.map(r=>routineRowHtml(r,today)).join('');
+  el.innerHTML=window.routines.map(r=>{
+    const on=!!window.routineChecks[routineKey(r.id,today)];
+    const st=routineStreak(r.id);
+    return `<div class="hrow ${on?'done':''}">
+      <span class="hchk ${on?'on':''}" onclick="toggleRoutine('${r.id}')">✓</span>
+      <span class="hrow-title" onclick="toggleRoutine('${r.id}')">${esc(r.name)}</span>
+      ${goalTagOf(r)?`<span class="hgoal-tag">🧭 ${esc(goalTagOf(r))}</span>`:''}
+      ${st>1?`<span class="hstreak">${st}일🔥</span>`:''}
+      <span class="hbtn-add" onclick="deleteRoutine('${r.id}')" style="padding:1px 7px">✕</span>
+    </div>`;
   }).join('');
 }
-window.toggleRoutineOn = async function(id, d){
-  const k=routineKey(id, d||getTodayStr());
+window.toggleRoutine = async function(id){
+  const k=routineKey(id, getTodayStr());
   try{
     if(window.routineChecks[k]) await deleteDoc(doc(db,ROUTINE_CHK_COL,k));
-    else await setDoc(doc(db,ROUTINE_CHK_COL,k), {routineId:id, date:d||getTodayStr()});
+    else await setDoc(doc(db,ROUTINE_CHK_COL,k), {routineId:id, date:getTodayStr()});
   }catch(e){ toast('오류: '+e.message, true); }
 };
-window.toggleRoutine = function(id){ return toggleRoutineOn(id, getTodayStr()); };
-
-// 루틴 추가·편집 창
-window._rtEdit=null; window._rtSlot=''; window._rtDays='all';
-function renderRtBtns(){
-  document.getElementById('rtSlots').innerHTML=[...SLOTS,['','정하지 않음']].map(([k,l])=>
-    `<button type="button" class="att-btn ${window._rtSlot===k?'active':''}" onclick="window._rtSlot='${k}';renderRtBtns()">${l}</button>`).join('');
-  document.getElementById('rtDays').innerHTML=[['weekday','평일만'],['all','매일']].map(([k,l])=>
-    `<button type="button" class="att-btn ${window._rtDays===k?'active':''}" onclick="window._rtDays='${k}';renderRtBtns()">${l}</button>`).join('');
-}
-window.addRoutine = function(){ openRoutineModal(null); };
-window.editRoutine = function(id){ openRoutineModal(window.routines.find(r=>r.id===id)); };
-function openRoutineModal(r){
-  window._rtEdit=r?r.id:null;
-  document.getElementById('rtTitle').textContent=r?'루틴 편집':'루틴 추가';
-  document.getElementById('rtIcon').value=r?(r.icon||''):'';
-  document.getElementById('rtName').value=r?(r.name||''):'';
-  document.getElementById('rtCue').value=r?(r.cue||''):'';
-  document.getElementById('rtTime').value=r?(r.time||''):'';
-  document.getElementById('rtCore').checked=!!(r&&r.core);
-  window._rtSlot=r?(r.slot||''):slotNow();
-  window._rtDays=r?(r.days||'all'):'weekday';
-  document.getElementById('rtDelete').style.display=r?'block':'none';
-  renderRtBtns();
-  document.getElementById('rtOverlay').classList.add('open');
-  setTimeout(()=>document.getElementById('rtName').focus(),80);
-}
-window.closeRoutineModal = function(){ document.getElementById('rtOverlay').classList.remove('open'); };
-window.saveRoutine = async function(){
-  const name=document.getElementById('rtName').value.trim();
-  if(!name){ toast('루틴 이름을 입력하세요', true); return; }
-  const data={name, icon:document.getElementById('rtIcon').value.trim(), cue:document.getElementById('rtCue').value.trim(),
-    time:document.getElementById('rtTime').value||'', slot:window._rtSlot, days:window._rtDays, core:document.getElementById('rtCore').checked};
+window.addRoutine = async function(){
+  const name=prompt('매일 할 일을 입력하세요\n예: 물 2리터 마시기, 30분 걷기',''); if(name===null) return;
+  if(!name.trim()){ toast('내용을 입력하세요', true); return; }
   try{
-    if(window._rtEdit) await updateDoc(doc(db,ROUTINE_COL,window._rtEdit), data);
-    else await addDoc(collection(db,ROUTINE_COL), {...data, order:Date.now()});
-    toast(window._rtEdit?'✏️ 저장되었습니다':'✅ 루틴이 추가되었습니다');
-    closeRoutineModal();
-    if(data.time && 'Notification' in window && Notification.permission==='default') enableNoti();
-  }catch(e){ toast('저장 실패: '+e.message, true); }
+    await addDoc(collection(db,ROUTINE_COL), {name:name.trim(), order:Date.now()});
+    toast('✅ 루틴이 추가되었습니다');
+  }catch(e){ toast('추가 실패: '+e.message, true); }
 };
 window.deleteRoutine = async function(id){
   const r=window.routines.find(x=>x.id===id);
   if(!confirm(`'${r?r.name:''}' 루틴을 삭제할까요?`)) return;
-  try{ await deleteDoc(doc(db,ROUTINE_COL,id)); toast('🗑️ 삭제되었습니다'); closeRoutineModal(); }
+  try{ await deleteDoc(doc(db,ROUTINE_COL,id)); toast('🗑️ 삭제되었습니다'); }
   catch(e){ toast('삭제 실패: '+e.message, true); }
 };
-
-// ── 알림 (수업 중에는 미뤘다가 쉬는 시간에) ──────────────
-window.enableNoti = async function(){
-  if(!('Notification' in window)){ toast('이 브라우저는 알림을 지원하지 않습니다', true); return; }
-  try{
-    const p=await Notification.requestPermission();
-    toast(p==='granted'?'🔔 알림을 켰습니다':'알림이 차단되어 있습니다. 주소창 왼쪽 🔒에서 알림을 허용해 주세요', p!=='granted', 4500);
-  }catch(e){}
-  renderRoutine();
-};
-function inClassNow(){
-  const t=getTodayStr();
-  if(holidayKind(t)==='off'||isVacation(t)||isWeekend(t)) return false;
-  const m=nowMin();
-  const ls=lessonsOn(t).concat(extrasOn(t));
-  return ls.some(l=>{ const pt=PERIOD_TIME[l.period]; return pt && m>=pt[0] && m<pt[1]; });
-}
-function wfNotify(title, body, tag, action){
-  toast(`🔔 ${title}${body?' · '+body:''}`, false, 6000);
-  if(!('Notification' in window) || Notification.permission!=='granted') return;
-  try{
-    const n=new Notification(title, {body, tag, silent:false});
-    n.onclick=()=>{ window.focus(); n.close(); if(action) action(); };
-  }catch(e){}
-}
-window._notified=new Set();
-const BOOT_DAY=getTodayStr(), BOOT_MIN=nowMin();      // 창을 연 시각
-function routineTick(){
-  if(!window.routines) return;
-  const today=getTodayStr(), hm=pad2(new Date().getHours())+':'+pad2(new Date().getMinutes());
-  // 창을 열기 5분 이상 전에 지난 알림은 한꺼번에 울리지 않음 (미니 창·홈에서 빨간색으로 표시됨)
-  const stale=r=>{ if(today!==BOOT_DAY) return false; const [h,mm]=r.time.split(':').map(Number); return h*60+mm < BOOT_MIN-5; };
-  const due=window.routines.filter(r=>r.time && r.time<=hm && !stale(r) && routineOn(r,today)
-    && !window.routineChecks[routineKey(r.id,today)] && !window._notified.has(r.id+'_'+today));
-  if(due.length && !inClassNow()){
-    due.forEach(r=>window._notified.add(r.id+'_'+today));
-    const names=due.map(r=>`${r.icon||''}${r.name}`.trim());
-    wfNotify(due.length===1?`루틴 시간: ${names[0]}`:`루틴 ${due.length}개`, due.length===1?(due[0].cue||''):names.join(', '),
-      'wf-rt-'+today+'-'+hm, ()=>{ if(!MINI) switchTab('home'); });
-    if(MINI) renderMini();
-  }
-  // 16:00 일과 마무리
-  const rd=reviewTarget();
-  if(rd && rd===today && nowMin()>=REVIEW_MIN && !window._notified.has('review_'+today)){
-    window._notified.add('review_'+today);
-    wfNotify('🌙 일과 마무리 점검', '오늘 루틴과 할 일을 확인하세요', 'wf-review-'+today, ()=>{ if(MINI) wfGotoMain({review:true}); else openReview(); });
-    if(!MINI) openReview(true);
-  }
-}
-
-// ── 일과 마무리 점검 ─────────────────────────────────────
-function isSchoolDay(d){ const wd=new Date(d+'T00:00:00').getDay(); return wd>=1&&wd<=5 && holidayKind(d)!=='off' && !isVacation(d); }
-// 점검할 날: 16:00 이후면 오늘, 아니면 가장 최근 등교일. 이미 마무리했으면 null
-function reviewTarget(){
-  const today=getTodayStr();
-  let d = nowMin()>=REVIEW_MIN ? today : addDaysStr(today,-1);
-  for(let i=0;i<5 && !isSchoolDay(d);i++) d=addDaysStr(d,-1);
-  if(!isSchoolDay(d)) return null;
-  const last=(window.config.review&&window.config.review.last)||'';
-  return last>=d ? null : d;
-}
-window._rvDate=null;
-window.openReview = function(auto){
-  const d = reviewTarget() || getTodayStr();
-  window._rvDate=d;
-  if(auto && window._rvAutoShown===d) return;
-  window._rvAutoShown=d;
-  renderReview();
-  document.getElementById('rvOverlay').classList.add('open');
-};
-window.closeReview = function(){ document.getElementById('rvOverlay').classList.remove('open'); };
-function renderReview(){
-  const d=window._rvDate, today=getTodayStr();
-  const [,mm,dd]=d.split('-').map(Number), wd='일월화수목금토'[new Date(d+'T00:00:00').getDay()];
-  document.getElementById('rvTitle').textContent = `🌙 ${d===today?'오늘':'지난 등교일'} 마무리 — ${mm}/${dd}(${wd})`;
-  const rts=sortRoutines(routinesOn(d));
-  const rDone=rts.filter(r=>window.routineChecks[routineKey(r.id,d)]).length;
-  const rtHtml = rts.length ? rts.map(r=>{
-      const on=!!window.routineChecks[routineKey(r.id,d)];
-      return `<div class="rv-row ${on?'done':''}"><span class="rv-chk ${on?'on':''}" onclick="toggleRoutineOn('${r.id}','${d}')">✓</span>
-        <span class="tx">${r.core?'⭐ ':''}${esc(r.icon||'')} ${esc(r.name)}</span>${r.time?`<span class="mn-sub">${r.time}</span>`:''}</div>`;
-    }).join('') : `<div class="rv-empty">등록된 루틴이 없습니다</div>`;
-  // 그날 걸친 미완료 + 마감 지난 미완료
-  const tasks=window.tasks.filter(t=>!isEvent(t)&&!t.skipped&&t.status!=='done'&&(taskCoversDate(t,d)||isOverdue(t)))
-    .sort((a,b)=>(isOverdue(b)-isOverdue(a)) || ((a.deadline||'9')<(b.deadline||'9')?-1:1));
-  const doneN=window.tasks.filter(t=>!isEvent(t)&&t.status==='done'&&t.doneAt===d).length;
-  const tkHtml = tasks.length ? tasks.map(t=>{
-      const od=isOverdue(t), dd=t.deadline?daysUntil(t.deadline):null;
-      const sub= od?`${Math.abs(dd)}일 초과`:(t.deadline===today?'오늘 마감':(t.deadline?`D-${dd}`:''));
-      return `<div class="rv-row"><span class="rv-chk" onclick="toggleDone(event,'${t.id}')">✓</span>
-        <span class="tx" style="${od?'color:#ffb4bf':''}">${esc(t.title)}</span><span class="mn-sub">${sub}</span>
-        <button class="od-btn" onclick="closeReview();extendTask('${t.id}')" title="연장">📅</button>
-        <button class="od-btn" onclick="skipTask('${t.id}')" title="넘기기">⏭</button></div>`;
-    }).join('') : `<div class="rv-ok">✓ 남은 할 일이 없습니다</div>`;
-  // 다음 등교일 미리보기
-  let nx=addDaysStr(d,1); for(let i=0;i<7&&!isSchoolDay(nx);i++) nx=addDaysStr(nx,1);
-  const nxList=tasksOn(nx).filter(t=>!t.skipped && t.status!=='done');
-  const [,nm,nd]=nx.split('-').map(Number), nwd='일월화수목금토'[new Date(nx+'T00:00:00').getDay()];
-  const nxHtml = nxList.length ? nxList.slice(0,6).map(t=>`<div class="rv-row"><span>${isEvent(t)?'📌':'📋'}</span><span class="tx">${esc(t.title)}</span></div>`).join('')
-    + (nxList.length>6?`<div class="rv-empty">+ ${nxList.length-6}개 더</div>`:'') : `<div class="rv-empty">등록된 일정·할 일이 없습니다</div>`;
-  // 확인서 임박·초과
-  const docs=(window.attendance||[]).filter(a=>{ const st=docState(a); return st && (st.k==='over'||st.k==='soon'); });
-  const docHtml = docs.length ? `<div class="rv-row" style="cursor:pointer" onclick="closeReview();openAttStatModal()"><span>🙋</span>
-      <span class="tx">확인서 임박·초과 ${docs.length}건 — ${docs.slice(0,3).map(a=>esc(a.name||'')).join(', ')}${docs.length>3?' 외':''}</span><span class="mn-sub">보기 ›</span></div>` : '';
-  document.getElementById('rvBody').innerHTML=`
-    <div class="rv-sec"><div class="rv-head"><span>🔥 루틴</span><span>${rDone}/${rts.length}</span></div>${rtHtml}</div>
-    <div class="rv-sec"><div class="rv-head"><span>📋 남은 할 일</span><span>${doneN?`오늘 완료 ${doneN}`:''}</span></div>${tkHtml}</div>
-    ${docHtml?`<div class="rv-sec"><div class="rv-head"><span>🙋 출결</span></div>${docHtml}</div>`:''}
-    <div class="rv-sec"><div class="rv-head"><span>👀 다음 등교일 ${nm}/${nd}(${nwd})</span></div>${nxHtml}</div>`;
-}
-window.finishReview = async function(){
-  const d=window._rvDate||getTodayStr();
-  try{ await setDoc(doc(db,CFG_COL,'review'), {last:d, at:new Date().toISOString()}); toast('🌙 수고하셨습니다!'); closeReview(); }
-  catch(e){ toast('저장 실패: '+e.message, true); }
-};
-
-// ── 미니 보기 ─────────────────────────────────────────
-window.openMini = function(){
-  const w=window.open(location.pathname+'?mini', 'wfmini', 'popup,width=380,height=640');
-  if(!w) toast('팝업이 차단되었습니다. 주소창 오른쪽에서 팝업을 허용해 주세요', true, 4500);
-};
-// 미니 창 → 원래 WorkFlow 창으로 이동
-window.wfGotoMain = function(msg){
-  try{
-    if(window.opener && !window.opener.closed && window.opener.wfGoto){ window.opener.wfGoto(msg); window.opener.focus(); toast('WorkFlow 창에서 열었습니다'); return; }
-  }catch(e){}
-  let acked=false;
-  try{
-    const bc=new BroadcastChannel('workflow');
-    bc.onmessage=e=>{ if(e.data&&e.data.type==='ack') acked=true; };
-    bc.postMessage({type:'goto', ...msg});
-    setTimeout(()=>{
-      bc.close();
-      if(acked){ toast('WorkFlow 창에서 열었습니다 · 작업표시줄에서 확인하세요', false, 3500); return; }
-      const h='#'+new URLSearchParams({view:msg.view||'home', task:msg.taskId||'', review:msg.review?'1':''}).toString();
-      window.open(location.pathname+h, '_blank');
-    },350);
-  }catch(e){ window.open(location.pathname, '_blank'); }
-};
-// 원래 창에서 이동 처리
-window.wfGoto = function(msg){
-  if(msg.view) switchTab(msg.view);
-  if(msg.review) openReview();
-  if(msg.taskId){
-    let n=0; const tryOpen=()=>{ if(window.tasks.find(t=>t.id===msg.taskId)) editTask(msg.taskId); else if(n++<20) setTimeout(tryOpen,250); };
-    tryOpen();
-  }
-  if(msg.att) openAttStatModal();
-  try{ window.focus(); }catch(e){}
-};
-if(!MINI){
-  try{
-    const bc=new BroadcastChannel('workflow');
-    bc.onmessage=e=>{ if(e.data&&e.data.type==='goto'){ bc.postMessage({type:'ack'}); wfGoto(e.data); } };
-  }catch(e){}
-}
-function renderMini(){
-  if(!MINI) return;
-  const el=document.getElementById('miniRoot'); if(!el) return;
-  const n=new Date(), today=getTodayStr();
-  const days=['일','월','화','수','목','금','토'];
-  const hm=pad2(n.getHours())+':'+pad2(n.getMinutes());
-  // 루틴: 지금 시간대 + 이전 시간대에서 아직 안 한 것 + 시간대 없는 것
-  const cur=slotOrder({slot:slotNow()});
-  const rts=sortRoutines(routinesOn(today)).filter(r=>{
-    const on=!!window.routineChecks[routineKey(r.id,today)];
-    if(!r.slot) return true;
-    const o=slotOrder(r);
-    return o===cur || (o<cur && !on);
-  });
-  const rtHtml = rts.length ? rts.map(r=>{
-    const on=!!window.routineChecks[routineKey(r.id,today)];
-    const late=!on && ((r.time&&r.time<=hm) || slotOrder(r)<cur);
-    return `<div class="mn-row ${on?'done':''} ${late?'late':''}" onclick="toggleRoutineOn('${r.id}','${today}')">
-      <span class="rv-chk ${on?'on':''}">✓</span>
-      <span class="tx">${r.core?'⭐ ':''}${esc(r.icon||'')} ${esc(r.name)}</span>
-      <span class="mn-sub">${r.time?r.time:(r.cue?esc(r.cue):'')}</span></div>`;
-  }).join('') : `<div class="mn-sub" style="padding:4px">지금 시간대 루틴이 없습니다</div>`;
-  // 할 일: 마감 초과 → 오늘 마감 → 오늘 걸친 것
-  const ev=tasksOn(today).filter(t=>isEvent(t));
-  const tk=window.tasks.filter(t=>!isEvent(t)&&!t.skipped&&t.status!=='done'&&(isOverdue(t)||taskCoversDate(t,today)))
-    .sort((a,b)=>(isOverdue(b)-isOverdue(a)) || ((a.deadline===today?0:1)-(b.deadline===today?0:1)) || ((a.deadline||'9')<(b.deadline||'9')?-1:1));
-  const doneToday=tasksOn(today).filter(t=>!isEvent(t)&&t.status==='done').length;
-  const shown=tk.slice(0,4);
-  const tkHtml = (ev.map(t=>`<div class="mn-row" onclick="wfGotoMain({view:'todo',taskId:'${t.id}'})"><span>📌</span><span class="tx">${esc(t.title)}</span></div>`).join('')
-    + shown.map(t=>{
-      const od=isOverdue(t), dd=t.deadline?daysUntil(t.deadline):null;
-      const sub = od?`${Math.abs(dd)}일 초과`:(t.deadline===today?'오늘 마감':(t.deadline?`D-${dd}`:''));
-      return `<div class="mn-row ${od?'late':''}">
-        <span class="rv-chk" onclick="toggleDone(event,'${t.id}')">✓</span>
-        <span class="tx" onclick="wfGotoMain({view:'todo',taskId:'${t.id}'})">${od?'⚠ ':''}${esc(t.title)}</span>
-        <span class="mn-sub">${sub}</span></div>`;
-    }).join('')
-    + (tk.length>4?`<div class="mn-more" onclick="wfGotoMain({view:'todo'})">+ ${tk.length-4}개 더 보기</div>`:''))
-    || `<div class="mn-sub" style="padding:4px">남은 할 일이 없습니다 👍</div>`;
-  // 출결 요약
-  const attN=(window.attendance||[]).filter(a=>a.date===today).length;
-  const docN=(window.attendance||[]).filter(a=>a.date<=today && (()=>{const st=docState(a); return st&&st.k!=='ok'&&st.k!=='wait';})()).length;
-  const rv=reviewTarget();
-  const rvBanner = rv ? `<button class="mn-banner" onclick="wfGotoMain({review:true})">🌙 ${rv===today?'오늘':'지난 등교일'} 마무리 점검이 남아 있습니다 ›</button>` : '';
-  const hn=document.getElementById('hNext');
-  const nextHtml=hn&&hn.innerHTML ? `<div class="${hn.className}">${hn.innerHTML}</div>` : '';
-  el.innerHTML=`
-    <div class="mn-top"><span class="mn-clock" id="mnClock">${hm}</span><span class="mn-date">${n.getMonth()+1}/${n.getDate()} (${days[n.getDay()]})</span></div>
-    <div class="mn-next">${nextHtml}</div>
-    ${rvBanner}
-    <div class="mn-card"><div class="mn-h">🔥 지금 할 루틴 <small>${SLOTS[cur]?SLOTS[cur][1]:''}</small></div>${rtHtml}</div>
-    <div class="mn-card"><div class="mn-h" style="cursor:pointer" onclick="wfGotoMain({view:'todo'})">📋 오늘 할 일 <small>${doneToday?`완료 ${doneToday}`:''}${tk.length?` · 남은 ${tk.length}`:''}</small></div>${tkHtml}</div>
-    ${(attN||docN)?`<div class="mn-card" style="cursor:pointer" onclick="wfGotoMain({view:'daily',att:${docN?'true':'false'}})"><div class="mn-h" style="margin:0">🙋 출결 <small>${attN?`오늘 ${attN}명`:''}${attN&&docN?' · ':''}${docN?`확인서 ${docN}건 임박·초과`:''}</small></div></div>`:''}
-    <div class="mn-foot">
-      ${('Notification' in window && Notification.permission!=='granted')?`<button onclick="enableNoti().then(renderMini)">🔔 알림 켜기</button>`:'<span>🔔 알림 켜짐 · 수업 중엔 쉬는 시간에</span>'}
-      <button onclick="wfGotoMain({view:'home'})">전체 열기 ›</button>
-    </div>`;
-}
 
 // ── LINKS ────────────────────────────────────────────
 function renderLinks(){
@@ -6321,17 +5933,6 @@ window.deleteLink = async function(id){
 
 // ── INIT ─────────────────────────────────────────────
 function initUI(){
-  if(MINI){ document.body.classList.add('mini-mode'); document.title='WorkFlow 미니'; }
-  // 미니 창에서 넘어온 주소(#view=…&task=…)
-  if(!MINI && location.hash.length>1){
-    const q=new URLSearchParams(location.hash.slice(1));
-    if(q.get('view')||q.get('task')||q.get('review')){
-      setTimeout(()=>wfGoto({view:q.get('view')||'home', taskId:q.get('task')||'', review:q.get('review')==='1'}), 300);
-      history.replaceState(null,'',location.pathname+location.search);
-    }
-  }
-  // 데이터가 들어온 뒤 한 번 검사 (지난 마무리 자동 표시)
-  setTimeout(()=>{ routineTick(); if(!MINI && reviewTarget()) openReview(true); }, 2500);
   document.body.classList.add('fab-on');   // 시작 화면은 홈
   document.body.classList.add('home-mode');
   document.body.classList.add('dark-ui');
@@ -6349,7 +5950,7 @@ function initUI(){
 document.addEventListener('keydown', e=>{
   if(e.key==='Escape'){
     if(window.editBlock||window.editMemo) return;   // 기록 편집 중이면 해당 칸에서 처리
-    closeModal(); closeLinksModal(); closeTtModal(); closeStatModal(); closeTtZoom(); closeMissingModal(); closeCkModal(); closeSemesterModal(); closeHolidayModal(); closeCatModal(); closeAttModal(); closeAttStatModal(); closeLsnModal(); closeExModal(); closeRoutineModal(); closeReview();
+    closeModal(); closeLinksModal(); closeTtModal(); closeStatModal(); closeTtZoom(); closeMissingModal(); closeCkModal(); closeSemesterModal(); closeHolidayModal(); closeCatModal(); closeAttModal(); closeAttStatModal(); closeLsnModal(); closeExModal();
   }
   if(e.key==='n'&&!e.target.matches('input,textarea,select')) openModal();
 });
