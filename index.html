@@ -2377,10 +2377,12 @@ function prioBg(p){ return {HIGH:'badge-high',MID:'badge-mid',LOW:'badge-low'}[p
 function prioLabel(p){ return {HIGH:'높음',MID:'중간',LOW:'낮음'}[p]||p; }
 function ringColor(v){ return v>=80?'var(--low)':v>=40?'var(--mid)':'var(--accent)'; }
 function isEvent(t){ return t.kind==='event'; }
+// 마감일이 비어 있으면 시작일을 마감일로 본다 (당일 일정은 시작일만 입력)
+function dueOf(t){ return t.deadline||t.start||''; }
 function isOverdue(t){
   if(isEvent(t)) return false;
-  if(!t.deadline||t.status==='done'||t.skipped) return false;
-  const [y,m,d]=t.deadline.split('-').map(Number);
+  if(!dueOf(t)||t.status==='done'||t.skipped) return false;
+  const [y,m,d]=dueOf(t).split('-').map(Number);
   const dl=new Date(y,m-1,d); const td=new Date(); td.setHours(0,0,0,0);
   return dl<td;
 }
@@ -3002,9 +3004,12 @@ window.renderTodo = function(){
 function taskCardHtml(t){
     const R=14, C=2*Math.PI*R, prog=t.progress||0, off=C-(prog/100)*C;
     const done=t.status==='done';
-    const due=t.deadline?daysUntil(t.deadline):null;
+    const due=dueOf(t)?daysUntil(dueOf(t)):null;
     let dueText=due!==null?(due<0?`${Math.abs(due)}일 초과`:due===0?'오늘 마감':`D-${due}`):'';
     let dueClass=due!==null&&due<0?'overdue':due!==null&&due<=2?'near':'';
+    // 마감일(없으면 시작일)을 10/6 형식으로 함께 표시
+    const dDate=dueOf(t);
+    if(dDate){ const [,mm,md]=dDate.split('-').map(Number); dueText=dueText?`${mm}/${md} · ${dueText}`:`${mm}/${md}`; }
     if(done){ const [,dm,dd]=(t.doneAt||'').split('-').map(Number); dueText=t.doneAt?`${dm}/${dd} 완료`:''; dueClass=''; }
     const od=isOverdue(t);
     return `<div class="task-card ${done?'p-done':'p-'+t.priority} ${od?'is-overdue':''}" onclick="editTask('${t.id}')">
@@ -3281,16 +3286,16 @@ function renderSidebar(){
     <div class="stat-box" onclick="openStatList('ongoing')"><div class="stat-num" style="color:var(--accent)">${ongoing}</div><div class="stat-lbl">진행 중</div></div>
     <div class="stat-box" onclick="openStatList('overdue')"><div class="stat-num" style="color:var(--high)">${overdue}</div><div class="stat-lbl">마감 초과</div></div>`;
 
-  const upcoming=visible.filter(t=>t.deadline&&t.status!=='done'&&daysUntil(t.deadline)<=5)
-    .sort((a,b)=>a.deadline<b.deadline?-1:1).slice(0,5);
+  const upcoming=visible.filter(t=>dueOf(t)&&t.status!=='done'&&daysUntil(dueOf(t))<=5)
+    .sort((a,b)=>dueOf(a)<dueOf(b)?-1:1).slice(0,5);
   document.getElementById('upcomingWrap').innerHTML=upcoming.length?upcoming.map(t=>{
-    const d=daysUntil(t.deadline);
+    const d=daysUntil(dueOf(t));
     const txt=d<0?`${Math.abs(d)}일 초과`:d===0?'오늘':`D-${d}`;
     const clr=d<=0?'var(--high)':d<=2?'var(--mid)':prioColor(t.priority);
     return `<div class="upcoming-item" onclick="editTask('${t.id}')" style="cursor:pointer">
       <div class="upcoming-stripe" style="background:${clr}"></div>
       <div><div class="upcoming-name">${esc(t.title)}</div>
-      <div class="upcoming-date" style="color:${d<=0?'var(--high)':'var(--text-muted)'}">${txt} · ${t.deadline}</div></div>
+      <div class="upcoming-date" style="color:${d<=0?'var(--high)':'var(--text-muted)'}">${txt} · ${dueOf(t)}</div></div>
     </div>`;
   }).join(''):`<div style="font-size:12px;color:var(--text-dim);padding:8px 0">임박한 마감일 없음</div>`;
 }
@@ -3310,7 +3315,7 @@ window.openStatList = function(kind){
   document.getElementById('statModalBody').innerHTML = items.length
     ? items.map(t=>{
         const done=t.status==='done';
-        const due=t.deadline?daysUntil(t.deadline):null;
+        const due=dueOf(t)?daysUntil(dueOf(t)):null;
         const dueText=due!==null?(due<0?`${Math.abs(due)}일 초과`:due===0?'오늘 마감':`D-${due}`):'기한 없음';
         const dueClr=due!==null&&due<0?'var(--high)':due!==null&&due<=2?'var(--mid)':'var(--text-muted)';
         return `<div class="stat-list-item ${done?'p-done':'p-'+t.priority}" onclick="openTaskFromStat('${t.id}')">
@@ -3335,10 +3340,10 @@ window.closeStatOutside = function(e){ if(e.target===document.getElementById('st
 
 function checkAlarms(){
   window.tasks.forEach(t=>{
-    if(!t.deadline||!t.alarm) return;
+    if(!dueOf(t)||!t.alarm) return;
     if(!isEvent(t)&&(t.status==='done'||t.skipped)) return;
-    if(daysUntil(t.deadline)===parseInt(t.alarm)){
-      const key=`alarm_${t.id}_${t.deadline}`;
+    if(daysUntil(dueOf(t))===parseInt(t.alarm)){
+      const key=`alarm_${t.id}_${dueOf(t)}`;
       if(!sessionStorage.getItem(key)){
         sessionStorage.setItem(key,'1');
         toast(`🔔 "${t.title}" ${isEvent(t)?'':'마감 '}${t.alarm}일 전입니다!`, false, 5000);
@@ -5343,10 +5348,10 @@ window.renderHome = function(){
     })].join('') : `<div class="hempty">오늘 할 일이 없습니다</div>`;
 
   // 마감 임박
-  const up=window.tasks.filter(t=>!t._hidden&&!isEvent(t)&&t.deadline&&t.status!=='done'&&daysUntil(t.deadline)<=7)
-    .sort((a,b)=>a.deadline<b.deadline?-1:1).slice(0,6);
+  const up=window.tasks.filter(t=>!t._hidden&&!isEvent(t)&&dueOf(t)&&t.status!=='done'&&daysUntil(dueOf(t))<=7)
+    .sort((a,b)=>dueOf(a)<dueOf(b)?-1:1).slice(0,6);
   document.getElementById('hUpcoming').innerHTML = up.length ? up.map(t=>{
-    const d=daysUntil(t.deadline);
+    const d=daysUntil(dueOf(t));
     const cls=d<0?'hd-over':d<=2?'hd-soon':'hd-norm';
     const txt=d<0?`${Math.abs(d)}일 초과`:d===0?'오늘':`D-${d}`;
     return `<div class="hrow" onclick="editTask('${t.id}')">
