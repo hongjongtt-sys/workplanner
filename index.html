@@ -780,6 +780,8 @@ body.home-mode .content{padding:0;overflow:visible}
 .slider::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--accent);cursor:pointer}
 .modal-actions{display:flex;gap:8px;justify-content:space-between;margin-top:4px}
 .modal-actions-right{display:flex;gap:8px}
+.modal-actions-left{display:flex;gap:8px}
+.btn-done{background:var(--low-bg);color:var(--low);border:1px solid #bbf7d0}
 
 .empty{text-align:center;padding:44px 20px;color:var(--text-dim)}
 .empty-icon{font-size:34px;margin-bottom:10px}
@@ -938,6 +940,8 @@ body.dark-ui #attNoteSave:disabled{opacity:.45;cursor:default}
 body.dark-ui .btn-danger{background:rgba(255,107,129,.15);color:var(--high);
   border-color:rgba(255,107,129,.32)}
 body.dark-ui .btn-danger:hover{background:rgba(255,107,129,.25)}
+body.dark-ui .btn-done{background:rgba(72,217,164,.13);color:#48d9a4;border-color:rgba(72,217,164,.4)}
+body.dark-ui .btn-done:hover{background:rgba(72,217,164,.22)}
 
 /* 입력 */
 body.dark-ui .form-input,body.dark-ui .form-select,body.dark-ui .form-textarea,
@@ -1644,7 +1648,10 @@ body.dark-ui .loading-logo em{color:transparent}
       <div class="form-group"><label class="form-label">메모</label><input type="text" class="form-input" id="fNote" placeholder="간단한 메모"></div>
     </div>
     <div class="modal-actions">
-      <button class="btn btn-danger" id="deleteBtn" onclick="deleteTask()" style="display:none">삭제</button>
+      <div class="modal-actions-left">
+        <button class="btn btn-danger" id="deleteBtn" onclick="deleteTask()" style="display:none">삭제</button>
+        <button class="btn btn-done task-only" id="doneBtn" onclick="finishTask()" style="display:none">✓ 마감</button>
+      </div>
       <div class="modal-actions-right">
         <button class="btn btn-ghost" onclick="closeModal()">취소</button>
         <button class="btn btn-primary" onclick="saveTask()">저장</button>
@@ -3393,6 +3400,7 @@ window.openModal = function(){
   document.getElementById('fAssignee').value='';
   document.getElementById('fNote').value='';
   document.getElementById('deleteBtn').style.display='none';
+  document.getElementById('doneBtn').style.display='none';
   setTaskKind('task');
   document.getElementById('overlay').classList.add('open');
   setTimeout(()=>document.getElementById('fTitle').focus(),100);
@@ -3414,6 +3422,7 @@ window.editTask = function(id){
   document.getElementById('fAssignee').value=t.assignee||'';
   document.getElementById('fNote').value=t.note||'';
   document.getElementById('deleteBtn').style.display='block';
+  document.getElementById('doneBtn').style.display=t.status==='done'?'none':'';
   setTaskKind(t.kind==='event'?'event':'task');
   document.getElementById('overlay').classList.add('open');
 };
@@ -3458,6 +3467,11 @@ window.deleteTask = async function(){
   if(!confirm('정말 삭제하시겠어요?')) return;
   try{ await deleteDoc(doc(db,COL,window.editId)); closeModal(); toast('🗑️ 삭제되었습니다'); }
   catch(e){ toast('삭제 실패: '+e.message, true); }
+};
+// 편집 팝업의 '마감': 고친 내용과 함께 완료로 저장
+window.finishTask = function(){
+  document.getElementById('fStatus').value='done';
+  saveTask();
 };
 window.toggleDone = async function(e, id){
   e.stopPropagation();
