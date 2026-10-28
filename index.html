@@ -1177,9 +1177,96 @@ body.dark-ui .loading-logo{background:linear-gradient(100deg,#6f9dff,#9b7cff 45%
   -webkit-background-clip:text;background-clip:text;color:transparent;
   filter:drop-shadow(0 0 14px rgba(111,157,255,.5))}
 body.dark-ui .loading-logo em{color:transparent}
+
+/* ══════════════════════════════════════════════════════
+   배경 사진 + 유리 카드  (사진을 올렸을 때만 적용)
+   ══════════════════════════════════════════════════════ */
+#bgPhoto{position:fixed;inset:0;z-index:0;pointer-events:none;display:none;
+  background-size:cover;background-position:center 50%;background-repeat:no-repeat}
+#bgPhoto::after{content:'';position:absolute;inset:0;
+  background:linear-gradient(180deg,rgba(8,10,16,calc(var(--bgdim,.45) + .15)) 0%,
+    rgba(8,10,16,var(--bgdim,.45)) 30%,rgba(8,10,16,calc(var(--bgdim,.45) + .12)) 100%)}
+body.has-photo #bgPhoto{display:block}
+body.has-photo.dark-ui::before,body.has-photo .home::before{display:none}
+body.has-photo .home{background:transparent}
+body.has-photo .app{position:relative;z-index:1}
+body.has-photo{--text-dim:#9aa4b8}
+body.has-photo .home{--hmute:#a3adbf;--hdim:#c3cad6}
+body.has-photo .hchk{border-color:rgba(255,255,255,.5)}
+body.has-photo .hempty{text-shadow:0 1px 8px rgba(0,0,0,.5)}
+
+/* 머리줄 — 알약 모양 탭 */
+body.has-photo header{background:rgba(12,15,22,.34);border-bottom:1px solid rgba(255,255,255,.12);
+  backdrop-filter:blur(26px) saturate(160%);-webkit-backdrop-filter:blur(26px) saturate(160%);
+  box-shadow:0 6px 30px rgba(0,0,0,.25)}
+body.has-photo .header-center{gap:4px}
+body.has-photo #syncText{display:none}
+body.has-photo .tab{border-radius:999px;padding:5px 10px;color:#e3e9f4;
+  background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.12)}
+body.has-photo .tab:hover{background:rgba(255,255,255,.16);color:#fff}
+body.has-photo .tab.active{background:rgba(255,255,255,.88);color:#151a24;border-color:transparent;
+  box-shadow:0 4px 18px rgba(0,0,0,.28)}
+body.has-photo .today-label,body.has-photo .icon-btn{border-radius:999px;
+  background:rgba(255,255,255,.10);border-color:rgba(255,255,255,.16);color:#e3e9f4}
+
+/* 유리 카드 */
+body.has-photo .hcard,body.has-photo .hgoal,body.has-photo .task-card,body.has-photo .daily-block,
+body.has-photo .panel,body.has-photo .tt-panel,body.has-photo .habit-card,body.has-photo .journal-wrap,
+body.has-photo .ck-scroll,body.has-photo .act-item,body.has-photo .stat-box,body.has-photo .goal-cell{
+  background:linear-gradient(160deg,rgba(255,255,255,var(--glass-hi,.14)),rgba(255,255,255,.04) 55%),rgba(16,20,28,var(--glass-a,.30));
+  border:1px solid rgba(255,255,255,.17);
+  backdrop-filter:blur(var(--glass-blur,20px)) saturate(150%);-webkit-backdrop-filter:blur(var(--glass-blur,20px)) saturate(150%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.22),0 16px 40px rgba(0,0,0,.32)}
+body.has-photo .hcard,body.has-photo .daily-block,body.has-photo .panel,body.has-photo .tt-panel{border-radius:20px}
+body.has-photo .hcard{transition:transform .22s cubic-bezier(.2,.8,.3,1),border-color .2s,box-shadow .2s}
+body.has-photo .hcard:hover,body.has-photo .task-card:hover,body.has-photo .stat-box:hover{
+  transform:translateY(-4px);border-color:rgba(255,255,255,.30);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.28),0 22px 48px rgba(0,0,0,.38)}
+body.has-photo .hcard-clock{background:linear-gradient(155deg,rgba(111,157,255,.30),rgba(255,255,255,.05) 60%),rgba(16,20,28,var(--glass-a,.30))}
+body.has-photo .hrow,body.has-photo .hq-btn,body.has-photo .hlink,body.has-photo .dtask{
+  background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.08)}
+body.has-photo .hrow:hover,body.has-photo .hq-btn:hover{background:rgba(255,255,255,.16);border-color:rgba(255,255,255,.28)}
+body.has-photo .sidebar{background:rgba(12,15,22,.30);border-left:1px solid rgba(255,255,255,.12);
+  backdrop-filter:blur(26px) saturate(150%);-webkit-backdrop-filter:blur(26px) saturate(150%)}
+body.has-photo .page-title,body.has-photo .daily-date,body.has-photo .cal-month-label{text-shadow:0 2px 14px rgba(0,0,0,.6)}
+
+/* 달력 — 판 전체를 한 장의 유리로 */
+body.has-photo .cal-grid{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.16);border-radius:18px;
+  backdrop-filter:blur(20px) saturate(150%);-webkit-backdrop-filter:blur(20px) saturate(150%)}
+body.has-photo .cal-label{background:rgba(255,255,255,.10)}
+body.has-photo .cal-cell{background:rgba(14,17,24,.44)}
+body.has-photo .cal-cell.schoolday{background:rgba(40,44,54,.50)}
+body.has-photo .cal-cell.holiday{background:rgba(70,24,34,.46)}
+body.has-photo .cal-cell.other{opacity:1;background:rgba(14,17,24,.22)}
+body.has-photo .cal-cell.other>*{opacity:.4}
+
+/* 아래 탭 줄(폰) · 창 */
+body.has-photo .mobile-nav{background:rgba(12,15,22,.55);border-top-color:rgba(255,255,255,.12);
+  backdrop-filter:blur(26px) saturate(160%);-webkit-backdrop-filter:blur(26px) saturate(160%)}
+body.has-photo .modal{background:rgba(20,24,33,.86);border-color:rgba(255,255,255,.16);border-radius:22px}
+
+/* 배경 사진 설정 창 */
+.bg-prev{position:relative;aspect-ratio:16/9;border-radius:14px;overflow:hidden;background:#151922 center/cover no-repeat;
+  border:1px solid var(--border);margin-bottom:14px}
+.bg-prev::after{content:'';position:absolute;inset:0;background:rgba(8,10,16,var(--bgdim,.45))}
+.bg-prev .bg-prev-card{position:absolute;left:8%;top:18%;width:38%;height:56%;z-index:1;border-radius:12px;
+  background:linear-gradient(160deg,rgba(255,255,255,var(--glass-hi,.14)),rgba(255,255,255,.04)),rgba(16,20,28,var(--glass-a,.30));
+  border:1px solid rgba(255,255,255,.2);backdrop-filter:blur(calc(var(--glass-blur,20px) * .6));-webkit-backdrop-filter:blur(calc(var(--glass-blur,20px) * .6));
+  font-size:11px;color:#e9edf5;padding:10px 12px;font-weight:600}
+.bg-prev.empty{display:flex;align-items:center;justify-content:center;text-align:center;
+  color:var(--text-dim);font-size:12.5px;line-height:1.7;padding:16px}
+.bg-prev.empty::after,.bg-prev.empty .bg-prev-card{display:none}
+.bg-range{display:flex;align-items:center;gap:10px;font-size:12.5px;color:var(--text-muted);margin-bottom:10px}
+.bg-range span:first-child{width:72px;flex-shrink:0}
+.bg-range input{flex:1;accent-color:#6f9dff}
+.bg-range b{width:38px;text-align:right;color:var(--text);font-weight:600}
+.bg-note{font-size:11.5px;color:var(--text-dim);line-height:1.65;margin-top:12px;
+  border-top:1px solid var(--border);padding-top:12px}
 </style>
 </head>
 <body>
+<div id="bgPhoto"></div>
 
 <div id="loginScreen" style="display:none">
   <div class="login-box">
@@ -1216,6 +1303,7 @@ body.dark-ui .loading-logo em{color:transparent}
     <div class="sync-indicator"><div class="sync-dot" id="syncDot"></div><span id="syncText">연결됨</span></div>
     <button class="icon-btn" onclick="doLogout()" title="로그아웃">🔒</button>
     <button class="icon-btn" onclick="openLinksModal()" title="바로가기">🔗</button>
+    <button class="icon-btn" onclick="openBgModal()" title="배경 사진">🖼️</button>
     <div class="today-label" id="todayLabel" onclick="goToday()" title="오늘로 이동"></div>
     <button class="btn btn-primary" onclick="openModal()">+ 업무</button>
   </div>
@@ -1676,6 +1764,30 @@ body.dark-ui .loading-logo em{color:transparent}
   </div>
 </div>
 
+<!-- BACKGROUND PHOTO MODAL -->
+<div class="overlay" id="bgOverlay" onclick="if(event.target===this)closeBgModal()">
+  <div class="modal" style="width:480px">
+    <div class="modal-head">
+      <div class="modal-title">🖼️ 배경 사진</div>
+      <button class="modal-close" onclick="closeBgModal()">✕</button>
+    </div>
+    <div class="form-group"><label class="form-label">학년도</label>
+      <select class="form-select" id="bgYear" onchange="loadBgYear()"></select></div>
+    <div class="bg-prev empty" id="bgPrev"></div>
+    <div id="bgCtrls">
+      <div class="bg-range"><span>어둡게</span><input type="range" id="bgDim" min="20" max="75" step="5" oninput="bgPreviewTune()" onchange="saveBgTune()"><b id="bgDimV"></b></div>
+      <div class="bg-range"><span>카드 투명도</span><input type="range" id="bgGlass" min="0" max="100" step="10" oninput="bgPreviewTune()" onchange="saveBgTune()"><b id="bgGlassV"></b></div>
+      <div class="bg-range"><span>세로 위치</span><input type="range" id="bgPos" min="0" max="100" step="5" oninput="bgPreviewTune()" onchange="saveBgTune()"><b id="bgPosV"></b></div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <label class="btn btn-primary" style="flex:1;text-align:center" id="bgPickBtn">📷 사진 올리기
+        <input type="file" accept="image/*" style="display:none" onchange="bgPick(event)"></label>
+      <button class="btn btn-danger" id="bgDelBtn" onclick="deleteBgPhoto()">삭제</button>
+    </div>
+    <div class="bg-note" id="bgNote"></div>
+  </div>
+</div>
+
 <!-- TIMETABLE CELL MODAL -->
 <div class="overlay" id="ttOverlay" onclick="closeTtOutside(event)">
   <div class="modal" style="width:400px">
@@ -2043,7 +2155,7 @@ body.dark-ui .loading-logo em{color:transparent}
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
 import {
   getFirestore, collection, onSnapshot,
-  addDoc, updateDoc, deleteDoc, doc, serverTimestamp, setDoc, writeBatch
+  addDoc, updateDoc, deleteDoc, doc, serverTimestamp, setDoc, writeBatch, getDoc
 } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
 import {
   getAuth, signInWithEmailAndPassword, signOut,
@@ -2130,6 +2242,7 @@ const CLUB_ACT_COL = "clubActivities";
 const CLUB_ITEM_COL = "clubItems";
 const CLUB_MARK_COL = "clubMarks";
 const CFG_COL = "config";
+const BG_COL = "bgPhotos";   // 배경 사진: 문서 id = 학년도(예: "2026")
 
 window.tasks = [];
 window.journals = {};
@@ -2187,6 +2300,7 @@ window.toast = function(msg, warn=false, ms=3000){
 // ── SYNC (로그인 후 시작) ─────────────────────────────
 function startApp(){
   setSyncState('syncing');
+  startBg();
   onSnapshot(collection(db,COL), snap=>{
     window.tasks = snap.docs.map(d=>({id:d.id,...d.data()}));
     purgeOldDone(); renderAll(); if(isActive('home')) renderHome(); if(isActive('goal')) renderGoal(); setSyncState('ok');
@@ -5924,6 +6038,164 @@ window.openLink = function(url){ window.open(url,'_blank','noopener'); };
 window.openLinksModal = function(){ document.getElementById('linksOverlay').classList.add('open'); renderLinks(); };
 window.closeLinksModal = function(){ document.getElementById('linksOverlay').classList.remove('open'); };
 window.closeLinksOutside = function(e){ if(e.target===document.getElementById('linksOverlay')) closeLinksModal(); };
+
+// ── 배경 사진 (학년도별, Firestore bgPhotos/{학년도}) ─────────────
+// 3월부터 새 학년도. 이번 학년도 사진이 없으면 지난 학년도 사진을 그대로 쓴다.
+const BG_CACHE_KEY='wf_bgCache';
+function schoolYear(d=new Date()){ return d.getMonth()<2 ? d.getFullYear()-1 : d.getFullYear(); }
+// 카드 투명도 t(0~100) → 카드 바탕 진하기·흐림 정도
+function glassVars(el,t){
+  t=Number(t??50);
+  el.style.setProperty('--glass-a',(0.6-0.006*t).toFixed(3));
+  el.style.setProperty('--glass-hi',(0.22-0.0016*t).toFixed(3));
+  el.style.setProperty('--glass-blur',(30-0.2*t)+'px');
+}
+function applyBg(p){
+  const el=document.getElementById('bgPhoto');
+  if(p&&p.data){
+    el.style.backgroundImage=`url("${p.data}")`;
+    el.style.backgroundPosition=`center ${p.pos??50}%`;
+    document.body.style.setProperty('--bgdim', p.dim??0.45);
+    glassVars(document.body, p.glass);
+    document.body.classList.add('has-photo');
+  } else {
+    el.style.backgroundImage='';
+    document.body.classList.remove('has-photo');
+  }
+}
+function cacheBg(p){
+  try{
+    if(!p){ localStorage.removeItem(BG_CACHE_KEY); return; }
+    const old=JSON.parse(localStorage.getItem(BG_CACHE_KEY)||'null');
+    if(old&&old.year===p.year&&old.updatedAt===p.updatedAt&&old.dim===p.dim&&old.pos===p.pos&&old.glass===p.glass) return;
+    localStorage.setItem(BG_CACHE_KEY, JSON.stringify(p));
+  }catch(e){}
+}
+try{ applyBg(JSON.parse(localStorage.getItem(BG_CACHE_KEY)||'null')); }catch(e){}
+
+window.bgShown=null;
+function startBg(){
+  const y=schoolYear();
+  onSnapshot(doc(db,BG_COL,String(y)), async snap=>{
+    let p=snap.exists()? {year:y,...snap.data()} : null;
+    if(!p){
+      try{ const prev=await getDoc(doc(db,BG_COL,String(y-1))); if(prev.exists()) p={year:y-1,...prev.data()}; }catch(e){}
+    }
+    window.bgShown=p; applyBg(p); cacheBg(p);
+  }, ()=>{});
+}
+
+window.bgEdit=null;   // 설정 창에서 보고 있는 학년도의 사진
+window.openBgModal = function(){
+  const y=schoolYear(), sel=document.getElementById('bgYear');
+  sel.innerHTML=[y-1,y,y+1].map(v=>`<option value="${v}">${v}학년도${v===y?' (지금)':''}</option>`).join('');
+  sel.value=String(y);
+  document.getElementById('bgOverlay').classList.add('open');
+  loadBgYear();
+};
+window.closeBgModal = function(){ document.getElementById('bgOverlay').classList.remove('open'); };
+window.loadBgYear = async function(){
+  const y=document.getElementById('bgYear').value;
+  window.bgEdit=null; renderBgModal('불러오는 중…');
+  try{
+    const d=await getDoc(doc(db,BG_COL,y));
+    window.bgEdit=d.exists()? d.data() : null;
+    renderBgModal();
+  }catch(e){ renderBgModal('불러오지 못했습니다: '+e.message); }
+};
+function renderBgModal(msg){
+  const y=Number(document.getElementById('bgYear').value), cur=schoolYear();
+  const p=window.bgEdit, prev=document.getElementById('bgPrev');
+  if(p&&p.data){
+    prev.className='bg-prev';
+    prev.style.backgroundImage=`url("${p.data}")`;
+    prev.innerHTML='<div class="bg-prev-card">오늘 할 일</div>';
+  } else {
+    prev.className='bg-prev empty';
+    prev.style.backgroundImage='';
+    prev.innerHTML=msg||`${y}학년도 사진이 아직 없습니다.<br>반 아이들 사진을 올리면 모든 화면 뒤에 깔립니다.`;
+  }
+  document.getElementById('bgCtrls').style.display=(p&&p.data)?'':'none';
+  document.getElementById('bgDelBtn').style.display=(p&&p.data)?'':'none';
+  document.getElementById('bgPickBtn').firstChild.textContent=(p&&p.data)?'📷 사진 바꾸기':'📷 사진 올리기';
+  document.getElementById('bgDim').value=Math.round((p?.dim??0.45)*100);
+  document.getElementById('bgPos').value=p?.pos??50;
+  document.getElementById('bgGlass').value=p?.glass??50;
+  bgPreviewTune();
+  const when = y>cur ? `${y}년 3월 1일부터 이 사진으로 바뀝니다.`
+             : y<cur ? '지난 학년도 사진입니다. 이번 학년도 사진이 없을 때만 보입니다.'
+             : '지금 화면에 보이는 학년도입니다.';
+  document.getElementById('bgNote').innerHTML=
+    `${when}<br>사진은 이 앱의 Firebase에만 저장되고 공개 저장소(GitHub)에는 올라가지 않습니다. 큰 사진은 자동으로 줄여서 저장합니다.`;
+}
+window.bgPreviewTune = function(){
+  const dim=document.getElementById('bgDim').value/100, pos=document.getElementById('bgPos').value;
+  const glass=Number(document.getElementById('bgGlass').value);
+  document.getElementById('bgGlassV').textContent=glass+'%';
+  document.getElementById('bgDimV').textContent=Math.round(dim*100)+'%';
+  document.getElementById('bgPosV').textContent=pos+'%';
+  const prev=document.getElementById('bgPrev');
+  prev.style.setProperty('--bgdim',dim);
+  prev.style.backgroundPosition=`center ${pos}%`;
+  glassVars(prev, glass);
+  const y=Number(document.getElementById('bgYear').value);
+  if(window.bgShown&&window.bgShown.year===y&&window.bgEdit) applyBg({...window.bgShown,dim,pos:Number(pos),glass});
+};
+window.saveBgTune = async function(){
+  if(!window.bgEdit) return;
+  const y=document.getElementById('bgYear').value;
+  const dim=document.getElementById('bgDim').value/100, pos=Number(document.getElementById('bgPos').value);
+  const glass=Number(document.getElementById('bgGlass').value);
+  try{ await updateDoc(doc(db,BG_COL,y), {dim,pos,glass}); window.bgEdit={...window.bgEdit,dim,pos,glass}; }
+  catch(e){ toast('저장 실패: '+e.message, true); }
+};
+window.bgPick = function(e){
+  const f=e.target.files[0]; e.target.value='';
+  if(!f) return;
+  if(!f.type.startsWith('image/')){ toast('이미지 파일만 넣을 수 있습니다', true); return; }
+  renderBgModal('사진 줄이는 중…');
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    const im=new Image();
+    im.onload=async ()=>{
+      // Firestore 문서 한도(1MB) 안에 들어가도록 줄인다
+      let data='';
+      for(const MAX of [2200,1800,1400]){
+        let w=im.width, h=im.height;
+        if(w>MAX){ h=Math.round(h*MAX/w); w=MAX; }
+        const cv=document.createElement('canvas'); cv.width=w; cv.height=h;
+        cv.getContext('2d').drawImage(im,0,0,w,h);
+        let q=0.82; data=cv.toDataURL('image/jpeg',q);
+        while(data.length>900000 && q>0.5){ q-=0.08; data=cv.toDataURL('image/jpeg',q); }
+        if(data.length<=900000) break;
+      }
+      if(data.length>900000){ toast('사진이 너무 큽니다. 다른 사진으로 해주세요', true); renderBgModal(); return; }
+      const y=document.getElementById('bgYear').value;
+      const rec={data, dim:window.bgEdit?.dim??0.45, pos:window.bgEdit?.pos??50, glass:window.bgEdit?.glass??50, updatedAt:new Date().toISOString()};
+      try{
+        await setDoc(doc(db,BG_COL,y), rec);
+        window.bgEdit=rec; renderBgModal();
+        toast('🖼️ 배경 사진이 저장되었습니다');
+        if(Number(y)===schoolYear()-1 && !(window.bgShown&&window.bgShown.year===schoolYear())){
+          window.bgShown={year:Number(y),...rec}; applyBg(window.bgShown); cacheBg(window.bgShown);
+        }
+      }catch(err){ toast('저장 실패: '+err.message, true); renderBgModal(); }
+    };
+    im.onerror=()=>{ toast('사진을 읽지 못했습니다 (HEIC는 JPG로 바꿔서 올려주세요)', true); renderBgModal(); };
+    im.src=ev.target.result;
+  };
+  reader.readAsDataURL(f);
+};
+window.deleteBgPhoto = async function(){
+  const y=document.getElementById('bgYear').value;
+  if(!confirm(`${y}학년도 배경 사진을 삭제할까요?`)) return;
+  try{
+    await deleteDoc(doc(db,BG_COL,y));
+    window.bgEdit=null; renderBgModal(); toast('🗑️ 삭제되었습니다');
+    // 이번 학년도 사진은 실시간 구독이 알아서 바꾼다. 지난 학년도 사진을 보여주던 중이면 여기서 지운다.
+    if(window.bgShown&&String(window.bgShown.year)===y&&Number(y)!==schoolYear()){ window.bgShown=null; applyBg(null); cacheBg(null); }
+  }catch(e){ toast('삭제 실패: '+e.message, true); }
+};
 window.addLink = async function(){
   const name=document.getElementById('lName').value.trim();
   let url=document.getElementById('lUrl').value.trim();
