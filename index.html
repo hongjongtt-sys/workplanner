@@ -1263,6 +1263,30 @@ body.has-photo .modal{background:rgba(20,24,33,.86);border-color:rgba(255,255,25
 .bg-range b{width:38px;text-align:right;color:var(--text);font-weight:600}
 .bg-note{font-size:11.5px;color:var(--text-dim);line-height:1.65;margin-top:12px;
   border-top:1px solid var(--border);padding-top:12px}
+
+/* 홈 맨 위 반 사진 칸 (반 사진을 올렸을 때만 보임) */
+.hcard-class{grid-column:1/-1;padding:0!important;min-height:0!important;overflow:hidden;position:relative;border-radius:22px!important}
+.hcard-class .hc-img{height:clamp(170px,24vw,280px);background:#151922 center 50%/cover no-repeat;transition:height .25s ease}
+.hcard-class.folded .hc-img{height:58px}
+.hcard-class .hc-cap{position:absolute;left:0;right:0;bottom:0;padding:34px 22px 14px;
+  background:linear-gradient(180deg,transparent,rgba(8,10,16,.62));display:flex;align-items:flex-end;justify-content:space-between;gap:10px}
+.hcard-class.folded .hc-cap{top:0;padding:0 16px 0 20px;align-items:center;background:rgba(8,10,16,.45)}
+.hcard-class.folded .hc-sub{display:none}
+.hcard-class .hc-title{font-size:clamp(16px,1.6vw,20px);font-weight:700;color:#fff;text-shadow:0 2px 10px rgba(0,0,0,.5);white-space:nowrap}
+.hcard-class.folded .hc-title{font-size:14px}
+.hcard-class .hc-sub{font-size:12px;color:#d6deea;margin-top:2px;text-shadow:0 1px 6px rgba(0,0,0,.5)}
+.hcard-class .hc-btns{display:flex;gap:6px;flex-shrink:0}
+.hcard-class .hc-btn{font-size:11.5px;font-family:inherit;color:#fff;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.3);
+  border-radius:999px;padding:5px 12px;cursor:pointer;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);white-space:nowrap}
+.hcard-class .hc-btn:hover{background:rgba(255,255,255,.28)}
+.hcard-class:hover{transform:none!important}
+@media(max-width:600px){.hcard-class .hc-change{display:none}.hcard-class .hc-cap{padding:30px 16px 12px}}
+.ph-tabs{display:flex;gap:6px;margin-bottom:14px}
+.ph-tab{flex:1;padding:9px 10px;font-size:13px;font-weight:600;font-family:inherit;border-radius:999px;cursor:pointer;
+  background:rgba(255,255,255,.05);border:1px solid var(--border);color:var(--text-muted)}
+.ph-tab.on{background:rgba(111,157,255,.18);border-color:rgba(111,157,255,.55);color:#a9c6ff}
+.bg-prev.cls{aspect-ratio:4/1}
+.bg-prev.cls::after{display:none}
 </style>
 </head>
 <body>
@@ -1303,7 +1327,7 @@ body.has-photo .modal{background:rgba(20,24,33,.86);border-color:rgba(255,255,25
     <div class="sync-indicator"><div class="sync-dot" id="syncDot"></div><span id="syncText">연결됨</span></div>
     <button class="icon-btn" onclick="doLogout()" title="로그아웃">🔒</button>
     <button class="icon-btn" onclick="openLinksModal()" title="바로가기">🔗</button>
-    <button class="icon-btn" onclick="openBgModal()" title="배경 사진">🖼️</button>
+    <button class="icon-btn" onclick="openBgModal()" title="배경 사진 · 반 사진">🖼️</button>
     <div class="today-label" id="todayLabel" onclick="goToday()" title="오늘로 이동"></div>
     <button class="btn btn-primary" onclick="openModal()">+ 업무</button>
   </div>
@@ -1448,6 +1472,17 @@ body.has-photo .modal{background:rgba(20,24,33,.86);border-color:rgba(255,255,25
     <div class="view active" id="view-home">
       <div class="home">
         <div class="home-grid">
+
+          <div class="hcard hcard-class" id="homeClass" style="display:none">
+            <div class="hc-img"></div>
+            <div class="hc-cap">
+              <div><div class="hc-title"></div><div class="hc-sub"></div></div>
+              <div class="hc-btns">
+                <button class="hc-btn hc-change" onclick="openBgModal('cls')">사진 바꾸기</button>
+                <button class="hc-btn hc-fold" onclick="toggleClsFold()">접기 ▲</button>
+              </div>
+            </div>
+          </div>
 
           <div class="hcard hcard-clock hcard-wide">
             <div class="hflip" id="hClock"></div>
@@ -1768,15 +1803,21 @@ body.has-photo .modal{background:rgba(20,24,33,.86);border-color:rgba(255,255,25
 <div class="overlay" id="bgOverlay" onclick="if(event.target===this)closeBgModal()">
   <div class="modal" style="width:480px">
     <div class="modal-head">
-      <div class="modal-title">🖼️ 배경 사진</div>
+      <div class="modal-title">🖼️ 사진</div>
       <button class="modal-close" onclick="closeBgModal()">✕</button>
+    </div>
+    <div class="ph-tabs">
+      <button class="ph-tab on" data-m="bg" onclick="setPhMode('bg')">🌄 배경 사진</button>
+      <button class="ph-tab" data-m="cls" onclick="setPhMode('cls')">🧑‍🤝‍🧑 반 사진</button>
     </div>
     <div class="form-group"><label class="form-label">학년도</label>
       <select class="form-select" id="bgYear" onchange="loadBgYear()"></select></div>
     <div class="bg-prev empty" id="bgPrev"></div>
     <div id="bgCtrls">
-      <div class="bg-range"><span>어둡게</span><input type="range" id="bgDim" min="20" max="75" step="5" oninput="bgPreviewTune()" onchange="saveBgTune()"><b id="bgDimV"></b></div>
-      <div class="bg-range"><span>카드 투명도</span><input type="range" id="bgGlass" min="0" max="100" step="10" oninput="bgPreviewTune()" onchange="saveBgTune()"><b id="bgGlassV"></b></div>
+      <div class="form-group only-cls"><label class="form-label">사진 제목</label>
+        <input type="text" class="form-input" id="clsTitle" maxlength="20" placeholder="우리 반" oninput="bgPreviewTune()" onchange="saveBgTune()"></div>
+      <div class="bg-range only-bg"><span>어둡게</span><input type="range" id="bgDim" min="20" max="75" step="5" oninput="bgPreviewTune()" onchange="saveBgTune()"><b id="bgDimV"></b></div>
+      <div class="bg-range only-bg"><span>카드 투명도</span><input type="range" id="bgGlass" min="0" max="100" step="10" oninput="bgPreviewTune()" onchange="saveBgTune()"><b id="bgGlassV"></b></div>
       <div class="bg-range"><span>세로 위치</span><input type="range" id="bgPos" min="0" max="100" step="5" oninput="bgPreviewTune()" onchange="saveBgTune()"><b id="bgPosV"></b></div>
     </div>
     <div style="display:flex;gap:8px">
@@ -6039,9 +6080,14 @@ window.openLinksModal = function(){ document.getElementById('linksOverlay').clas
 window.closeLinksModal = function(){ document.getElementById('linksOverlay').classList.remove('open'); };
 window.closeLinksOutside = function(e){ if(e.target===document.getElementById('linksOverlay')) closeLinksModal(); };
 
-// ── 배경 사진 (학년도별, Firestore bgPhotos/{학년도}) ─────────────
+// ── 배경 사진 · 반 사진 (학년도별) ─────────────────────────────
+// 배경: bgPhotos/{학년도} {data,dim,glass,pos}   반 사진(홈 맨 위 칸): classPhotos/{학년도} {data,pos,title}
 // 3월부터 새 학년도. 이번 학년도 사진이 없으면 지난 학년도 사진을 그대로 쓴다.
-const BG_CACHE_KEY='wf_bgCache';
+const CLS_COL="classPhotos";
+const PH={
+  bg:{col:BG_COL, cache:'wf_bgCache', apply:p=>applyBg(p), name:'배경 사진'},
+  cls:{col:CLS_COL, cache:'wf_clsCache', apply:p=>applyCls(p), name:'반 사진'},
+};
 function schoolYear(d=new Date()){ return d.getMonth()<2 ? d.getFullYear()-1 : d.getFullYear(); }
 // 카드 투명도 t(0~100) → 카드 바탕 진하기·흐림 정도
 function glassVars(el,t){
@@ -6063,64 +6109,107 @@ function applyBg(p){
     document.body.classList.remove('has-photo');
   }
 }
-function cacheBg(p){
+function applyCls(p){
+  const el=document.getElementById('homeClass');
+  if(!el) return;
+  if(!(p&&p.data)){ el.style.display='none'; return; }
+  el.style.display='';
+  const img=el.querySelector('.hc-img');
+  img.style.backgroundImage=`url("${p.data}")`;
+  img.style.backgroundPosition=`center ${p.pos??50}%`;
+  el.querySelector('.hc-title').textContent=`${p.title||'우리 반'} · ${p.year}학년도`;
+  const days=Math.floor((new Date().setHours(0,0,0,0)-new Date(p.year,2,2))/864e5)+1;
+  el.querySelector('.hc-sub').textContent= days>=1&&days<=366 ? `함께한 지 ${days}일째` : '';
+  let fold=false; try{ fold=localStorage.getItem('wf_clsFold')==='1'; }catch(e){}
+  el.classList.toggle('folded', fold);
+  el.querySelector('.hc-fold').textContent= fold ? '펼치기 ▼' : '접기 ▲';
+}
+window.toggleClsFold = function(){
+  const el=document.getElementById('homeClass'), fold=!el.classList.contains('folded');
+  try{ localStorage.setItem('wf_clsFold', fold?'1':'0'); }catch(e){}
+  el.classList.toggle('folded', fold);
+  el.querySelector('.hc-fold').textContent= fold ? '펼치기 ▼' : '접기 ▲';
+};
+function cachePh(kind,p){
   try{
-    if(!p){ localStorage.removeItem(BG_CACHE_KEY); return; }
-    const old=JSON.parse(localStorage.getItem(BG_CACHE_KEY)||'null');
-    if(old&&old.year===p.year&&old.updatedAt===p.updatedAt&&old.dim===p.dim&&old.pos===p.pos&&old.glass===p.glass) return;
-    localStorage.setItem(BG_CACHE_KEY, JSON.stringify(p));
+    const k=PH[kind].cache;
+    if(!p){ localStorage.removeItem(k); return; }
+    const old=JSON.parse(localStorage.getItem(k)||'null');
+    if(old&&old.year===p.year&&old.updatedAt===p.updatedAt&&old.dim===p.dim&&old.pos===p.pos&&old.glass===p.glass&&old.title===p.title) return;
+    localStorage.setItem(k, JSON.stringify(p));
   }catch(e){}
 }
-try{ applyBg(JSON.parse(localStorage.getItem(BG_CACHE_KEY)||'null')); }catch(e){}
-
-window.bgShown=null;
-function startBg(){
-  const y=schoolYear();
-  onSnapshot(doc(db,BG_COL,String(y)), async snap=>{
-    let p=snap.exists()? {year:y,...snap.data()} : null;
-    if(!p){
-      try{ const prev=await getDoc(doc(db,BG_COL,String(y-1))); if(prev.exists()) p={year:y-1,...prev.data()}; }catch(e){}
-    }
-    window.bgShown=p; applyBg(p); cacheBg(p);
-  }, ()=>{});
+window.phShown={bg:null,cls:null};
+function showPh(kind,p){ window.phShown[kind]=p; PH[kind].apply(p); cachePh(kind,p); }
+// 지난번 사진을 먼저 보여 준다 (불러오는 동안 화면이 비지 않게)
+for(const kind of ['bg','cls']){
+  try{ const c=JSON.parse(localStorage.getItem(PH[kind].cache)||'null'); if(c){ window.phShown[kind]=c; PH[kind].apply(c); } }catch(e){}
 }
 
-window.bgEdit=null;   // 설정 창에서 보고 있는 학년도의 사진
-window.openBgModal = function(){
+function startBg(){
+  const y=schoolYear();
+  for(const kind of ['bg','cls']){
+    onSnapshot(doc(db,PH[kind].col,String(y)), async snap=>{
+      let p=snap.exists()? {year:y,...snap.data()} : null;
+      if(!p){
+        try{ const prev=await getDoc(doc(db,PH[kind].col,String(y-1))); if(prev.exists()) p={year:y-1,...prev.data()}; }catch(e){}
+      }
+      showPh(kind,p);
+    }, ()=>{});
+  }
+}
+
+// ── 사진 설정 창 ──
+window.phMode='bg';
+window.bgEdit=null;   // 설정 창에서 보고 있는 학년도·종류의 사진
+window.openBgModal = function(mode){
   const y=schoolYear(), sel=document.getElementById('bgYear');
   sel.innerHTML=[y-1,y,y+1].map(v=>`<option value="${v}">${v}학년도${v===y?' (지금)':''}</option>`).join('');
   sel.value=String(y);
+  window.phMode= mode==='cls' ? 'cls' : 'bg';
   document.getElementById('bgOverlay').classList.add('open');
   loadBgYear();
 };
-window.closeBgModal = function(){ document.getElementById('bgOverlay').classList.remove('open'); };
+window.setPhMode = function(mode){ window.phMode=mode; loadBgYear(); };
+window.closeBgModal = function(){
+  document.getElementById('bgOverlay').classList.remove('open');
+  PH.bg.apply(window.phShown.bg); PH.cls.apply(window.phShown.cls);   // 저장 안 한 미리보기 되돌리기
+};
 window.loadBgYear = async function(){
-  const y=document.getElementById('bgYear').value;
+  const y=document.getElementById('bgYear').value, mode=window.phMode;
   window.bgEdit=null; renderBgModal('불러오는 중…');
   try{
-    const d=await getDoc(doc(db,BG_COL,y));
+    const d=await getDoc(doc(db,PH[mode].col,y));
+    if(mode!==window.phMode||y!==document.getElementById('bgYear').value) return;
     window.bgEdit=d.exists()? d.data() : null;
     renderBgModal();
   }catch(e){ renderBgModal('불러오지 못했습니다: '+e.message); }
 };
 function renderBgModal(msg){
+  const mode=window.phMode, isBg=mode==='bg';
   const y=Number(document.getElementById('bgYear').value), cur=schoolYear();
-  const p=window.bgEdit, prev=document.getElementById('bgPrev');
-  if(p&&p.data){
-    prev.className='bg-prev';
+  const p=window.bgEdit, has=!!(p&&p.data), prev=document.getElementById('bgPrev');
+  document.querySelectorAll('#bgOverlay .ph-tab').forEach(b=>b.classList.toggle('on', b.dataset.m===mode));
+  prev.classList.toggle('cls', !isBg);
+  prev.classList.toggle('empty', !has);
+  if(has){
     prev.style.backgroundImage=`url("${p.data}")`;
-    prev.innerHTML='<div class="bg-prev-card">오늘 할 일</div>';
+    prev.innerHTML= isBg ? '<div class="bg-prev-card">오늘 할 일</div>' : '';
   } else {
-    prev.className='bg-prev empty';
     prev.style.backgroundImage='';
-    prev.innerHTML=msg||`${y}학년도 사진이 아직 없습니다.<br>반 아이들 사진을 올리면 모든 화면 뒤에 깔립니다.`;
+    prev.innerHTML=msg|| (isBg
+      ? `${y}학년도 배경 사진이 아직 없습니다.<br>풍경 사진처럼 넓게 퍼진 사진이 잘 어울립니다.`
+      : `${y}학년도 반 사진이 아직 없습니다.<br>올리면 홈 화면 맨 위에 또렷하게 보입니다.`);
   }
-  document.getElementById('bgCtrls').style.display=(p&&p.data)?'':'none';
-  document.getElementById('bgDelBtn').style.display=(p&&p.data)?'':'none';
-  document.getElementById('bgPickBtn').firstChild.textContent=(p&&p.data)?'📷 사진 바꾸기':'📷 사진 올리기';
+  document.getElementById('bgCtrls').style.display=has?'':'none';
+  document.querySelectorAll('#bgCtrls .only-bg').forEach(e=>e.style.display=isBg?'':'none');
+  document.querySelectorAll('#bgCtrls .only-cls').forEach(e=>e.style.display=isBg?'none':'');
+  document.getElementById('bgDelBtn').style.display=has?'':'none';
+  document.getElementById('bgPickBtn').firstChild.textContent=(has?'📷 사진 바꾸기':'📷 사진 올리기');
   document.getElementById('bgDim').value=Math.round((p?.dim??0.45)*100);
-  document.getElementById('bgPos').value=p?.pos??50;
   document.getElementById('bgGlass').value=p?.glass??50;
+  document.getElementById('bgPos').value=p?.pos??50;
+  document.getElementById('clsTitle').value=p?.title??'우리 반';
   bgPreviewTune();
   const when = y>cur ? `${y}년 3월 1일부터 이 사진으로 바뀝니다.`
              : y<cur ? '지난 학년도 사진입니다. 이번 학년도 사진이 없을 때만 보입니다.'
@@ -6128,31 +6217,40 @@ function renderBgModal(msg){
   document.getElementById('bgNote').innerHTML=
     `${when}<br>사진은 이 앱의 Firebase에만 저장되고 공개 저장소(GitHub)에는 올라가지 않습니다. 큰 사진은 자동으로 줄여서 저장합니다.`;
 }
+function phTune(){
+  return {
+    dim:document.getElementById('bgDim').value/100,
+    glass:Number(document.getElementById('bgGlass').value),
+    pos:Number(document.getElementById('bgPos').value),
+    title:document.getElementById('clsTitle').value.trim()||'우리 반',
+  };
+}
 window.bgPreviewTune = function(){
-  const dim=document.getElementById('bgDim').value/100, pos=document.getElementById('bgPos').value;
-  const glass=Number(document.getElementById('bgGlass').value);
-  document.getElementById('bgGlassV').textContent=glass+'%';
-  document.getElementById('bgDimV').textContent=Math.round(dim*100)+'%';
-  document.getElementById('bgPosV').textContent=pos+'%';
-  const prev=document.getElementById('bgPrev');
-  prev.style.setProperty('--bgdim',dim);
-  prev.style.backgroundPosition=`center ${pos}%`;
-  glassVars(prev, glass);
-  const y=Number(document.getElementById('bgYear').value);
-  if(window.bgShown&&window.bgShown.year===y&&window.bgEdit) applyBg({...window.bgShown,dim,pos:Number(pos),glass});
+  const t=phTune(), prev=document.getElementById('bgPrev'), mode=window.phMode;
+  document.getElementById('bgGlassV').textContent=t.glass+'%';
+  document.getElementById('bgDimV').textContent=Math.round(t.dim*100)+'%';
+  document.getElementById('bgPosV').textContent=t.pos+'%';
+  prev.style.setProperty('--bgdim',t.dim);
+  prev.style.backgroundPosition=`center ${t.pos}%`;
+  glassVars(prev, t.glass);
+  // 지금 보이는 사진을 고치는 중이면 실제 화면에도 바로 보여 준다
+  const y=Number(document.getElementById('bgYear').value), shown=window.phShown[mode];
+  if(shown&&shown.year===y&&window.bgEdit){
+    PH[mode].apply(mode==='bg' ? {...shown,dim:t.dim,pos:t.pos,glass:t.glass} : {...shown,pos:t.pos,title:t.title});
+  }
 };
 window.saveBgTune = async function(){
   if(!window.bgEdit) return;
-  const y=document.getElementById('bgYear').value;
-  const dim=document.getElementById('bgDim').value/100, pos=Number(document.getElementById('bgPos').value);
-  const glass=Number(document.getElementById('bgGlass').value);
-  try{ await updateDoc(doc(db,BG_COL,y), {dim,pos,glass}); window.bgEdit={...window.bgEdit,dim,pos,glass}; }
+  const y=document.getElementById('bgYear').value, mode=window.phMode, t=phTune();
+  const upd= mode==='bg' ? {dim:t.dim,pos:t.pos,glass:t.glass} : {pos:t.pos,title:t.title};
+  try{ await updateDoc(doc(db,PH[mode].col,y), upd); window.bgEdit={...window.bgEdit,...upd}; }
   catch(e){ toast('저장 실패: '+e.message, true); }
 };
 window.bgPick = function(e){
   const f=e.target.files[0]; e.target.value='';
   if(!f) return;
   if(!f.type.startsWith('image/')){ toast('이미지 파일만 넣을 수 있습니다', true); return; }
+  const mode=window.phMode;
   renderBgModal('사진 줄이는 중…');
   const reader=new FileReader();
   reader.onload=ev=>{
@@ -6170,15 +6268,17 @@ window.bgPick = function(e){
         if(data.length<=900000) break;
       }
       if(data.length>900000){ toast('사진이 너무 큽니다. 다른 사진으로 해주세요', true); renderBgModal(); return; }
-      const y=document.getElementById('bgYear').value;
-      const rec={data, dim:window.bgEdit?.dim??0.45, pos:window.bgEdit?.pos??50, glass:window.bgEdit?.glass??50, updatedAt:new Date().toISOString()};
+      const y=document.getElementById('bgYear').value, t=phTune(), now=new Date().toISOString();
+      const rec= mode==='bg'
+        ? {data, dim:t.dim, pos:t.pos, glass:t.glass, updatedAt:now}
+        : {data, pos:t.pos, title:t.title, updatedAt:now};
       try{
-        await setDoc(doc(db,BG_COL,y), rec);
-        window.bgEdit=rec; renderBgModal();
-        toast('🖼️ 배경 사진이 저장되었습니다');
-        if(Number(y)===schoolYear()-1 && !(window.bgShown&&window.bgShown.year===schoolYear())){
-          window.bgShown={year:Number(y),...rec}; applyBg(window.bgShown); cacheBg(window.bgShown);
-        }
+        await setDoc(doc(db,PH[mode].col,y), rec);
+        if(mode===window.phMode){ window.bgEdit=rec; renderBgModal(); }
+        toast(`🖼️ ${PH[mode].name}이 저장되었습니다`);
+        // 이번 학년도는 실시간 구독이 바꾼다. 지난 학년도 사진을 올렸고 이번 학년도 사진이 없으면 여기서 보여 준다.
+        if(Number(y)===schoolYear()-1 && !(window.phShown[mode]&&window.phShown[mode].year===schoolYear()))
+          showPh(mode,{year:Number(y),...rec});
       }catch(err){ toast('저장 실패: '+err.message, true); renderBgModal(); }
     };
     im.onerror=()=>{ toast('사진을 읽지 못했습니다 (HEIC는 JPG로 바꿔서 올려주세요)', true); renderBgModal(); };
@@ -6187,13 +6287,14 @@ window.bgPick = function(e){
   reader.readAsDataURL(f);
 };
 window.deleteBgPhoto = async function(){
-  const y=document.getElementById('bgYear').value;
-  if(!confirm(`${y}학년도 배경 사진을 삭제할까요?`)) return;
+  const y=document.getElementById('bgYear').value, mode=window.phMode;
+  if(!confirm(`${y}학년도 ${PH[mode].name}을 삭제할까요?`)) return;
   try{
-    await deleteDoc(doc(db,BG_COL,y));
+    await deleteDoc(doc(db,PH[mode].col,y));
     window.bgEdit=null; renderBgModal(); toast('🗑️ 삭제되었습니다');
     // 이번 학년도 사진은 실시간 구독이 알아서 바꾼다. 지난 학년도 사진을 보여주던 중이면 여기서 지운다.
-    if(window.bgShown&&String(window.bgShown.year)===y&&Number(y)!==schoolYear()){ window.bgShown=null; applyBg(null); cacheBg(null); }
+    const sh=window.phShown[mode];
+    if(sh&&String(sh.year)===y&&Number(y)!==schoolYear()) showPh(mode,null);
   }catch(e){ toast('삭제 실패: '+e.message, true); }
 };
 window.addLink = async function(){
