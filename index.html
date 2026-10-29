@@ -1261,6 +1261,8 @@ body.has-photo .modal{background:rgba(20,24,33,.86);border-color:rgba(255,255,25
 .bg-range span:first-child{width:72px;flex-shrink:0}
 .bg-range input{flex:1;accent-color:#6f9dff}
 .bg-range b{width:38px;text-align:right;color:var(--text);font-weight:600}
+.bg-auto{font-size:11.5px;color:#9ec0ff;margin-top:10px}
+.bg-auto:empty{display:none}
 .bg-note{font-size:11.5px;color:var(--text-dim);line-height:1.65;margin-top:12px;
   border-top:1px solid var(--border);padding-top:12px}
 
@@ -1289,6 +1291,35 @@ body.has-photo .modal{background:rgba(20,24,33,.86);border-color:rgba(255,255,25
 .ph-tab.on{background:rgba(111,157,255,.18);border-color:rgba(111,157,255,.55);color:#a9c6ff}
 .bg-prev.cls{aspect-ratio:4/1}
 .bg-prev.cls::after{display:none}
+
+/* 사진 위에 바로 놓이는 글씨·버튼 — 사진이 밝아도 읽히게 어두운 유리 바탕 + 그림자 */
+body.has-photo .page-title,body.has-photo .daily-date,body.has-photo .cal-month-label,
+body.has-photo .page-header,body.has-photo .daily-head{
+  text-shadow:0 1px 3px rgba(0,0,0,.75),0 2px 16px rgba(0,0,0,.55)}
+body.has-photo .cal-nav button,body.has-photo .btn-ghost,body.has-photo .filter-chip,
+body.has-photo .class-tab-btn,body.has-photo .att-btn,body.has-photo .type-btn,
+body.has-photo .carry-btn,body.has-photo .ws-btn,body.has-photo .goal-board-chip,
+body.has-photo .ck-toggle,body.has-photo .cls-legend span{
+  background:rgba(14,17,24,.52);border:1px solid rgba(255,255,255,.2);color:#e8edf5;
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+body.has-photo .cls-legend span{background:rgba(14,17,24,.6)!important;filter:brightness(1.35)}
+body.has-photo .ck-toggle{padding:6px 12px;border-radius:999px}
+body.has-photo .filter-chip.active,body.has-photo .class-tab-btn.active,body.has-photo .goal-board-chip.on{
+  background:linear-gradient(120deg,#6f9dff,#9b7cff);color:#fff;border-color:transparent}
+body.has-photo .cal-label{background:rgba(14,17,24,.58);color:#dfe6f2}
+body.has-photo .cal-label:first-child{color:#ff9aa8}
+body.has-photo .cal-label:last-child{color:#a9c6ff}
+body.has-photo .empty,body.has-photo .ws-empty{color:#e3e8f0;text-shadow:0 1px 3px rgba(0,0,0,.8),0 2px 14px rgba(0,0,0,.6)}
+body.has-photo .content>.view>.empty,body.has-photo .view .empty{background:rgba(14,17,24,.42);border-radius:18px;
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,.12)}
+body.has-photo .view p[style*="text-dim"],body.has-photo #ttRangeNote,body.has-photo .daily-date small{
+  color:#dfe5ee!important;text-shadow:0 1px 3px rgba(0,0,0,.85),0 2px 12px rgba(0,0,0,.6)}
+body.has-photo #ttRangeNote span{color:#ffcb7a!important}
+body.has-photo .page-header .form-select,body.has-photo .daily-nav .form-input,body.has-photo .daily-nav input{
+  background:rgba(14,17,24,.55);border-color:rgba(255,255,255,.2);color:#e8edf5;
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+body.has-photo .tt-title[style*="#9f1239"]{color:#ff9aa8!important}
+body.has-photo .tt-title[style*="#1d4ed8"]{color:#a9c6ff!important}
 </style>
 </head>
 <body>
@@ -1831,6 +1862,7 @@ body.has-photo .modal{background:rgba(20,24,33,.86);border-color:rgba(255,255,25
         <input type="file" accept="image/*" style="display:none" onchange="bgPick(event)"></label>
       <button class="btn btn-danger" id="bgDelBtn" onclick="deleteBgPhoto()">삭제</button>
     </div>
+    <div class="bg-auto" id="bgAuto"></div>
     <div class="bg-note" id="bgNote"></div>
   </div>
 </div>
@@ -6102,12 +6134,37 @@ function glassVars(el,t){
   el.style.setProperty('--glass-hi',(0.22-0.0016*t).toFixed(3));
   el.style.setProperty('--glass-blur',(30-0.2*t)+'px');
 }
+// 사진 밝기(0~1)를 재서 밝은 사진이면 어둡게 막을 자동으로 더 진하게 한다
+const bgLumCache={};
+function photoLum(data){
+  if(bgLumCache[data.length+data.slice(-40)]!=null) return Promise.resolve(bgLumCache[data.length+data.slice(-40)]);
+  return new Promise(res=>{
+    const im=new Image();
+    im.onload=()=>{
+      try{
+        const cv=document.createElement('canvas'); cv.width=48; cv.height=27;
+        const ctx=cv.getContext('2d'); ctx.drawImage(im,0,0,48,27);
+        const px=ctx.getImageData(0,0,48,27).data; let sum=0;
+        for(let i=0;i<px.length;i+=4) sum+=(0.2126*px[i]+0.7152*px[i+1]+0.0722*px[i+2])/255;
+        const L=sum/(px.length/4); bgLumCache[data.length+data.slice(-40)]=L; res(L);
+      }catch(e){ res(0.5); }
+    };
+    im.onerror=()=>res(0.5);
+    im.src=data;
+  });
+}
+function autoBoost(L){ return Math.max(0,(L-0.42))*0.75; }   // 밝기 0.7 → 약 +21%
 function applyBg(p){
   const el=document.getElementById('bgPhoto');
   if(p&&p.data){
     el.style.backgroundImage=`url("${p.data}")`;
     el.style.backgroundPosition=`center ${p.pos??50}%`;
-    document.body.style.setProperty('--bgdim', p.dim??0.45);
+    const dim=p.dim??0.45;
+    document.body.style.setProperty('--bgdim', dim);
+    photoLum(p.data).then(L=>{
+      if(document.getElementById('bgPhoto').style.backgroundImage.indexOf(p.data.slice(-40))<0) return;
+      document.body.style.setProperty('--bgdim', Math.min(0.85, dim+autoBoost(L)).toFixed(3));
+    });
     glassVars(document.body, p.glass);
     document.body.classList.add('has-photo');
   } else {
@@ -6257,6 +6314,13 @@ window.bgPreviewTune = function(){
   document.getElementById('bgDimV').textContent=Math.round(t.dim*100)+'%';
   document.getElementById('bgPosV').textContent=t.pos+'%';
   prev.style.setProperty('--bgdim',t.dim);
+  if(mode==='bg'&&window.bgEdit&&window.bgEdit.data){
+    photoLum(window.bgEdit.data).then(L=>{
+      const b=autoBoost(L);
+      prev.style.setProperty('--bgdim',Math.min(0.85,phTune().dim+b).toFixed(3));
+      document.getElementById('bgAuto').textContent= b>=0.02 ? `밝은 사진이라 글씨가 잘 보이도록 ${Math.round(b*100)}% 더 어둡게 맞췄어요.` : '';
+    });
+  } else document.getElementById('bgAuto').textContent='';
   prev.style.backgroundPosition=`center ${t.pos}%`;
   glassVars(prev, t.glass);
   // 지금 보이는 사진을 고치는 중이면 실제 화면에도 바로 보여 준다
