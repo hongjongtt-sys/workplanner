@@ -1274,6 +1274,8 @@ body.has-photo .modal{background:rgba(20,24,33,.86);border-color:rgba(255,255,25
 .hcard-class.folded .hc-sub{display:none}
 .hcard-class .hc-title{font-size:clamp(16px,1.6vw,20px);font-weight:700;color:#fff;text-shadow:0 2px 10px rgba(0,0,0,.5);white-space:nowrap}
 .hcard-class.folded .hc-title{font-size:14px}
+.hcard-class .hc-cap>div:first-child{min-width:0}
+.hcard-class .hc-title,.hcard-class .hc-sub{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .hcard-class .hc-sub{font-size:12px;color:#d6deea;margin-top:2px;text-shadow:0 1px 6px rgba(0,0,0,.5)}
 .hcard-class .hc-btns{display:flex;gap:6px;flex-shrink:0}
 .hcard-class .hc-btn{font-size:11.5px;font-family:inherit;color:#fff;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.3);
@@ -1814,8 +1816,12 @@ body.has-photo .modal{background:rgba(20,24,33,.86);border-color:rgba(255,255,25
       <select class="form-select" id="bgYear" onchange="loadBgYear()"></select></div>
     <div class="bg-prev empty" id="bgPrev"></div>
     <div id="bgCtrls">
-      <div class="form-group only-cls"><label class="form-label">사진 제목</label>
-        <input type="text" class="form-input" id="clsTitle" maxlength="20" placeholder="우리 반" oninput="bgPreviewTune()" onchange="saveBgTune()"></div>
+      <div class="form-group only-cls"><label class="form-label">첫째 줄 글</label>
+        <input type="text" class="form-input" id="clsLine1" maxlength="30" oninput="bgPreviewTune()" onchange="saveBgTune()"></div>
+      <div class="form-group only-cls"><label class="form-label">둘째 줄 글 <span style="font-weight:400;color:var(--text-dim)">· # 자리에 만난 날부터 센 날짜가 들어가요. 비우면 안 보여요.</span></label>
+        <input type="text" class="form-input" id="clsLine2" maxlength="40" oninput="bgPreviewTune()" onchange="saveBgTune()"></div>
+      <div class="form-group only-cls"><label class="form-label">만난 날</label>
+        <input type="date" class="form-input" id="clsMet" oninput="bgPreviewTune()" onchange="saveBgTune()"></div>
       <div class="bg-range only-bg"><span>어둡게</span><input type="range" id="bgDim" min="20" max="75" step="5" oninput="bgPreviewTune()" onchange="saveBgTune()"><b id="bgDimV"></b></div>
       <div class="bg-range only-bg"><span>카드 투명도</span><input type="range" id="bgGlass" min="0" max="100" step="10" oninput="bgPreviewTune()" onchange="saveBgTune()"><b id="bgGlassV"></b></div>
       <div class="bg-range"><span>세로 위치</span><input type="range" id="bgPos" min="0" max="100" step="5" oninput="bgPreviewTune()" onchange="saveBgTune()"><b id="bgPosV"></b></div>
@@ -6109,6 +6115,22 @@ function applyBg(p){
     document.body.classList.remove('has-photo');
   }
 }
+// 반 사진 글: 첫째 줄·둘째 줄은 선생님이 쓴 대로, 둘째 줄의 #은 만난 날부터 센 날짜
+// (예전 형식 {title}만 있는 사진은 "우리 반 · 2026학년도 / 함께한 지 #일째"로 보인다)
+function clsDefaults(p,year){
+  return {
+    line1: p?.line1 ?? `${p?.title||'우리 반'} · ${year}학년도`,
+    line2: p?.line2 ?? '함께한 지 #일째',
+    metDate: p?.metDate || `${year}-03-02`,
+  };
+}
+function clsText(p){
+  const d=clsDefaults(p,p.year), [y,m,dd]=d.metDate.split('-').map(Number);
+  const days=Math.floor((new Date().setHours(0,0,0,0)-new Date(y,m-1,dd))/864e5)+1;
+  let line2=d.line2.trim();
+  if(line2.includes('#')) line2= days>=1 ? line2.replaceAll('#',days) : '';
+  return {line1:d.line1, line2};
+}
 function applyCls(p){
   const el=document.getElementById('homeClass');
   if(!el) return;
@@ -6117,9 +6139,8 @@ function applyCls(p){
   const img=el.querySelector('.hc-img');
   img.style.backgroundImage=`url("${p.data}")`;
   img.style.backgroundPosition=`center ${p.pos??50}%`;
-  el.querySelector('.hc-title').textContent=`${p.title||'우리 반'} · ${p.year}학년도`;
-  const days=Math.floor((new Date().setHours(0,0,0,0)-new Date(p.year,2,2))/864e5)+1;
-  el.querySelector('.hc-sub').textContent= days>=1&&days<=366 ? `함께한 지 ${days}일째` : '';
+  el.querySelector('.hc-title').textContent=clsText(p).line1;
+  el.querySelector('.hc-sub').textContent=clsText(p).line2;
   let fold=false; try{ fold=localStorage.getItem('wf_clsFold')==='1'; }catch(e){}
   el.classList.toggle('folded', fold);
   el.querySelector('.hc-fold').textContent= fold ? '펼치기 ▼' : '접기 ▲';
@@ -6135,7 +6156,7 @@ function cachePh(kind,p){
     const k=PH[kind].cache;
     if(!p){ localStorage.removeItem(k); return; }
     const old=JSON.parse(localStorage.getItem(k)||'null');
-    if(old&&old.year===p.year&&old.updatedAt===p.updatedAt&&old.dim===p.dim&&old.pos===p.pos&&old.glass===p.glass&&old.title===p.title) return;
+    if(old&&old.year===p.year&&old.updatedAt===p.updatedAt&&old.dim===p.dim&&old.pos===p.pos&&old.glass===p.glass&&old.line1===p.line1&&old.line2===p.line2&&old.metDate===p.metDate) return;
     localStorage.setItem(k, JSON.stringify(p));
   }catch(e){}
 }
@@ -6209,7 +6230,10 @@ function renderBgModal(msg){
   document.getElementById('bgDim').value=Math.round((p?.dim??0.45)*100);
   document.getElementById('bgGlass').value=p?.glass??50;
   document.getElementById('bgPos').value=p?.pos??50;
-  document.getElementById('clsTitle').value=p?.title??'우리 반';
+  const cd=clsDefaults(p,y);
+  document.getElementById('clsLine1').value=cd.line1;
+  document.getElementById('clsLine2').value=cd.line2;
+  document.getElementById('clsMet').value=cd.metDate;
   bgPreviewTune();
   const when = y>cur ? `${y}년 3월 1일부터 이 사진으로 바뀝니다.`
              : y<cur ? '지난 학년도 사진입니다. 이번 학년도 사진이 없을 때만 보입니다.'
@@ -6222,7 +6246,9 @@ function phTune(){
     dim:document.getElementById('bgDim').value/100,
     glass:Number(document.getElementById('bgGlass').value),
     pos:Number(document.getElementById('bgPos').value),
-    title:document.getElementById('clsTitle').value.trim()||'우리 반',
+    line1:document.getElementById('clsLine1').value.trim(),
+    line2:document.getElementById('clsLine2').value.trim(),
+    metDate:document.getElementById('clsMet').value||`${document.getElementById('bgYear').value}-03-02`,
   };
 }
 window.bgPreviewTune = function(){
@@ -6236,13 +6262,13 @@ window.bgPreviewTune = function(){
   // 지금 보이는 사진을 고치는 중이면 실제 화면에도 바로 보여 준다
   const y=Number(document.getElementById('bgYear').value), shown=window.phShown[mode];
   if(shown&&shown.year===y&&window.bgEdit){
-    PH[mode].apply(mode==='bg' ? {...shown,dim:t.dim,pos:t.pos,glass:t.glass} : {...shown,pos:t.pos,title:t.title});
+    PH[mode].apply(mode==='bg' ? {...shown,dim:t.dim,pos:t.pos,glass:t.glass} : {...shown,pos:t.pos,line1:t.line1,line2:t.line2,metDate:t.metDate});
   }
 };
 window.saveBgTune = async function(){
   if(!window.bgEdit) return;
   const y=document.getElementById('bgYear').value, mode=window.phMode, t=phTune();
-  const upd= mode==='bg' ? {dim:t.dim,pos:t.pos,glass:t.glass} : {pos:t.pos,title:t.title};
+  const upd= mode==='bg' ? {dim:t.dim,pos:t.pos,glass:t.glass} : {pos:t.pos,line1:t.line1,line2:t.line2,metDate:t.metDate};
   try{ await updateDoc(doc(db,PH[mode].col,y), upd); window.bgEdit={...window.bgEdit,...upd}; }
   catch(e){ toast('저장 실패: '+e.message, true); }
 };
@@ -6271,7 +6297,7 @@ window.bgPick = function(e){
       const y=document.getElementById('bgYear').value, t=phTune(), now=new Date().toISOString();
       const rec= mode==='bg'
         ? {data, dim:t.dim, pos:t.pos, glass:t.glass, updatedAt:now}
-        : {data, pos:t.pos, title:t.title, updatedAt:now};
+        : {data, pos:t.pos, line1:t.line1, line2:t.line2, metDate:t.metDate, updatedAt:now};
       try{
         await setDoc(doc(db,PH[mode].col,y), rec);
         if(mode===window.phMode){ window.bgEdit=rec; renderBgModal(); }
