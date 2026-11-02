@@ -1181,8 +1181,11 @@ body.dark-ui .loading-logo em{color:transparent}
 /* ══════════════════════════════════════════════════════
    배경 사진 + 유리 카드  (사진을 올렸을 때만 적용)
    ══════════════════════════════════════════════════════ */
-#bgPhoto{position:fixed;inset:0;z-index:0;pointer-events:none;display:none;
+#bgPhoto{position:fixed;inset:0;z-index:0;pointer-events:none;display:none;overflow:hidden;
   background-size:cover;background-position:center 50%;background-repeat:no-repeat}
+/* '사진 전체 보이기': 사진은 잘리지 않게 가운데, 남는 자리는 같은 사진을 흐리게 */
+.ph-blur{position:absolute;inset:-40px;background:center/cover no-repeat;filter:blur(24px) brightness(.55);pointer-events:none}
+.ph-all{position:absolute;inset:0;background:center/contain no-repeat;pointer-events:none}
 #bgPhoto::after{content:'';position:absolute;inset:0;
   background:linear-gradient(180deg,rgba(8,10,16,calc(var(--bgdim,.45) + .15)) 0%,
     rgba(8,10,16,var(--bgdim,.45)) 30%,rgba(8,10,16,calc(var(--bgdim,.45) + .12)) 100%)}
@@ -1268,7 +1271,7 @@ body.has-photo .modal{background:rgba(20,24,33,.86);border-color:rgba(255,255,25
 
 /* 홈 맨 위 반 사진 칸 (반 사진을 올렸을 때만 보임) */
 .hcard-class{grid-column:1/-1;padding:0!important;min-height:0!important;overflow:hidden;position:relative;border-radius:22px!important}
-.hcard-class .hc-img{height:clamp(170px,24vw,280px);background:#151922 center 50%/cover no-repeat;transition:height .25s ease}
+.hcard-class .hc-img{position:relative;overflow:hidden;height:clamp(170px,24vw,280px);background:#151922 center 50%/cover no-repeat;transition:height .25s ease}
 .hcard-class.folded .hc-img{height:58px}
 .hcard-class .hc-cap{position:absolute;left:0;right:0;bottom:0;padding:34px 22px 14px;
   background:linear-gradient(180deg,transparent,rgba(8,10,16,.62));display:flex;align-items:flex-end;justify-content:space-between;gap:10px}
@@ -1291,6 +1294,14 @@ body.has-photo .modal{background:rgba(20,24,33,.86);border-color:rgba(255,255,25
 .ph-tab.on{background:rgba(111,157,255,.18);border-color:rgba(111,157,255,.55);color:#a9c6ff}
 .bg-prev.cls{aspect-ratio:4/1}
 .bg-prev.cls::after{display:none}
+.bg-prev.tall{margin-left:auto;margin-right:auto}
+/* 사진 창: 컴퓨터·폰 화면 따로 맞추기 */
+.ph-seg{display:flex;align-items:center;gap:8px;margin-bottom:10px;font-size:12.5px;color:var(--text-muted)}
+.ph-seg>span{width:72px;flex-shrink:0}
+.ph-seg .seg{display:flex;flex:1;gap:4px;background:rgba(255,255,255,.05);padding:3px;border-radius:999px;border:1px solid var(--border)}
+.ph-seg button{flex:1;padding:6px 6px;border:none;border-radius:999px;background:none;color:var(--text-muted);font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;white-space:nowrap}
+.ph-seg button.on{background:rgba(111,157,255,.18);color:#a9c6ff;box-shadow:inset 0 0 0 1px rgba(111,157,255,.55)}
+.ph-devnote{font-size:11.5px;color:var(--text-dim);margin:-4px 0 10px}
 
 /* 사진 위에 바로 놓이는 글씨·버튼 — 사진이 밝아도 읽히게 어두운 유리 바탕 + 그림자 */
 body.has-photo .page-title,body.has-photo .daily-date,body.has-photo .cal-month-label,
@@ -1847,6 +1858,13 @@ body.has-photo .tt-title[style*="#1d4ed8"]{color:#a9c6ff!important}
       <select class="form-select" id="bgYear" onchange="loadBgYear()"></select></div>
     <div class="bg-prev empty" id="bgPrev"></div>
     <div id="bgCtrls">
+      <div class="ph-seg"><span>맞출 화면</span><div class="seg">
+        <button id="phDevPc" onclick="setPhDev('pc')">💻 컴퓨터</button>
+        <button id="phDevM" onclick="setPhDev('m')">📱 폰</button></div></div>
+      <div class="ph-seg"><span>사진 크기</span><div class="seg">
+        <button id="phFitFill" onclick="setPhFit('fill')">꽉 채우기</button>
+        <button id="phFitAll" onclick="setPhFit('all')">사진 전체 보이기</button></div></div>
+      <div class="ph-devnote" id="phDevNote"></div>
       <div class="form-group only-cls"><label class="form-label">첫째 줄 글</label>
         <input type="text" class="form-input" id="clsLine1" maxlength="30" oninput="bgPreviewTune()" onchange="saveBgTune()"></div>
       <div class="form-group only-cls"><label class="form-label">둘째 줄 글 <span style="font-weight:400;color:var(--text-dim)">· # 자리에 만난 날부터 센 날짜가 들어가요. 비우면 안 보여요.</span></label>
@@ -1855,7 +1873,8 @@ body.has-photo .tt-title[style*="#1d4ed8"]{color:#a9c6ff!important}
         <input type="date" class="form-input" id="clsMet" oninput="bgPreviewTune()" onchange="saveBgTune()"></div>
       <div class="bg-range only-bg"><span>어둡게</span><input type="range" id="bgDim" min="20" max="75" step="5" oninput="bgPreviewTune()" onchange="saveBgTune()"><b id="bgDimV"></b></div>
       <div class="bg-range only-bg"><span>카드 투명도</span><input type="range" id="bgGlass" min="0" max="100" step="10" oninput="bgPreviewTune()" onchange="saveBgTune()"><b id="bgGlassV"></b></div>
-      <div class="bg-range"><span>세로 위치</span><input type="range" id="bgPos" min="0" max="100" step="5" oninput="bgPreviewTune()" onchange="saveBgTune()"><b id="bgPosV"></b></div>
+      <div class="bg-range" id="bgPosRow"><span>세로 위치</span><input type="range" id="bgPos" min="0" max="100" step="5" oninput="bgPreviewTune()" onchange="saveBgTune()"><b id="bgPosV"></b></div>
+      <div class="bg-range" id="bgPosXRow"><span>가로 위치</span><input type="range" id="bgPosX" min="0" max="100" step="5" oninput="bgPreviewTune()" onchange="saveBgTune()"><b id="bgPosXV"></b></div>
     </div>
     <div style="display:flex;gap:8px">
       <label class="btn btn-primary" style="flex:1;text-align:center" id="bgPickBtn">📷 사진 올리기
@@ -6130,6 +6149,8 @@ window.closeLinksOutside = function(e){ if(e.target===document.getElementById('l
 
 // ── 배경 사진 · 반 사진 (학년도별) ─────────────────────────────
 // 배경: bgPhotos/{학년도} {data,dim,glass,pos}   반 사진(홈 맨 위 칸): classPhotos/{학년도} {data,pos,title}
+// 컴퓨터·폰 따로(두 사진 모두): 폰 = pos(세로) posX(가로) fit,  컴퓨터 = posWide posXWide fitWide
+//   (fit='all'이면 사진 전체 보이기). 컴퓨터 값이 없으면 예전처럼 pos를 같이 쓴다.
 // 3월부터 새 학년도. 이번 학년도 사진이 없으면 지난 학년도 사진을 그대로 쓴다.
 const CLS_COL="classPhotos";
 const PH={
@@ -6164,11 +6185,32 @@ function photoLum(data){
   });
 }
 function autoBoost(L){ return Math.max(0,(L-0.42))*0.75; }   // 밝기 0.7 → 약 +21%
+const WIDE_MQ=window.matchMedia('(min-width:769px)');   // 이 앱의 폰 화면 = 768px 이하
+function isWide(){ return WIDE_MQ.matches; }
+const PH_DEV_KEYS={pc:['posWide','posXWide','fitWide'], m:['pos','posX','fit']};
+// 기기별 보기 값 {y,x,all}
+function phView(p,dev){
+  if(dev==='pc') return {y:p?.posWide??p?.pos??50, x:p?.posXWide??50, all:p?.fitWide==='all'};
+  return {y:p?.pos??50, x:p?.posX??50, all:p?.fit==='all'};
+}
+function curDev(){ return isWide()?'pc':'m'; }
+// el에 사진을 그린다: 꽉 채우기(위치 x,y) 또는 사진 전체 보이기(양옆·위아래는 흐린 사진)
+function paintPhoto(el,data,v){
+  el.querySelectorAll(':scope>.ph-blur,:scope>.ph-all').forEach(n=>n.remove());
+  if(v.all){
+    el.style.backgroundImage='';
+    const u=`url("${data}")`, b=document.createElement('div'), a=document.createElement('div');
+    b.className='ph-blur'; b.style.backgroundImage=u; a.className='ph-all'; a.style.backgroundImage=u;
+    el.prepend(b,a);
+  } else {
+    el.style.backgroundImage=`url("${data}")`;
+    el.style.backgroundPosition=`${v.x}% ${v.y}%`;
+  }
+}
 function applyBg(p){
   const el=document.getElementById('bgPhoto');
   if(p&&p.data){
-    el.style.backgroundImage=`url("${p.data}")`;
-    el.style.backgroundPosition=`center ${p.pos??50}%`;
+    paintPhoto(el,p.data,phView(p,curDev()));
     const dim=p.dim??0.45;
     document.body.style.setProperty('--bgdim', dim);
     photoLum(p.data).then(L=>{
@@ -6179,6 +6221,7 @@ function applyBg(p){
     document.body.classList.add('has-photo');
   } else {
     el.style.backgroundImage='';
+    el.querySelectorAll('.ph-blur,.ph-all').forEach(n=>n.remove());
     document.body.classList.remove('has-photo');
   }
 }
@@ -6203,9 +6246,7 @@ function applyCls(p){
   if(!el) return;
   if(!(p&&p.data)){ el.style.display='none'; return; }
   el.style.display='';
-  const img=el.querySelector('.hc-img');
-  img.style.backgroundImage=`url("${p.data}")`;
-  img.style.backgroundPosition=`center ${p.pos??50}%`;
+  paintPhoto(el.querySelector('.hc-img'),p.data,phView(p,curDev()));
   el.querySelector('.hc-title').textContent=clsText(p).line1;
   el.querySelector('.hc-sub').textContent=clsText(p).line2;
   let fold=false; try{ fold=localStorage.getItem('wf_clsFold')==='1'; }catch(e){}
@@ -6223,7 +6264,8 @@ function cachePh(kind,p){
     const k=PH[kind].cache;
     if(!p){ localStorage.removeItem(k); return; }
     const old=JSON.parse(localStorage.getItem(k)||'null');
-    if(old&&old.year===p.year&&old.updatedAt===p.updatedAt&&old.dim===p.dim&&old.pos===p.pos&&old.glass===p.glass&&old.line1===p.line1&&old.line2===p.line2&&old.metDate===p.metDate) return;
+    const sig=o=>JSON.stringify(Object.keys(o).filter(k=>k!=='data').sort().map(k=>[k,o[k]]))+(o.data||'').length+(o.data||'').slice(-40);
+    if(old&&sig(old)===sig(p)) return;
     localStorage.setItem(k, JSON.stringify(p));
   }catch(e){}
 }
@@ -6234,6 +6276,11 @@ for(const kind of ['bg','cls']){
   try{ const c=JSON.parse(localStorage.getItem(PH[kind].cache)||'null'); if(c){ window.phShown[kind]=c; PH[kind].apply(c); } }catch(e){}
 }
 
+// 창 크기가 컴퓨터↔폰 기준을 넘나들면 그 화면에 맞춘 값으로 다시 그린다
+WIDE_MQ.addEventListener('change',()=>{
+  PH.bg.apply(window.phShown.bg); PH.cls.apply(window.phShown.cls);
+  if(document.getElementById('bgOverlay').classList.contains('open')) bgPreviewTune();
+});
 function startBg(){
   const y=schoolYear();
   for(const kind of ['bg','cls']){
@@ -6255,6 +6302,7 @@ window.openBgModal = function(mode){
   sel.innerHTML=[y-1,y,y+1].map(v=>`<option value="${v}">${v}학년도${v===y?' (지금)':''}</option>`).join('');
   sel.value=String(y);
   window.phMode= mode==='cls' ? 'cls' : 'bg';
+  window.phDev=curDev();   // 처음엔 지금 쓰는 화면을 맞춘다
   document.getElementById('bgOverlay').classList.add('open');
   loadBgYear();
 };
@@ -6281,10 +6329,11 @@ function renderBgModal(msg){
   prev.classList.toggle('cls', !isBg);
   prev.classList.toggle('empty', !has);
   if(has){
-    prev.style.backgroundImage=`url("${p.data}")`;
     prev.innerHTML= isBg ? '<div class="bg-prev-card">오늘 할 일</div>' : '';
+    phImgSize(p.data).then(()=>{ if(window.bgEdit===p) bgPreviewTune(); });
   } else {
     prev.style.backgroundImage='';
+    prev.style.aspectRatio=''; prev.style.width=''; prev.classList.remove('tall');
     prev.innerHTML=msg|| (isBg
       ? `${y}학년도 배경 사진이 아직 없습니다.<br>풍경 사진처럼 넓게 퍼진 사진이 잘 어울립니다.`
       : `${y}학년도 반 사진이 아직 없습니다.<br>올리면 홈 화면 맨 위에 또렷하게 보입니다.`);
@@ -6296,7 +6345,9 @@ function renderBgModal(msg){
   document.getElementById('bgPickBtn').firstChild.textContent=(has?'📷 사진 바꾸기':'📷 사진 올리기');
   document.getElementById('bgDim').value=Math.round((p?.dim??0.45)*100);
   document.getElementById('bgGlass').value=p?.glass??50;
-  document.getElementById('bgPos').value=p?.pos??50;
+  window.phDraft={};
+  for(const k of [...PH_DEV_KEYS.pc,...PH_DEV_KEYS.m]) if(p&&p[k]!=null) window.phDraft[k]=p[k];
+  phLoadDev();
   const cd=clsDefaults(p,y);
   document.getElementById('clsLine1').value=cd.line1;
   document.getElementById('clsLine2').value=cd.line2;
@@ -6308,11 +6359,38 @@ function renderBgModal(msg){
   document.getElementById('bgNote').innerHTML=
     `${when}<br>사진은 이 앱의 Firebase에만 저장되고 공개 저장소(GitHub)에는 올라가지 않습니다. 큰 사진은 자동으로 줄여서 저장합니다.`;
 }
+// ── 컴퓨터·폰 따로 맞추기 ──
+window.phDev='pc';
+window.phDraft={};
+const phImgAR={};
+function phImgSize(data){
+  const k=data.length+data.slice(-40);
+  if(phImgAR[k]) return Promise.resolve(phImgAR[k]);
+  return new Promise(res=>{ const im=new Image(); im.onload=()=>{ phImgAR[k]=im.width/im.height; res(phImgAR[k]); }; im.onerror=()=>res(null); im.src=data; });
+}
+// 미리보기 모양(가로/세로 비) = 그 화면에서 사진이 보이는 칸 모양
+function phBoxAR(mode,dev){
+  const here=dev===curDev();
+  if(mode==='bg') return here ? innerWidth/innerHeight : (dev==='pc' ? 16/10 : 390/844);
+  const hc=document.getElementById('homeClass');
+  const vw= here ? innerWidth : (dev==='pc'?1280:390);
+  const w= here&&hc&&hc.offsetWidth ? hc.offsetWidth : (dev==='pc'? Math.min(vw-56,1180) : vw-24);
+  return w/Math.min(280,Math.max(170,vw*0.24));
+}
+function phLoadDev(){
+  const v=phView(window.phDraft,window.phDev);
+  document.getElementById('bgPos').value=v.y;
+  document.getElementById('bgPosX').value=v.x;
+}
+window.setPhDev = function(dev){ window.phDev=dev; phLoadDev(); bgPreviewTune(); };
+window.setPhFit = function(fit){
+  const [,,fk]=PH_DEV_KEYS[window.phDev];
+  window.phDraft[fk]=fit; bgPreviewTune(); saveBgTune();
+};
 function phTune(){
   return {
     dim:document.getElementById('bgDim').value/100,
     glass:Number(document.getElementById('bgGlass').value),
-    pos:Number(document.getElementById('bgPos').value),
     line1:document.getElementById('clsLine1').value.trim(),
     line2:document.getElementById('clsLine2').value.trim(),
     metDate:document.getElementById('clsMet').value||`${document.getElementById('bgYear').value}-03-02`,
@@ -6322,7 +6400,31 @@ window.bgPreviewTune = function(){
   const t=phTune(), prev=document.getElementById('bgPrev'), mode=window.phMode;
   document.getElementById('bgGlassV').textContent=t.glass+'%';
   document.getElementById('bgDimV').textContent=Math.round(t.dim*100)+'%';
-  document.getElementById('bgPosV').textContent=t.pos+'%';
+  // 지금 고르는 화면의 위치 막대 값을 초안에 넣는다
+  const dev=window.phDev, [yk,xk,fk]=PH_DEV_KEYS[dev];
+  window.phDraft[yk]=Number(document.getElementById('bgPos').value);
+  window.phDraft[xk]=Number(document.getElementById('bgPosX').value);
+  const v=phView(window.phDraft,dev);
+  document.getElementById('bgPosV').textContent=v.y+'%';
+  document.getElementById('bgPosXV').textContent=v.x+'%';
+  document.getElementById('phDevPc').classList.toggle('on',dev==='pc');
+  document.getElementById('phDevM').classList.toggle('on',dev==='m');
+  document.getElementById('phFitFill').classList.toggle('on',!v.all);
+  document.getElementById('phFitAll').classList.toggle('on',v.all);
+  // 미리보기 모양을 그 화면의 사진 칸과 같게
+  const box=phBoxAR(mode,dev), ed=window.bgEdit, hasImg=!!(ed&&ed.data);
+  prev.style.aspectRatio= hasImg ? `${box.toFixed(3)}` : '';
+  prev.classList.toggle('tall',hasImg&&box<1);
+  prev.style.width= hasImg&&box<1 ? Math.round(300*box)+'px' : '';
+  // 사진이 잘리는 쪽 막대만 보여 준다 (사진 전체 보이기면 위치 막대 없음)
+  const imgAR= ed&&ed.data ? phImgAR[ed.data.length+ed.data.slice(-40)] : null;
+  const cutX= imgAR ? imgAR>box : false;
+  document.getElementById('bgPosRow').style.display= v.all||cutX ? 'none' : '';
+  document.getElementById('bgPosXRow').style.display= !v.all&&cutX ? '' : 'none';
+  const devName= dev==='pc'?'컴퓨터':'폰';
+  document.getElementById('phDevNote').textContent= dev===curDev()
+    ? `지금 이 ${devName} 화면에 맞추는 중이에요. ${dev==='pc'?'폰':'컴퓨터'}은 따로 맞춰요.`
+    : `${devName} 화면 모양으로 미리 보여요. 이 화면에는 바뀌지 않아요.`;
   prev.style.setProperty('--bgdim',t.dim);
   if(mode==='bg'&&window.bgEdit&&window.bgEdit.data){
     photoLum(window.bgEdit.data).then(L=>{
@@ -6331,18 +6433,24 @@ window.bgPreviewTune = function(){
       document.getElementById('bgAuto').textContent= b>=0.02 ? `밝은 사진이라 글씨가 잘 보이도록 ${Math.round(b*100)}% 더 어둡게 맞췄어요.` : '';
     });
   } else document.getElementById('bgAuto').textContent='';
-  prev.style.backgroundPosition=`center ${t.pos}%`;
+  if(ed&&ed.data) paintPhoto(prev,ed.data,v);
   glassVars(prev, t.glass);
   // 지금 보이는 사진을 고치는 중이면 실제 화면에도 바로 보여 준다
   const y=Number(document.getElementById('bgYear').value), shown=window.phShown[mode];
   if(shown&&shown.year===y&&window.bgEdit){
-    PH[mode].apply(mode==='bg' ? {...shown,dim:t.dim,pos:t.pos,glass:t.glass} : {...shown,pos:t.pos,line1:t.line1,line2:t.line2,metDate:t.metDate});
+    PH[mode].apply(mode==='bg' ? {...shown,...window.phDraft,dim:t.dim,glass:t.glass} : {...shown,...window.phDraft,line1:t.line1,line2:t.line2,metDate:t.metDate});
   }
 };
 window.saveBgTune = async function(){
   if(!window.bgEdit) return;
   const y=document.getElementById('bgYear').value, mode=window.phMode, t=phTune();
-  const upd= mode==='bg' ? {dim:t.dim,pos:t.pos,glass:t.glass} : {pos:t.pos,line1:t.line1,line2:t.line2,metDate:t.metDate};
+  const upd= mode==='bg' ? {dim:t.dim,glass:t.glass} : {line1:t.line1,line2:t.line2,metDate:t.metDate};
+  // 고르고 있는 화면 값만 저장한다
+  for(const k of PH_DEV_KEYS[window.phDev]) if(window.phDraft[k]!=null) upd[k]=window.phDraft[k];
+  // 예전 사진은 pos 하나를 컴퓨터·폰이 같이 썼다 → 폰을 처음 바꿀 때 컴퓨터 위치는 그대로 붙잡아 둔다
+  if(window.phDev==='m' && window.bgEdit.posWide==null && upd.pos!==(window.bgEdit.pos??50)){
+    upd.posWide=window.bgEdit.pos??50; window.phDraft.posWide=upd.posWide;
+  }
   try{ await updateDoc(doc(db,PH[mode].col,y), upd); window.bgEdit={...window.bgEdit,...upd}; }
   catch(e){ toast('저장 실패: '+e.message, true); }
 };
@@ -6369,9 +6477,12 @@ window.bgPick = function(e){
       }
       if(data.length>900000){ toast('사진이 너무 큽니다. 다른 사진으로 해주세요', true); renderBgModal(); return; }
       const y=document.getElementById('bgYear').value, t=phTune(), now=new Date().toISOString();
+      // 사진을 바꿔도 컴퓨터·폰 크기·위치 설정은 이어서 쓴다
+      const devTune={};
+      for(const k of [...PH_DEV_KEYS.pc,...PH_DEV_KEYS.m]) if(window.phDraft[k]!=null) devTune[k]=window.phDraft[k];
       const rec= mode==='bg'
-        ? {data, dim:t.dim, pos:t.pos, glass:t.glass, updatedAt:now}
-        : {data, pos:t.pos, line1:t.line1, line2:t.line2, metDate:t.metDate, updatedAt:now};
+        ? {data, dim:t.dim, ...devTune, glass:t.glass, updatedAt:now}
+        : {data, ...devTune, line1:t.line1, line2:t.line2, metDate:t.metDate, updatedAt:now};
       try{
         await setDoc(doc(db,PH[mode].col,y), rec);
         if(mode===window.phMode){ window.bgEdit=rec; renderBgModal(); }
