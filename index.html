@@ -3033,7 +3033,7 @@ function renderDailyClass(){
       return `<div class="lesson-row ${saved?'saved':''}">
         <div class="lesson-period">${ls.period}교시</div>
         <div class="lesson-label">${esc(ls.label||'—')}<small>${esc(ls.s||'')}</small></div>
-        <input type="text" id="ls_u_${ls.period}" placeholder="진도 내용 (예: 3단원 순열과 조합 p.72~78)" value="${esc(val)}">
+        <input type="text" id="ls_u_${ls.period}" placeholder="진도 내용 (예: 3단원 순열과 조합 p.72~78)" value="${esc(val)}" onkeydown="lessonKey(event,this)">
         ${saved
           ? `<button class="btn btn-ghost btn-sm" style="white-space:nowrap" onclick="saveLesson('${ls.period}','${jsStr(ls.label)}','${log.id}')">수정</button>`
           : `<button class="btn btn-primary btn-sm" style="white-space:nowrap" onclick="saveLesson('${ls.period}','${jsStr(ls.label)}','')">기록</button>`}
@@ -3127,6 +3127,16 @@ window.deleteExtraLesson = async function(id){
   if(!confirm('삭제할까요?')) return;
   try{ await deleteDoc(doc(db,EXTRA_COL,id)); toast('🗑️ 삭제되었습니다'); }
   catch(e){ toast('삭제 실패: '+e.message, true); }
+};
+// 진도 칸에서 Ctrl+Enter(맥 Cmd+Enter) → 그 반의 [기록]/[수정] 버튼과 같게 저장
+window.lessonKey = function(e, el){
+  if(e.key==='Enter' && (e.ctrlKey||e.metaKey)){
+    e.preventDefault();
+    // 한글 입력 중에는 Enter가 두 번 들어올 수 있어 한 번만 저장되게 막음
+    if(el._lsBusy) return;
+    el._lsBusy=true; setTimeout(()=>{ el._lsBusy=false; },800);
+    setTimeout(()=>el.nextElementSibling?.click(),0);
+  }
 };
 window.saveLesson = async function(period, label, logId){
   const unit=document.getElementById(`ls_u_${period}`).value.trim();
