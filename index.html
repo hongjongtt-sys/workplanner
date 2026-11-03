@@ -3678,11 +3678,18 @@ window.saveTask = async function(){
     if(!window.editId||(window.tasks.find(t=>t.id===window.editId)?.status!=='done')) data.doneAt=getTodayStr();
   }
   setSyncState('syncing');
+  // 저장을 누르면 바로 닫는다. 서버 응답(학교 와이파이가 느리거나 끊기면 오래 걸림)을 기다리지 않는다.
+  // 화면 목록은 Firestore가 먼저 반영해 주고, 실패하면 쓰던 내용 그대로 팝업을 다시 연다.
+  const editId=window.editId;
+  closeModal();
   try{
-    if(window.editId){ await updateDoc(doc(db,COL,window.editId), data); toast('✏️ 수정되었습니다'); }
+    if(editId){ await updateDoc(doc(db,COL,editId), data); toast('✏️ 수정되었습니다'); }
     else { data.createdAt=serverTimestamp(); await addDoc(collection(db,COL), data); toast(isEv?'📌 일정이 추가되었습니다':'✅ 업무가 추가되었습니다'); }
-    closeModal();
-  }catch(e){ toast('저장 실패: '+e.message, true); setSyncState('error'); }
+  }catch(e){
+    toast('저장 실패: '+e.message, true); setSyncState('error');
+    const ov=document.getElementById('overlay');
+    if(!ov.classList.contains('open') && window.editId===editId) ov.classList.add('open');
+  }
 };
 window.deleteTask = async function(){
   if(!window.editId) return;
