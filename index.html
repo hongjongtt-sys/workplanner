@@ -669,6 +669,7 @@ body.home-mode .content{padding:0;overflow:visible}
 .mr-row.mr-pink td{background:rgba(244,114,182,.18)!important}
 .mr-note{font-size:11px;color:var(--text-dim);margin-top:10px;line-height:1.7}
 .mr-sw{display:inline-block;width:10px;height:10px;border-radius:3px;vertical-align:-1px;margin:0 3px 0 6px}
+#mrLinkBtn.mr-linked{border-color:rgba(72,217,164,.55);color:var(--low)}
 body.dark-ui .mr-import{background:rgba(20,23,31,.72);border-color:var(--border)}
 body.dark-ui .mr-in{background:rgba(255,255,255,.06);border-color:var(--border2);color:var(--text)}
 body.dark-ui .mr-row.mr-yellow td{background:rgba(250,204,21,.14)!important}
@@ -1672,19 +1673,11 @@ body.has-photo .tt-title[style*="#1d4ed8"]{color:#a9c6ff!important}
         <div class="page-title">상벌점</div>
         <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
           <span id="mrUpdated" style="font-size:11px;color:var(--text-dim)"></span>
-          <button class="btn btn-ghost btn-sm" onclick="toggleMeritImport()">📥 게시판에서 가져오기</button>
+          <button class="btn btn-ghost btn-sm" id="mrLinkBtn" onclick="toggleMeritLink()">🔗 게시판 연결</button>
           <button class="btn btn-ghost btn-sm" onclick="toggleMeritPrint()">🖨 인쇄</button>
         </div>
       </div>
-      <div id="mrImport" class="mr-import" style="display:none">
-        <div style="font-size:12.5px;font-weight:700;margin-bottom:6px">우리 반 게시판 상벌점 붙여넣기</div>
-        <textarea id="mrImportText" class="form-input" rows="6" placeholder="학번&#9;이름&#9;벌점&#9;상점&#10;20301&#9;김민준&#9;3&#9;1"></textarea>
-        <div style="font-size:11px;color:var(--text-dim);margin:6px 0 8px;line-height:1.6">게시판 상벌점 표를 드래그해 복사한 뒤 붙여넣으세요. 한 줄에 학번(또는 번호), 이름, 벌점, 상점 순서이고, 이름으로 학생카드 명단과 맞춥니다. 붙여넣은 학생의 점수는 새 값으로 바뀝니다.</div>
-        <div style="display:flex;gap:6px;justify-content:flex-end">
-          <button class="btn btn-ghost btn-sm" onclick="toggleMeritImport()">취소</button>
-          <button class="btn btn-primary btn-sm" onclick="importMerit()">가져오기</button>
-        </div>
-      </div>
+      <div id="mrLink" class="mr-import" style="display:none"></div>
       <div id="mrPrint" class="mr-import" style="display:none">
         <div style="font-size:12.5px;font-weight:700;margin-bottom:8px">인쇄 쪽 나누기</div>
         <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:12.5px">
@@ -2492,6 +2485,7 @@ function startApp(){
     if(document.getElementById('catOverlay').classList.contains('open')) renderCatList();
     if(!window.editMemo) renderMemo();
     if(isActive('merit')) renderMerit();
+    if(window.cb && window.cb.app && window.cb.cls!==cbClass()) cbListen();
     if(document.getElementById('attOverlay')?.classList.contains('open')) renderNotePresets();
     homeTouch();
   });
@@ -2572,6 +2566,7 @@ window.loadGroup = function(g){
     }
     if(isActive('check')) renderCheck();
     if(isActive('merit')) renderMerit();
+    cbReconcile();
     homeTouch();
   });
   onSnapshot(collection(db,ATT_COL), snap=>{
@@ -2587,6 +2582,8 @@ window.loadGroup = function(g){
     window.meritPoints={};
     snap.docs.forEach(d=>{ window.meritPoints[d.id]=d.data(); });
     if(isActive('merit')) renderMerit();
+    if(cbClass()) cbInit();
+    cbReconcile();
   });
   }
   if(g==='check'){
@@ -4420,6 +4417,7 @@ window.renderMerit = function(){
   const up=document.getElementById('mrUpdated');
   const last=(window.config.merit&&window.config.merit.lastUpdated)||'';
   if(up) up.textContent=last?`최종 수정일 ${mrFmtDate(last)}`:'';
+  cbRenderStatus();
   if(!window.dataReady.students || !window.dataReady.merit){
     el.innerHTML=`<div class="empty"><div class="empty-icon">⏳</div><p>불러오는 중...</p></div>`;
     return;
@@ -4431,7 +4429,8 @@ window.renderMerit = function(){
   }
   // 입력 중인 칸이 다시 그려져도 끊기지 않도록
   const a=document.activeElement;
-  const focus=(a&&el.contains(a)&&a.dataset.stu)?{stu:a.dataset.stu,kind:a.dataset.kind,val:a.value}:null;
+  // 손대지 않은 칸이면 새 값(게시판에서 바뀐 값 등)을 보여 주고, 입력 중이던 칸만 그 값을 지킴
+  const focus=(a&&el.contains(a)&&a.dataset.stu)?{stu:a.dataset.stu,kind:a.dataset.kind,val:a.value,edited:a.value!==a.dataset.orig}:null;
 
   let sumD=0,sumM=0;
   const body=window.students.map(s=>{
@@ -4440,8 +4439,8 @@ window.renderMerit = function(){
     return `<tr class="ck-row mr-row ${mrRowClass(t)}"><td class="ck-td-stu">
       <div class="ck-stu-line"><div class="ck-stu-num">${esc(String(s.number||''))}</div>
       <div class="ck-stu-name">${esc(s.name||'')}</div></div></td>
-      <td class="mr-cell"><input class="mr-in" type="number" inputmode="numeric" min="0" data-stu="${s.id}" data-kind="demerit" value="${m.demerit}" onchange="setMerit(this)" onkeydown="mrKey(event,this)"></td>
-      <td class="mr-cell"><input class="mr-in" type="number" inputmode="numeric" min="0" data-stu="${s.id}" data-kind="merit" value="${m.merit}" onchange="setMerit(this)" onkeydown="mrKey(event,this)"></td>
+      <td class="mr-cell"><input class="mr-in" type="number" inputmode="numeric" min="0" data-stu="${s.id}" data-kind="demerit" value="${m.demerit}" data-orig="${m.demerit}" onchange="setMerit(this)" onkeydown="mrKey(event,this)"></td>
+      <td class="mr-cell"><input class="mr-in" type="number" inputmode="numeric" min="0" data-stu="${s.id}" data-kind="merit" value="${m.merit}" data-orig="${m.merit}" onchange="setMerit(this)" onkeydown="mrKey(event,this)"></td>
       <td class="mr-total">${t}</td></tr>`;
   }).join('');
 
@@ -4457,7 +4456,7 @@ window.renderMerit = function(){
 
   if(focus){
     const f=el.querySelector(`.mr-in[data-stu="${focus.stu}"][data-kind="${focus.kind}"]`);
-    if(f){ f.value=focus.val; f.focus(); }
+    if(f){ if(focus.edited) f.value=focus.val; f.focus(); }
   }
 };
 
@@ -4469,7 +4468,8 @@ window.setMerit = async function(inp){
   try{
     await setDoc(doc(db,MERIT_COL,stuId), {[kind]:v, updatedAt:new Date().toISOString()}, {merge:true});
     await setDoc(doc(db,CFG_COL,'merit'), {lastUpdated:getTodayStr()}, {merge:true});
-  }catch(e){ toast('저장 실패: '+e.message, true); }
+  }catch(e){ toast('저장 실패: '+e.message, true); return; }
+  cbSave(stuId);
 };
 // Enter → 같은 열 다음 학생
 window.mrKey = function(e, inp){
@@ -4480,37 +4480,188 @@ window.mrKey = function(e, inp){
   if(next){ next.focus(); next.select(); } else inp.blur();
 };
 
-window.toggleMeritImport = function(){
-  const box=document.getElementById('mrImport');
+// ── 학급 게시판(classboard) 상벌점 양쪽 연결 ──
+// 게시판 데이터: classes/{학급코드}/meritPoints/{학번} {studentNo,name,merit,demerit,updatedAt}
+// 이름으로 학생카드 명단과 짝지음. 값이 다르면 나중에 고친 쪽(updatedAt)을 따라감.
+const CB_CONFIG = {
+  apiKey: "AIzaSyDEVJk1GOGjJdBfCJjuMyeXmzzKIw4wlKI",
+  authDomain: "classboard-4b9da.firebaseapp.com",
+  projectId: "classboard-4b9da",
+  storageBucket: "classboard-4b9da.firebasestorage.app",
+  messagingSenderId: "933415283397",
+  appId: "1:933415283397:web:87f93865e49a9e8d049eac"
+};
+const CB_TEACHER_EMAIL = "hongjongtt@class.com";
+window.cb = {app:null, db:null, auth:null, user:null, unsub:null, cls:'', docs:[], ready:false, err:''};
+function cbClass(){ return String((window.config.merit&&window.config.merit.boardClass)||'').trim(); }
+function cbMs(v){ if(!v) return 0; if(typeof v.toMillis==='function') return v.toMillis(); const t=Date.parse(v); return isNaN(t)?0:t; }
+const cbNorm=x=>String(x||'').replace(/\s+/g,'');
+function cbInit(){
+  if(window.cb.app) return;
+  window.cb.app=initializeApp(CB_CONFIG, 'classboard');
+  window.cb.db=getFirestore(window.cb.app);
+  window.cb.auth=getAuth(window.cb.app);
+  setPersistence(window.cb.auth, browserLocalPersistence).catch(()=>{});
+  onAuthStateChanged(window.cb.auth, u=>{
+    window.cb.user=(u && u.email===CB_TEACHER_EMAIL)?u:null;
+    cbListen();
+  });
+}
+function cbListen(){
+  const cls=cbClass();
+  if(window.cb.unsub && window.cb.cls===cls && window.cb.user) return;
+  if(window.cb.unsub){ window.cb.unsub(); window.cb.unsub=null; }
+  window.cb.ready=false; window.cb.docs=[]; window.cb.cls=cls; window.cb.err='';
+  if(!window.cb.user || !cls){ cbRenderStatus(); return; }
+  window.cb.unsub=onSnapshot(collection(window.cb.db,'classes',cls,'meritPoints'), snap=>{
+    window.cb.docs=snap.docs.map(d=>({id:d.id,...d.data({serverTimestamps:'estimate'})}));
+    window.cb.ready=true; window.cb.err='';
+    cbReconcile();
+    cbRenderStatus();
+  }, e=>{ window.cb.err=e.message; window.cb.ready=false; cbRenderStatus(); });
+  cbRenderStatus();
+}
+// 학생카드 학생 ↔ 게시판 문서 짝짓기 (이름, 같은 이름이 둘 이상이면 학번 끝 두 자리=번호)
+function cbPairs(){
+  const docs=window.cb.docs, used=new Set();
+  const pairs=window.students.map(s=>{
+    let c=docs.filter(d=>!used.has(d.id) && cbNorm(d.name)===cbNorm(s.name));
+    if(c.length>1){ const f=c.filter(d=>parseInt(String(d.studentNo||d.id).slice(-2))===parseInt(s.number)); if(f.length) c=f; }
+    const d=c[0]||null; if(d) used.add(d.id);
+    return {s, d};
+  });
+  const extra=docs.filter(d=>!used.has(d.id));
+  return {pairs, extra};
+}
+function cbLinked(){ return !!(window.cb && window.cb.user && window.cb.ready && cbClass()); }
+// 학번 만들기: 학년 + 반(2자리) + 번호(2자리), 예: 2학년 3반 1번 → 20301
+function cbStudentNo(s){
+  const sc=window.config.school||{};
+  const n=parseInt(s.number)||0;
+  if(sc.grade && sc.cls && n) return `${sc.grade}${String(sc.cls).padStart(2,'0')}${String(n).padStart(2,'0')}`;
+  return String(s.number||s.name||s.id);
+}
+let cbBusy=false, cbAgain=false;
+async function cbReconcile(){
+  if(!cbLinked() || !window.dataReady.students || !window.dataReady.merit) return;
+  if(cbBusy){ cbAgain=true; return; }
+  cbBusy=true;
+  try{
+    const {pairs}=cbPairs();
+    const toWf=[], toCb=[];
+    pairs.forEach(({s,d})=>{
+      const w=window.meritPoints[s.id]||{};
+      const wv={merit:Number(w.merit)||0, demerit:Number(w.demerit)||0};
+      if(!d){ if(wv.merit||wv.demerit) toCb.push({s, v:wv}); return; }
+      const cv={merit:Number(d.merit)||0, demerit:Number(d.demerit)||0};
+      if(cv.merit===wv.merit && cv.demerit===wv.demerit) return;
+      if(cbMs(w.updatedAt) > cbMs(d.updatedAt)) toCb.push({s, d, v:wv});
+      else toWf.push({s, v:cv, t:cbMs(d.updatedAt)});
+    });
+    for(const x of toWf)
+      await setDoc(doc(db,MERIT_COL,x.s.id), {...x.v, updatedAt:new Date(x.t||Date.now()).toISOString()}, {merge:true});
+    if(toWf.length) await setDoc(doc(db,CFG_COL,'merit'), {lastUpdated:getTodayStr()}, {merge:true});
+    for(const x of toCb) await cbPush(x.s, x.v, x.d);
+    if(toCb.length) await cbTouchMeta();
+  }catch(e){ console.warn('게시판 맞추기 실패', e); }
+  finally{ cbBusy=false; if(cbAgain){ cbAgain=false; cbReconcile(); } }
+}
+async function cbPush(s, v, d){
+  const id=d?d.id:cbStudentNo(s);
+  const data={merit:v.merit, demerit:v.demerit, updatedAt:serverTimestamp()};
+  if(!d){ data.studentNo=id; data.name=s.name||''; }
+  await setDoc(doc(window.cb.db,'classes',cbClass(),'meritPoints',id), data, {merge:true});
+}
+async function cbTouchMeta(){
+  await setDoc(doc(window.cb.db,'classes',cbClass(),'meritMeta','info'), {lastUpdated:getTodayStr(), updatedAt:serverTimestamp()}, {merge:true});
+}
+// WorkFlow에서 고친 점수를 게시판에도 바로 저장
+async function cbSave(stuId){
+  if(!cbLinked()) return;
+  const s=window.students.find(x=>x.id===stuId); if(!s) return;
+  const pr=cbPairs().pairs.find(p=>p.s.id===stuId);
+  try{ await cbPush(s, mrOf(stuId), pr&&pr.d); await cbTouchMeta(); }
+  catch(e){ toast('게시판 저장 실패: '+e.message, true); }
+}
+function cbRenderStatus(){
+  const btn=document.getElementById('mrLinkBtn');
+  if(btn){
+    const on=cbLinked();
+    btn.textContent= on?`🔗 게시판 연결됨 · ${cbClass()}반`:((window.cb&&window.cb.err)?'⚠️ 게시판 연결 오류':'🔗 게시판 연결');
+    btn.classList.toggle('mr-linked', on);
+  }
+  const box=document.getElementById('mrLink');
+  if(box && box.style.display!=='none') renderMeritLink();
+}
+function renderMeritLink(){
+  const box=document.getElementById('mrLink'); if(!box) return;
+  const cls=cbClass();
+  if(cbLinked()){
+    const {pairs, extra}=cbPairs();
+    const miss=pairs.filter(p=>!p.d).map(p=>p.s.name);
+    box.innerHTML=`<div style="font-size:12.5px;font-weight:700;margin-bottom:6px">🔗 우리 반 게시판과 연결됨 · ${esc(cls)}반</div>
+      <div style="font-size:12px;line-height:1.8">
+        여기서 고친 점수는 게시판에도 바로 저장되고, 게시판에서 고친 점수도 이 표에 들어옵니다. 두 곳 값이 다르면 나중에 고친 쪽을 따라갑니다.<br>
+        이름이 같은 학생 <b>${pairs.length-miss.length}명</b>이 짝지어졌어요.
+        ${miss.length?`<br>게시판에 없는 학생 ${miss.length}명(${esc(miss.slice(0,6).join(', '))}${miss.length>6?' …':''})은 점수를 넣으면 게시판에 새로 추가됩니다.`:''}
+        ${extra.length?`<br>학생카드 명단에 없는 게시판 학생 ${extra.length}명(${esc(extra.slice(0,6).map(d=>d.name||d.id).join(', '))}${extra.length>6?' …':''})은 연결하지 않아요.`:''}
+      </div>
+      <div style="display:flex;gap:6px;justify-content:flex-end;margin-top:8px">
+        <button class="btn btn-ghost btn-sm" onclick="cbDisconnect()">연결 끊기</button>
+        <button class="btn btn-primary btn-sm" onclick="toggleMeritLink()">닫기</button>
+      </div>`;
+    return;
+  }
+  box.innerHTML=`<div style="font-size:12.5px;font-weight:700;margin-bottom:6px">우리 반 게시판과 연결</div>
+    <div style="font-size:11px;color:var(--text-dim);margin-bottom:8px;line-height:1.6">
+      게시판 교사 계정으로 한 번 로그인하면 이 컴퓨터(폰)에서는 계속 연결돼요. 비밀번호는 저장하지 않아요.
+      ${window.cb.err?`<br><span style="color:var(--high)">연결 오류: ${esc(window.cb.err)}</span>`:''}</div>
+    <div style="display:grid;grid-template-columns:auto 1fr;gap:6px 8px;align-items:center;font-size:12.5px;max-width:420px">
+      <span>학급 코드</span><input id="cbCls" class="form-input" style="padding:6px 8px" placeholder="게시판의 학급 코드" value="${esc(cls)}">
+      ${window.cb.user?'':`<span>교사 이메일</span><input id="cbEmail" class="form-input" style="padding:6px 8px" value="${CB_TEACHER_EMAIL}">
+      <span>비밀번호</span><input id="cbPw" type="password" class="form-input" style="padding:6px 8px" placeholder="게시판 교사 비밀번호" autocomplete="current-password" onkeydown="if(event.key==='Enter'){event.preventDefault();cbConnect();}">`}
+    </div>
+    <div style="display:flex;gap:6px;justify-content:flex-end;margin-top:10px">
+      <button class="btn btn-ghost btn-sm" onclick="toggleMeritLink()">취소</button>
+      <button class="btn btn-primary btn-sm" id="cbGo" onclick="cbConnect()">연결</button>
+    </div>`;
+}
+window.toggleMeritLink = function(){
+  cbInit();
+  const box=document.getElementById('mrLink');
   const open=box.style.display==='none';
   box.style.display=open?'block':'none';
-  if(open) document.getElementById('mrImportText').focus();
+  if(open){ renderMeritLink(); setTimeout(()=>{ const f=document.getElementById(cbClass()?'cbPw':'cbCls'); if(f) f.focus(); },50); }
 };
-window.importMerit = async function(){
-  const raw=document.getElementById('mrImportText').value;
-  const lines=String(raw||'').replace(/\r/g,'').split('\n').map(l=>l.trim()).filter(Boolean);
-  if(!lines.length){ toast('붙여넣은 내용이 없습니다', true); return; }
-  const norm=x=>String(x||'').replace(/\s+/g,'');
-  const found=[], missing=[];
-  lines.forEach(l=>{
-    const p=(l.includes('\t')?l.split('\t'):l.split(/[,\s]+/)).map(x=>x.trim());
-    // 학번, 이름, 벌점, 상점 (누계 열은 무시) — 머리글 줄은 건너뜀
-    const name=p[1], dem=parseInt(p[2]), mer=parseInt(p[3]);
-    if(!name || isNaN(dem) || isNaN(mer)) return;
-    const s=window.students.find(x=>norm(x.name)===norm(name));
-    if(s) found.push({s, demerit:Math.max(0,dem), merit:Math.max(0,mer)});
-    else missing.push(name);
-  });
-  if(!found.length){ toast('명단과 맞는 학생이 없습니다. 이름을 확인하세요', true); return; }
-  if(!confirm(`${found.length}명의 상벌점을 가져올까요?`+(missing.length?`\n\n명단에 없는 이름 ${missing.length}명은 건너뜁니다: ${missing.slice(0,8).join(', ')}${missing.length>8?' …':''}`:''))) return;
+window.cbConnect = async function(){
+  cbInit();
+  const cls=(document.getElementById('cbCls')?.value||'').trim();
+  if(!cls){ toast('게시판 학급 코드를 입력하세요', true); return; }
+  const go=document.getElementById('cbGo'); if(go){ go.disabled=true; go.textContent='연결 중...'; }
   try{
-    const now=new Date().toISOString();
-    await Promise.all(found.map(f=>setDoc(doc(db,MERIT_COL,f.s.id), {demerit:f.demerit, merit:f.merit, updatedAt:now}, {merge:true})));
-    await setDoc(doc(db,CFG_COL,'merit'), {lastUpdated:getTodayStr()}, {merge:true});
-    document.getElementById('mrImportText').value='';
-    document.getElementById('mrImport').style.display='none';
-    toast(`✅ ${found.length}명 가져왔습니다`);
-  }catch(e){ toast('가져오기 실패: '+e.message, true); }
+    if(!window.cb.user){
+      const email=(document.getElementById('cbEmail')?.value||'').trim();
+      const pw=document.getElementById('cbPw')?.value||'';
+      if(!email||!pw) throw new Error('이메일과 비밀번호를 입력하세요');
+      if(email!==CB_TEACHER_EMAIL) throw new Error('게시판 교사 계정으로 로그인하세요');
+      try{ await signInWithEmailAndPassword(window.cb.auth, email, pw); }
+      catch(e){ throw new Error('로그인 실패 — 이메일·비밀번호를 확인하세요'); }
+    }
+    if(cbClass()!==cls) await setDoc(doc(db,CFG_COL,'merit'), {boardClass:cls}, {merge:true});
+    window.config.merit={...(window.config.merit||{}), boardClass:cls};
+    window.cb.user=window.cb.auth.currentUser||window.cb.user;
+    cbListen();
+    toast('🔗 게시판과 연결했습니다');
+  }catch(e){ toast(e.message, true); }
+  finally{ if(go){ go.disabled=false; go.textContent='연결'; } }
+};
+window.cbDisconnect = async function(){
+  if(!confirm('게시판 연결을 끊을까요?\n두 앱의 점수는 그대로 남고, 이후로는 서로 반영되지 않아요.')) return;
+  try{ if(window.cb.auth) await signOut(window.cb.auth); }catch(e){}
+  if(window.cb.unsub){ window.cb.unsub(); window.cb.unsub=null; }
+  window.cb.user=null; window.cb.ready=false;
+  cbRenderStatus();
+  toast('게시판 연결을 끊었습니다');
 };
 
 window.toggleMeritPrint = function(){
