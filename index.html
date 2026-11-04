@@ -4699,13 +4699,14 @@ window.printMerit = async function(){
   }
   const pages=groups.map((g,i)=>`<div class="page">
     <h1>${title}${groups.length>1?` <span style="font-weight:400;font-size:13px">(${i+1}/${groups.length})</span>`:''}</h1>
-    <table><thead><tr><th>번호</th><th>이름</th><th>벌점</th><th>상점</th><th>누계</th></tr></thead>
+    <table><colgroup><col class="c-no"><col class="c-nm"><col class="c-v"><col class="c-v"><col class="c-v"></colgroup><thead><tr><th>번호</th><th>이름</th><th>벌점</th><th>상점</th><th>누계</th></tr></thead>
     <tbody>${g.map(rowHtml).join('')}</tbody></table></div>`).join('');
   const w=window.open('','_blank');
   w.document.write(`<html><head><meta charset="utf-8"><title>상벌점</title>
     <style>@page{size:A4;margin:12mm}body{font-family:sans-serif;padding:0;margin:0}
-    .page{break-after:page;page-break-after:always}.page:last-child{break-after:auto;page-break-after:auto}
-    h1{font-size:17px;margin:0 0 10px}table{width:100%;border-collapse:collapse;font-size:12px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    .page{width:180mm;max-width:100%;margin:0 auto;box-sizing:border-box;break-after:page;page-break-after:always}.page:last-child{break-after:auto;page-break-after:auto}
+    h1{font-size:17px;margin:0 0 10px}table{width:100%;table-layout:fixed;box-sizing:border-box;border-collapse:collapse;font-size:12px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    col.c-no{width:12%}col.c-nm{width:28%}col.c-v{width:20%}
     th,td{border:1px solid #888;padding:4px 6px;text-align:center}th{background:#eee}</style></head>
     <body>${pages}
     <script>
