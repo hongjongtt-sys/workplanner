@@ -655,6 +655,25 @@ body.home-mode .content{padding:0;overflow:visible}
 .mem-cls{font-size:11px;font-weight:700;color:var(--text-muted);background:var(--surface2);border-radius:6px;padding:3px 0;text-align:center}
 .mem-name{font-weight:500}
 
+/* MERIT */
+.mr-import{border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);padding:12px;margin-bottom:12px}
+.mr-import textarea{width:100%;font-family:inherit;font-size:12px;resize:vertical}
+.mr-table .ck-td-stu{min-width:120px;width:120px}
+.mr-table .ck-th-stu{min-width:120px;width:120px}
+.mr-col{min-width:76px;width:76px;padding:8px 6px!important;text-align:center}
+.mr-cell{text-align:center;padding:5px 6px!important}
+.mr-in{width:58px;padding:6px 4px;text-align:center;font-size:13px;font-weight:600;border:1px solid var(--border2);border-radius:8px;background:var(--surface);color:var(--text);font-family:inherit}
+.mr-in:focus{outline:none;border-color:var(--accent)}
+.mr-total{text-align:center;font-weight:800;font-size:13.5px;min-width:64px}
+.mr-row.mr-yellow td{background:rgba(250,204,21,.16)!important}
+.mr-row.mr-pink td{background:rgba(244,114,182,.18)!important}
+.mr-note{font-size:11px;color:var(--text-dim);margin-top:10px;line-height:1.7}
+.mr-sw{display:inline-block;width:10px;height:10px;border-radius:3px;vertical-align:-1px;margin:0 3px 0 6px}
+body.dark-ui .mr-import{background:rgba(20,23,31,.72);border-color:var(--border)}
+body.dark-ui .mr-in{background:rgba(255,255,255,.06);border-color:var(--border2);color:var(--text)}
+body.dark-ui .mr-row.mr-yellow td{background:rgba(250,204,21,.14)!important}
+body.dark-ui .mr-row.mr-pink td{background:rgba(244,114,182,.17)!important}
+
 /* CHECKLIST */
 .ck-toggle{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text-muted);cursor:pointer;user-select:none}
 .ck-toggle input{cursor:pointer}
@@ -1127,7 +1146,7 @@ body.dark-ui.home-mode::before{display:none}
   margin:0;padding:0;cursor:pointer;opacity:0}
 
 /* 학생카드 · 동아리 — 카드는 어둡게, 글 쓰는 칸만 밝게 */
-body.dark-ui .stu-listwrap,body.dark-ui #stuDetail,
+body.dark-ui .stu-listwrap,body.dark-ui #stuDetail,body.dark-ui #clubStuDetail,
 body.dark-ui .stu-list,body.dark-ui .club-tabs{background:transparent}
 body.dark-ui .stu-item:hover{background:rgba(255,255,255,.06)}
 body.dark-ui .stu-item.active{background:rgba(111,157,255,.16);border-color:rgba(111,157,255,.45)}
@@ -1363,6 +1382,7 @@ body.has-photo .tt-title[style*="#1d4ed8"]{color:#a9c6ff!important}
     <div class="tab" onclick="switchTab('goal')">🧭 목표</div>
     <div class="tab" onclick="switchTab('class')">📖 수업 진도</div>
     <div class="tab" onclick="switchTab('student')">👤 학생카드</div>
+    <div class="tab" onclick="switchTab('merit')">⚖️ 상벌점</div>
     <div class="tab" onclick="switchTab('check')">☑️ 체크리스트</div>
     <div class="tab" onclick="switchTab('club')">🎯 동아리</div>
     <div class="tab" onclick="switchTab('timetable')">🕐 시간표</div>
@@ -1632,6 +1652,7 @@ body.has-photo .tt-title[style*="#1d4ed8"]{color:#a9c6ff!important}
           <button class="btn btn-ghost btn-sm" onclick="openAttStatModal()">📊 출결 통계</button>
           <button class="btn btn-ghost btn-sm" onclick="setSchoolInfo()">⚙ 학년·반</button>
           <button class="btn btn-ghost btn-sm" onclick="addStudents()">+ 학생 추가</button>
+          <button class="btn btn-ghost btn-sm" onclick="exportStudentNotes()">📥 엑셀로 받기</button>
           <button class="btn btn-ghost btn-sm" onclick="printStudent()">🖨 인쇄</button>
         </div>
       </div>
@@ -1643,6 +1664,41 @@ body.has-photo .tt-title[style*="#1d4ed8"]{color:#a9c6ff!important}
         </div>
         <div class="panel" id="stuDetail"></div>
       </div>
+    </div>
+
+    <!-- MERIT -->
+    <div class="view" id="view-merit">
+      <div class="page-header">
+        <div class="page-title">상벌점</div>
+        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+          <span id="mrUpdated" style="font-size:11px;color:var(--text-dim)"></span>
+          <button class="btn btn-ghost btn-sm" onclick="toggleMeritImport()">📥 게시판에서 가져오기</button>
+          <button class="btn btn-ghost btn-sm" onclick="toggleMeritPrint()">🖨 인쇄</button>
+        </div>
+      </div>
+      <div id="mrImport" class="mr-import" style="display:none">
+        <div style="font-size:12.5px;font-weight:700;margin-bottom:6px">우리 반 게시판 상벌점 붙여넣기</div>
+        <textarea id="mrImportText" class="form-input" rows="6" placeholder="학번&#9;이름&#9;벌점&#9;상점&#10;20301&#9;김민준&#9;3&#9;1"></textarea>
+        <div style="font-size:11px;color:var(--text-dim);margin:6px 0 8px;line-height:1.6">게시판 상벌점 표를 드래그해 복사한 뒤 붙여넣으세요. 한 줄에 학번(또는 번호), 이름, 벌점, 상점 순서이고, 이름으로 학생카드 명단과 맞춥니다. 붙여넣은 학생의 점수는 새 값으로 바뀝니다.</div>
+        <div style="display:flex;gap:6px;justify-content:flex-end">
+          <button class="btn btn-ghost btn-sm" onclick="toggleMeritImport()">취소</button>
+          <button class="btn btn-primary btn-sm" onclick="importMerit()">가져오기</button>
+        </div>
+      </div>
+      <div id="mrPrint" class="mr-import" style="display:none">
+        <div style="font-size:12.5px;font-weight:700;margin-bottom:8px">인쇄 쪽 나누기</div>
+        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:12.5px">
+          <span>1쪽에</span>
+          <input type="number" id="mrSplit" class="form-input" min="1" inputmode="numeric" placeholder="전체" style="width:76px;padding:6px 8px;text-align:center" onkeydown="if(event.key==='Enter'){event.preventDefault();printMerit();}">
+          <span>번까지, 나머지는 2쪽에</span>
+        </div>
+        <div style="font-size:11px;color:var(--text-dim);margin:6px 0 8px;line-height:1.6">비워 두면 한 장에 모두 넣습니다. 쪽마다 넘치면 자동으로 줄여서 맞춥니다. 정한 번호는 다음에도 그대로 남아요.</div>
+        <div style="display:flex;gap:6px;justify-content:flex-end">
+          <button class="btn btn-ghost btn-sm" onclick="toggleMeritPrint()">취소</button>
+          <button class="btn btn-primary btn-sm" onclick="printMerit()">🖨 인쇄</button>
+        </div>
+      </div>
+      <div id="meritContent"></div>
     </div>
 
     <!-- CHECKLIST -->
@@ -1669,6 +1725,7 @@ body.has-photo .tt-title[style*="#1d4ed8"]{color:#a9c6ff!important}
       </div>
       <div class="club-tabs">
         <button class="class-tab-btn active" id="clubTab0" onclick="switchClubView(0)">📋 활동 기록</button>
+        <button class="class-tab-btn" id="clubTab3" onclick="switchClubView(3)">🗂 학생카드</button>
         <button class="class-tab-btn" id="clubTab1" onclick="switchClubView(1)">📦 제출 현황</button>
         <button class="class-tab-btn" id="clubTab2" onclick="switchClubView(2)">👥 부원 명단</button>
       </div>
@@ -1735,6 +1792,7 @@ body.has-photo .tt-title[style*="#1d4ed8"]{color:#a9c6ff!important}
     <div class="mobile-tab" onclick="switchTab('goal')"><div class="mobile-tab-icon">🧭</div>목표</div>
     <div class="mobile-tab" onclick="switchTab('class')"><div class="mobile-tab-icon">📖</div>진도</div>
     <div class="mobile-tab" onclick="switchTab('student')"><div class="mobile-tab-icon">👤</div>학생</div>
+    <div class="mobile-tab" onclick="switchTab('merit')"><div class="mobile-tab-icon">⚖️</div>상벌점</div>
     <div class="mobile-tab" onclick="switchTab('check')"><div class="mobile-tab-icon">☑️</div>제출</div>
     <div class="mobile-tab" onclick="switchTab('club')"><div class="mobile-tab-icon">🎯</div>동아리</div>
     <div class="mobile-tab" onclick="switchTab('timetable')"><div class="mobile-tab-icon">🕐</div>시간표</div>
@@ -2339,7 +2397,9 @@ const CLUB_MEM_COL = "clubMembers";
 const CLUB_ACT_COL = "clubActivities";
 const CLUB_ITEM_COL = "clubItems";
 const CLUB_MARK_COL = "clubMarks";
+const CLUB_NOTE_COL = "clubNotes"; // 동아리 누가기록: 문서 id = 부원 id {content}
 const CFG_COL = "config";
+const MERIT_COL = "meritPoints"; // 상벌점: 문서 id = 학생 id {merit, demerit}
 const BG_COL = "bgPhotos";   // 배경 사진: 문서 id = 학년도(예: "2026")
 
 window.tasks = [];
@@ -2351,6 +2411,7 @@ window.timetables = {};
 window.ttImages = {};
 window.quickLinks = [];
 window.students = [];
+window.meritPoints = {};
 window.extraLessons = [];
 window.checkItems = [];
 window.checkMarks = {};
@@ -2359,6 +2420,8 @@ window.attendance = [];
 window.routines = [];
 window.routineChecks = {};
 window.clubMembers = [];
+window.clubNotes = {};
+window.currentClubMemId = null;
 window.clubActs = [];
 window.clubItems = [];
 window.clubMarks = {};
@@ -2428,6 +2491,7 @@ function startApp(){
     renderCatSelect();
     if(document.getElementById('catOverlay').classList.contains('open')) renderCatList();
     if(!window.editMemo) renderMemo();
+    if(isActive('merit')) renderMerit();
     if(document.getElementById('attOverlay')?.classList.contains('open')) renderNotePresets();
     homeTouch();
   });
@@ -2463,7 +2527,7 @@ function startApp(){
 
 // ── 지연 로딩 ─────────────────────────────────────────
 // 일부 화면은 다른 그룹의 데이터도 필요합니다
-const GROUP_DEPS={ check:['student'], class:['student'], daily:['class','student','timetable'] };
+const GROUP_DEPS={ merit:['student'], check:['student'], class:['student'], daily:['class','student','timetable'] };
 window.loadedGroups={};
 window.dataReady={};
 window.loadGroup = function(g){
@@ -2507,6 +2571,7 @@ window.loadGroup = function(g){
       if(!window.dirtyStudent) renderStudentDetail();
     }
     if(isActive('check')) renderCheck();
+    if(isActive('merit')) renderMerit();
     homeTouch();
   });
   onSnapshot(collection(db,ATT_COL), snap=>{
@@ -2514,6 +2579,14 @@ window.loadGroup = function(g){
     if(isActive('daily')) renderDailyAtt();
     if(document.getElementById('attStatOverlay').classList.contains('open')) renderAttStat();
     homeTouch();
+  });
+  }
+  if(g==='merit'){
+  onSnapshot(collection(db,MERIT_COL), snap=>{
+    window.dataReady.merit=true;
+    window.meritPoints={};
+    snap.docs.forEach(d=>{ window.meritPoints[d.id]=d.data(); });
+    if(isActive('merit')) renderMerit();
   });
   }
   if(g==='check'){
@@ -2530,6 +2603,12 @@ window.loadGroup = function(g){
   });
   }
   if(g==='club'){
+  onSnapshot(collection(db,CLUB_NOTE_COL), snap=>{
+    window.clubNotes={};
+    snap.docs.forEach(d=>{ window.clubNotes[d.id]=d.data(); });
+    if(isActive('club') && window.clubView===3 && !window.dirtyClubNote) renderClub();
+    else if(isActive('club') && window.clubView===3) renderClubMemList();
+  });
   onSnapshot(collection(db,CLUB_MEM_COL), snap=>{
     window.clubMembers = snap.docs.map(d=>({id:d.id,...d.data()}))
       .sort((a,b)=>(a.cls||'').localeCompare(b.cls||'')||(parseInt(a.number)||999)-(parseInt(b.number)||999));
@@ -2584,7 +2663,7 @@ window.loadGroup = function(g){
   });
   }
 };
-const TAB_GROUP={class:'class', student:'student', check:'check', club:'club', timetable:'timetable', daily:'daily'};
+const TAB_GROUP={class:'class', student:'student', merit:'merit', check:'check', club:'club', timetable:'timetable', daily:'daily'};
 const GROUP_EXTRA={timetable:['ttimg'], student:['stunote']};
 
 function isActive(v){ return document.getElementById('view-'+v)?.classList.contains('active'); }
@@ -2658,10 +2737,11 @@ window.renderAll = function(){
 window.switchTab = async function(view){
   if(window.dirtyBlock) await flushDaily();
   if(window.dirtyStudent) await flushStudent();
+  if(window.dirtyClubNote) await flushClubNote();
   if(window.dirtyMemo) await flushMemo();
   document.querySelectorAll('.tab,.mobile-tab').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
-  const map={home:0,month:1,daily:2,todo:3,goal:4,class:5,student:6,check:7,club:8,timetable:9};
+  const map={home:0,month:1,daily:2,todo:3,goal:4,class:5,student:6,merit:7,check:8,club:9,timetable:10};
   document.querySelectorAll('.tab')[map[view]]?.classList.add('active');
   document.querySelectorAll('.mobile-tab')[map[view]]?.classList.add('active');
   document.getElementById('view-'+view).classList.add('active');
@@ -2675,6 +2755,7 @@ window.switchTab = async function(view){
   else if(view==='timetable') renderTimetable();
   else if(view==='class'){ if(window.clsView==='cal') renderClassCal(); else renderClass(); }
   else if(view==='student') renderStudent();
+  else if(view==='merit') renderMerit();
   else if(view==='check') renderCheck();
   else if(view==='club') renderClub();
   else if(view==='home') renderHome();
@@ -4299,6 +4380,211 @@ window.printStudent = function(){
   w.document.close(); w.print();
 };
 
+// ── 엑셀 내보내기 (SheetJS, 누를 때만 불러옴) ─────────
+let _xlsxLoading=null;
+function loadXlsx(){
+  if(window.XLSX) return Promise.resolve(window.XLSX);
+  if(_xlsxLoading) return _xlsxLoading;
+  _xlsxLoading=new Promise((res,rej)=>{
+    const sc=document.createElement('script');
+    sc.src='https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';
+    sc.onload=()=>res(window.XLSX);
+    sc.onerror=()=>{ _xlsxLoading=null; rej(new Error('엑셀 도구를 불러오지 못했습니다 (인터넷 연결 확인)')); };
+    document.head.appendChild(sc);
+  });
+  return _xlsxLoading;
+}
+// rows: 배열의 배열(첫 줄 머리글), widths: 열 너비(글자 수)
+async function downloadXlsx(fileName, sheetName, rows, widths){
+  try{
+    const X=await loadXlsx();
+    const ws=X.utils.aoa_to_sheet(rows);
+    if(widths) ws['!cols']=widths.map(w=>({wch:w}));
+    const wb=X.utils.book_new();
+    X.utils.book_append_sheet(wb, ws, sheetName);
+    X.writeFile(wb, fileName);
+    toast('📥 엑셀 파일을 받았습니다');
+  }catch(e){ toast(e.message||'엑셀 저장 실패', true); }
+}
+function fileDate(){ const n=new Date(); return `${n.getFullYear()}${pad2(n.getMonth()+1)}${pad2(n.getDate())}`; }
+
+// ── MERIT (상벌점) ───────────────────────────────────
+// 우리 반 게시판(classboard)과 같은 구조: 학생별 벌점·상점 누적, 누계 = 벌점 − 상점
+function mrOf(stuId){ const m=window.meritPoints[stuId]||{}; return {merit:Number(m.merit)||0, demerit:Number(m.demerit)||0}; }
+function mrTotal(m){ return m.demerit - m.merit; }
+function mrRowClass(t){ return t>=21?'mr-pink':(t>=11?'mr-yellow':''); }
+function mrFmtDate(v){ if(!v) return ''; const [y,m,d]=v.split('-'); return `${y}. ${parseInt(m)}. ${parseInt(d)}.`; }
+
+window.renderMerit = function(){
+  const el=document.getElementById('meritContent'); if(!el) return;
+  const up=document.getElementById('mrUpdated');
+  const last=(window.config.merit&&window.config.merit.lastUpdated)||'';
+  if(up) up.textContent=last?`최종 수정일 ${mrFmtDate(last)}`:'';
+  if(!window.dataReady.students || !window.dataReady.merit){
+    el.innerHTML=`<div class="empty"><div class="empty-icon">⏳</div><p>불러오는 중...</p></div>`;
+    return;
+  }
+  if(!window.students.length){
+    el.innerHTML=`<div class="empty"><div class="empty-icon">👤</div><p>학생 명단이 없습니다</p>
+      <small>[학생카드] 탭에서 먼저 명단을 등록하세요</small></div>`;
+    return;
+  }
+  // 입력 중인 칸이 다시 그려져도 끊기지 않도록
+  const a=document.activeElement;
+  const focus=(a&&el.contains(a)&&a.dataset.stu)?{stu:a.dataset.stu,kind:a.dataset.kind,val:a.value}:null;
+
+  let sumD=0,sumM=0;
+  const body=window.students.map(s=>{
+    const m=mrOf(s.id), t=mrTotal(m);
+    sumD+=m.demerit; sumM+=m.merit;
+    return `<tr class="ck-row mr-row ${mrRowClass(t)}"><td class="ck-td-stu">
+      <div class="ck-stu-line"><div class="ck-stu-num">${esc(String(s.number||''))}</div>
+      <div class="ck-stu-name">${esc(s.name||'')}</div></div></td>
+      <td class="mr-cell"><input class="mr-in" type="number" inputmode="numeric" min="0" data-stu="${s.id}" data-kind="demerit" value="${m.demerit}" onchange="setMerit(this)" onkeydown="mrKey(event,this)"></td>
+      <td class="mr-cell"><input class="mr-in" type="number" inputmode="numeric" min="0" data-stu="${s.id}" data-kind="merit" value="${m.merit}" onchange="setMerit(this)" onkeydown="mrKey(event,this)"></td>
+      <td class="mr-total">${t}</td></tr>`;
+  }).join('');
+
+  el.innerHTML=`<div class="ck-scroll"><table class="ck-table mr-table">
+    <thead><tr><th class="ck-th-stu" style="padding:8px 10px;text-align:left">학생 (${window.students.length}명)</th>
+      <th class="mr-col">벌점</th><th class="mr-col">상점</th><th class="mr-col">누계</th></tr></thead>
+    <tbody>${body}
+      <tr class="ck-sum-row"><td class="ck-td-stu" style="background:var(--surface2)!important;text-align:left;padding-left:12px!important">합계</td>
+      <td>${sumD}</td><td>${sumM}</td><td>${sumD-sumM}</td></tr>
+    </tbody></table></div>
+    <p class="mr-note">벌점·상점 칸에 숫자를 넣으면 바로 저장됩니다 (Enter 누르면 아래 학생으로). 누계 = 벌점 − 상점, 음수일수록 좋아요.<br>
+    누계 11점 이상<span class="mr-sw" style="background:rgba(250,204,21,.55)"></span>노란색, 21점 이상<span class="mr-sw" style="background:rgba(244,114,182,.6)"></span>분홍색으로 표시됩니다.</p>`;
+
+  if(focus){
+    const f=el.querySelector(`.mr-in[data-stu="${focus.stu}"][data-kind="${focus.kind}"]`);
+    if(f){ f.value=focus.val; f.focus(); }
+  }
+};
+
+window.setMerit = async function(inp){
+  const stuId=inp.dataset.stu, kind=inp.dataset.kind;
+  const v=Math.max(0, parseInt(inp.value)||0);
+  inp.value=v;
+  if(mrOf(stuId)[kind]===v) return;
+  try{
+    await setDoc(doc(db,MERIT_COL,stuId), {[kind]:v, updatedAt:new Date().toISOString()}, {merge:true});
+    await setDoc(doc(db,CFG_COL,'merit'), {lastUpdated:getTodayStr()}, {merge:true});
+  }catch(e){ toast('저장 실패: '+e.message, true); }
+};
+// Enter → 같은 열 다음 학생
+window.mrKey = function(e, inp){
+  if(e.key!=='Enter' || e.isComposing) return;
+  e.preventDefault();
+  const all=[...document.querySelectorAll(`#meritContent .mr-in[data-kind="${inp.dataset.kind}"]`)];
+  const next=all[all.indexOf(inp)+1];
+  if(next){ next.focus(); next.select(); } else inp.blur();
+};
+
+window.toggleMeritImport = function(){
+  const box=document.getElementById('mrImport');
+  const open=box.style.display==='none';
+  box.style.display=open?'block':'none';
+  if(open) document.getElementById('mrImportText').focus();
+};
+window.importMerit = async function(){
+  const raw=document.getElementById('mrImportText').value;
+  const lines=String(raw||'').replace(/\r/g,'').split('\n').map(l=>l.trim()).filter(Boolean);
+  if(!lines.length){ toast('붙여넣은 내용이 없습니다', true); return; }
+  const norm=x=>String(x||'').replace(/\s+/g,'');
+  const found=[], missing=[];
+  lines.forEach(l=>{
+    const p=(l.includes('\t')?l.split('\t'):l.split(/[,\s]+/)).map(x=>x.trim());
+    // 학번, 이름, 벌점, 상점 (누계 열은 무시) — 머리글 줄은 건너뜀
+    const name=p[1], dem=parseInt(p[2]), mer=parseInt(p[3]);
+    if(!name || isNaN(dem) || isNaN(mer)) return;
+    const s=window.students.find(x=>norm(x.name)===norm(name));
+    if(s) found.push({s, demerit:Math.max(0,dem), merit:Math.max(0,mer)});
+    else missing.push(name);
+  });
+  if(!found.length){ toast('명단과 맞는 학생이 없습니다. 이름을 확인하세요', true); return; }
+  if(!confirm(`${found.length}명의 상벌점을 가져올까요?`+(missing.length?`\n\n명단에 없는 이름 ${missing.length}명은 건너뜁니다: ${missing.slice(0,8).join(', ')}${missing.length>8?' …':''}`:''))) return;
+  try{
+    const now=new Date().toISOString();
+    await Promise.all(found.map(f=>setDoc(doc(db,MERIT_COL,f.s.id), {demerit:f.demerit, merit:f.merit, updatedAt:now}, {merge:true})));
+    await setDoc(doc(db,CFG_COL,'merit'), {lastUpdated:getTodayStr()}, {merge:true});
+    document.getElementById('mrImportText').value='';
+    document.getElementById('mrImport').style.display='none';
+    toast(`✅ ${found.length}명 가져왔습니다`);
+  }catch(e){ toast('가져오기 실패: '+e.message, true); }
+};
+
+window.toggleMeritPrint = function(){
+  const box=document.getElementById('mrPrint');
+  const open=box.style.display==='none';
+  box.style.display=open?'block':'none';
+  if(open){
+    const v=(window.config.merit&&window.config.merit.pageSplit)||'';
+    const inp=document.getElementById('mrSplit');
+    inp.value=v; inp.focus(); inp.select();
+  }
+};
+window.printMerit = async function(){
+  if(!window.students.length){ toast('학생 명단이 없습니다', true); return; }
+  const raw=(document.getElementById('mrSplit')?.value||'').trim();
+  const split=raw?parseInt(raw):0;
+  if(raw && !(split>0)){ toast('번호를 숫자로 입력하세요', true); return; }
+  if(((window.config.merit&&window.config.merit.pageSplit)||0)!==split){
+    setDoc(doc(db,CFG_COL,'merit'), {pageSplit:split}, {merge:true}).catch(()=>{});
+  }
+  const sc=window.config.school||{};
+  const last=(window.config.merit&&window.config.merit.lastUpdated)||'';
+  const title=`${sc.grade&&sc.cls?`${esc(sc.grade)}학년 ${esc(sc.cls)}반 `:''}상벌점 현황${last?' · 최종 수정일 '+mrFmtDate(last):''}`;
+  const rowHtml=s=>{
+    const m=mrOf(s.id), t=mrTotal(m);
+    const bg=t>=21?'#fbcfe8':(t>=11?'#fef08a':'');
+    return `<tr${bg?` style="background:${bg}"`:''}><td>${esc(String(s.number||''))}</td><td>${esc(s.name||'')}</td><td>${m.demerit}</td><td>${m.merit}</td><td><b>${t}</b></td></tr>`;
+  };
+  // 번호 기준으로 1쪽 / 2쪽 나누기 (비우면 한 쪽)
+  let groups=[window.students];
+  if(split){
+    const p1=window.students.filter(s=>(parseInt(s.number)||0)<=split);
+    const p2=window.students.filter(s=>(parseInt(s.number)||0)>split);
+    groups=[p1,p2].filter(g=>g.length);
+  }
+  const pages=groups.map((g,i)=>`<div class="page">
+    <h1>${title}${groups.length>1?` <span style="font-weight:400;font-size:13px">(${i+1}/${groups.length})</span>`:''}</h1>
+    <table><thead><tr><th>번호</th><th>이름</th><th>벌점</th><th>상점</th><th>누계</th></tr></thead>
+    <tbody>${g.map(rowHtml).join('')}</tbody></table></div>`).join('');
+  const w=window.open('','_blank');
+  w.document.write(`<html><head><meta charset="utf-8"><title>상벌점</title>
+    <style>@page{size:A4;margin:12mm}body{font-family:sans-serif;padding:0;margin:0}
+    .page{break-after:page;page-break-after:always}.page:last-child{break-after:auto;page-break-after:auto}
+    h1{font-size:17px;margin:0 0 10px}table{width:100%;border-collapse:collapse;font-size:12px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    th,td{border:1px solid #888;padding:4px 6px;text-align:center}th{background:#eee}</style></head>
+    <body>${pages}
+    <script>
+      // 쪽마다 A4 한 장을 넘으면 그 쪽만 줄여서 맞춤
+      window.onload=function(){
+        var avail=1010;
+        Array.prototype.forEach.call(document.querySelectorAll('.page'),function(p){
+          var h=p.scrollHeight; if(h>avail) p.style.zoom=(avail/h).toFixed(3);
+        });
+        setTimeout(function(){ window.print(); },150);
+      };
+    <\/script></body></html>`);
+  w.document.close();
+  document.getElementById('mrPrint').style.display='none';
+};
+
+// 학생카드 전체 → 엑셀 (한 행에 한 명)
+window.exportStudentNotes = async function(){
+  if(window.dirtyStudent) await flushStudent();
+  if(!window.students.length){ toast('학생 명단이 없습니다', true); return; }
+  const sc=window.config.school||{};
+  const rows=[['번호','이름','학생카드 기록','최종 수정일']];
+  window.students.forEach(s=>{
+    const n=window.studentNotes[s.id]||{};
+    rows.push([s.number?Number(s.number)||String(s.number):'', s.name||'', (n.content||'').trim(), n.updatedAt?String(n.updatedAt).slice(0,10):'']);
+  });
+  const cls=sc.grade&&sc.cls?`${sc.grade}학년${sc.cls}반_`:'';
+  await downloadXlsx(`${cls}학생카드_${fileDate()}.xlsx`, '학생카드', rows, [6,10,90,12]);
+};
+
 // ── CHECKLIST ────────────────────────────────────────
 function ckKey(itemId, stuId){ return `${itemId}_${stuId}`; }
 function ckDoneCount(itemId){
@@ -4480,9 +4766,10 @@ window.closeMissingModal = function(){ document.getElementById('missOverlay').cl
 window.closeMissingOutside = function(e){ if(e.target===document.getElementById('missOverlay')) closeMissingModal(); };
 
 // ── CLUB ─────────────────────────────────────────────
-window.switchClubView = function(v){
+window.switchClubView = async function(v){
+  if(window.dirtyClubNote) await flushClubNote();
   window.clubView=v;
-  [0,1,2].forEach(i=>document.getElementById('clubTab'+i).classList.toggle('active', i===v));
+  [0,1,2,3].forEach(i=>document.getElementById('clubTab'+i).classList.toggle('active', i===v));
   renderClub();
 };
 function clubMarkKey(itemId, memId){ return `${itemId}_${memId}`; }
@@ -4493,6 +4780,7 @@ window.renderClub = function(){
   const t=document.getElementById('clubTitle');
   if(t) t.textContent=(window.config.club&&window.config.club.name)||'동아리';
   if(window.clubView===0) el.innerHTML=clubActivityView();
+  else if(window.clubView===3){ el.innerHTML=clubCardView(); renderClubMemList(); renderClubMemDetail(); }
   else if(window.clubView===1) el.innerHTML=clubSubmitView();
   else el.innerHTML=clubMemberView();
 };
@@ -4632,6 +4920,121 @@ window.clubMissing = function(){
     </div>`;
   }).join('');
   document.getElementById('missOverlay').classList.add('open');
+};
+
+// ── 동아리 학생카드 (부원별 누가기록) ──
+function clubCardView(){
+  if(!window.clubMembers.length){
+    return `<div class="empty"><div class="empty-icon">👥</div><p>부원 명단이 없습니다</p><small>먼저 [부원 명단]에서 학생을 등록하세요</small></div>`;
+  }
+  if(!window.currentClubMemId || !window.clubMembers.find(m=>m.id===window.currentClubMemId))
+    window.currentClubMemId=window.clubMembers[0].id;
+  return `<div style="margin-bottom:12px;display:flex;gap:6px;flex-wrap:wrap">
+      <button class="btn btn-ghost btn-sm" onclick="exportClubNotes()">📥 엑셀로 받기</button>
+    </div>
+    <div class="stu-layout">
+      <div class="panel stu-listwrap">
+        <div class="panel-head"><span>부원</span><span style="font-size:10px;font-weight:500;color:var(--text-muted)">${window.clubMembers.length}명</span></div>
+        <div class="stu-list" id="clubStuList" style="padding-top:8px"></div>
+      </div>
+      <div class="panel" id="clubStuDetail"></div>
+    </div>`;
+}
+window.renderClubMemList = function(){
+  const el=document.getElementById('clubStuList'); if(!el) return;
+  el.innerHTML=window.clubMembers.map(m=>{
+    const has=!!(window.clubNotes[m.id]&&(window.clubNotes[m.id].content||'').trim());
+    return `<div class="stu-item ${m.id===window.currentClubMemId?'active':''}" onclick="selectClubMem('${m.id}')">
+      <div class="stu-num" style="width:auto;min-width:26px;padding:0 5px">${esc(m.cls||'-')}</div>
+      <div class="stu-name">${esc(m.name||'')}</div>
+      ${has?'<div class="stu-dot" title="기록 있음"></div>':''}
+    </div>`;
+  }).join('');
+};
+function renderClubMemDetail(){
+  const el=document.getElementById('clubStuDetail'); if(!el) return;
+  const m=window.clubMembers.find(x=>x.id===window.currentClubMemId);
+  if(!m){ el.innerHTML=`<div class="empty"><div class="empty-icon">👤</div><p>부원을 선택하세요</p></div>`; return; }
+  const note=(window.clubNotes[m.id]&&window.clubNotes[m.id].content)||'';
+  el.innerHTML=`
+    <div class="stu-detail-head">
+      <div class="stu-detail-name">${esc(m.name||'')}<small>${esc(m.cls||'')}</small></div>
+      <span id="clubNoteStatus" style="font-size:11px;color:var(--text-dim)">${note.trim()?'✓ 저장됨':''}</span>
+    </div>
+    <div class="stu-quick">
+      <button class="stu-chip" onclick="clubNoteInsert('활동')">＋ 활동</button>
+      <button class="stu-chip" onclick="clubNoteInsert('관찰')">＋ 관찰</button>
+      <button class="stu-chip" onclick="clubNoteInsert('산출물')">＋ 산출물</button>
+      <button class="stu-chip" onclick="clubNoteInsert('생기부')">＋ 생기부</button>
+    </div>
+    <textarea class="stu-textarea" id="clubNote" oninput="clubNoteInput()" onkeydown="clubNoteKey(event)"
+      placeholder="이 부원의 활동 누가기록을 작성하세요.&#10;&#10;상단 버튼을 누르면 날짜와 함께 항목이 추가됩니다.">${esc(note)}</textarea>
+    <div class="stu-save-bar">
+      <span class="blk-hint"><b>Ctrl+Enter</b> 로 저장 · 다른 부원을 누르면 자동 저장</span>
+      <span style="display:flex;gap:6px">
+        <button class="btn btn-ghost btn-sm" onclick="revertClubNote()">되돌리기</button>
+        <button class="btn btn-primary btn-sm" onclick="saveClubNote()">저장</button>
+      </span>
+    </div>`;
+}
+window.clubNoteInput = function(){
+  const st=document.getElementById('clubNoteStatus'); if(st) st.textContent='● 저장 안 됨';
+  window.dirtyClubNote=window.currentClubMemId;
+};
+window.clubNoteKey = function(e){
+  if(e.key==='Enter' && (e.ctrlKey||e.metaKey)){ e.preventDefault(); saveClubNote(); }
+};
+window.clubNoteInsert = function(kind){
+  const ta=document.getElementById('clubNote'); if(!ta) return;
+  const n=new Date();
+  const header=`\n[${kind}] ${n.getFullYear()}-${pad2(n.getMonth()+1)}-${pad2(n.getDate())}\n`;
+  ta.value=(ta.value.trim()? ta.value.replace(/\s+$/,'')+'\n' : '')+header;
+  ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length);
+  clubNoteInput();
+};
+window.revertClubNote = function(){
+  const ta=document.getElementById('clubNote'); if(!ta) return;
+  const saved=(window.clubNotes[window.currentClubMemId]&&window.clubNotes[window.currentClubMemId].content)||'';
+  if(ta.value!==saved && !confirm('저장하지 않은 내용을 버리고 되돌릴까요?')) return;
+  window.dirtyClubNote=null;
+  renderClubMemDetail();
+};
+window.saveClubNote = async function(idArg, valueArg){
+  const id=idArg||window.currentClubMemId; if(!id) return;
+  const ta=document.getElementById('clubNote');
+  const content=valueArg!==undefined?valueArg:(ta?ta.value:null);
+  if(content===null) return;
+  try{
+    if(content.trim()) await setDoc(doc(db,CLUB_NOTE_COL,id), {content, updatedAt:new Date().toISOString()});
+    else await deleteDoc(doc(db,CLUB_NOTE_COL,id)).catch(()=>{});
+    if(window.dirtyClubNote===id) window.dirtyClubNote=null;
+    if(window.currentClubMemId===id){
+      const st=document.getElementById('clubNoteStatus'); if(st) st.textContent=content.trim()?'✓ 저장됨':'';
+    }
+    toast('✓ 저장되었습니다');
+  }catch(e){ toast('저장 실패: '+e.message, true); }
+};
+async function flushClubNote(){
+  if(!window.dirtyClubNote) return;
+  const ta=document.getElementById('clubNote');
+  if(ta) await saveClubNote(window.dirtyClubNote, ta.value);
+  window.dirtyClubNote=null;
+}
+window.selectClubMem = async function(id){
+  if(window.dirtyClubNote && window.dirtyClubNote!==id) await flushClubNote();
+  window.currentClubMemId=id;
+  renderClubMemList(); renderClubMemDetail();
+};
+window.exportClubNotes = async function(){
+  if(window.dirtyClubNote) await flushClubNote();
+  if(!window.clubMembers.length){ toast('부원 명단이 없습니다', true); return; }
+  const club=(window.config.club&&window.config.club.name)||'동아리';
+  const rows=[['학번(반)','이름','누가기록','최종 수정일']];
+  window.clubMembers.forEach(m=>{
+    const n=window.clubNotes[m.id]||{};
+    rows.push([m.cls||'', m.name||'', (n.content||'').trim(), n.updatedAt?String(n.updatedAt).slice(0,10):'']);
+  });
+  await downloadXlsx(`${club.replace(/[\\/:*?"<>|]/g,'')}_누가기록_${fileDate()}.xlsx`, '누가기록', rows, [10,10,90,12]);
 };
 
 function clubMemberView(){
