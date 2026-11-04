@@ -5487,10 +5487,11 @@ window.setSchoolInfo = async function(){
   }catch(e){ toast('저장 실패: '+e.message, true); }
 };
 function attLabel(a){ return `${a.reason||''}${a.type}`; }
-// 확인서 대상: 출석인정은 현장체험학습만, 나머지 사유는 모두 대상
+// 확인서 대상: 미인정은 제외, 출석인정은 현장체험학습만, 나머지 사유(질병·기타)는 대상
 function needsDoc(a){
   if(!a) return false;
   const r=a.reason||'';
+  if(r==='미인정') return false;
   if(r==='출석인정') return /체험학습|현장/.test(a.note||'');
   return true;
 }
@@ -5761,7 +5762,9 @@ window.updateDocNote = function(){
   wrap.style.opacity=target?'1':'.45';
   document.getElementById('attDoc').disabled=!target;
   if(!target){
-    el.textContent='출석인정은 확인서 대상이 아닙니다 (비고에 "체험학습"을 넣으면 대상이 됩니다)';
+    el.textContent = window.attReason==='미인정'
+      ? '미인정은 확인서 대상이 아닙니다'
+      : '출석인정은 확인서 대상이 아닙니다 (비고에 "체험학습"을 넣으면 대상이 됩니다)';
     return;
   }
   const due=docDue(window.dailyDate);
