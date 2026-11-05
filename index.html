@@ -1351,6 +1351,31 @@ body.has-photo .page-header .form-select,body.has-photo .daily-nav .form-input,b
   backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
 body.has-photo .tt-title[style*="#9f1239"]{color:#ff9aa8!important}
 body.has-photo .tt-title[style*="#1d4ed8"]{color:#a9c6ff!important}
+/* 사진 자르기 */
+#cropOverlay{z-index:260}
+#cropOverlay .modal{width:560px}
+.crop-wrap{width:100%;display:flex;justify-content:center;margin:2px 0 10px}
+.crop-stage{position:relative;touch-action:none;user-select:none;-webkit-user-select:none;border-radius:10px;overflow:hidden;background:#0b0d12}
+.crop-stage canvas{display:block;width:100%;height:100%;pointer-events:none}
+.crop-box{position:absolute;box-shadow:0 0 0 9999px rgba(5,7,12,.6);outline:2px solid #fff;outline-offset:-1px;cursor:move;touch-action:none;
+  background-image:linear-gradient(90deg,transparent calc(33.33% - .5px),rgba(255,255,255,.35) calc(33.33% - .5px),rgba(255,255,255,.35) calc(33.33% + .5px),transparent calc(33.33% + .5px),transparent calc(66.66% - .5px),rgba(255,255,255,.35) calc(66.66% - .5px),rgba(255,255,255,.35) calc(66.66% + .5px),transparent calc(66.66% + .5px)),
+  linear-gradient(transparent calc(33.33% - .5px),rgba(255,255,255,.35) calc(33.33% - .5px),rgba(255,255,255,.35) calc(33.33% + .5px),transparent calc(33.33% + .5px),transparent calc(66.66% - .5px),rgba(255,255,255,.35) calc(66.66% - .5px),rgba(255,255,255,.35) calc(66.66% + .5px),transparent calc(66.66% + .5px))}
+.crop-box.round{border-radius:50%;outline:none;border:2px solid #fff;background-image:none}
+.crop-h{position:absolute;width:16px;height:16px;background:#fff;border-radius:4px;box-shadow:0 1px 4px rgba(0,0,0,.45);touch-action:none}
+.crop-h::after{content:'';position:absolute;inset:-12px}
+.crop-h[data-h=nw]{left:-2px;top:-2px;cursor:nwse-resize}.crop-h[data-h=ne]{right:-2px;top:-2px;cursor:nesw-resize}
+.crop-h[data-h=sw]{left:-2px;bottom:-2px;cursor:nesw-resize}.crop-h[data-h=se]{right:-2px;bottom:-2px;cursor:nwse-resize}
+.crop-h[data-h=n],.crop-h[data-h=s]{left:50%;width:26px;height:8px;margin-left:-13px;cursor:ns-resize}
+.crop-h[data-h=n]{top:-2px}.crop-h[data-h=s]{bottom:-2px}
+.crop-h[data-h=e],.crop-h[data-h=w]{top:50%;width:8px;height:26px;margin-top:-13px;cursor:ew-resize}
+.crop-h[data-h=w]{left:-2px}.crop-h[data-h=e]{right:-2px}
+.crop-box.sq .crop-h[data-h=n],.crop-box.sq .crop-h[data-h=s],.crop-box.sq .crop-h[data-h=e],.crop-box.sq .crop-h[data-h=w]{display:none}
+.crop-box.round .crop-h[data-h=nw]{left:calc(14.6% - 8px);top:calc(14.6% - 8px)}.crop-box.round .crop-h[data-h=ne]{right:calc(14.6% - 8px);top:calc(14.6% - 8px)}
+.crop-box.round .crop-h[data-h=sw]{left:calc(14.6% - 8px);bottom:calc(14.6% - 8px)}.crop-box.round .crop-h[data-h=se]{right:calc(14.6% - 8px);bottom:calc(14.6% - 8px)}
+.crop-info{display:flex;justify-content:space-between;gap:10px;font-size:12px;color:var(--text-dim);margin-bottom:14px;line-height:1.5}
+.crop-info b{font-weight:600;color:var(--text-muted);white-space:nowrap}
+.crop-btns{display:flex;gap:8px;flex-wrap:wrap}
+.crop-btns .btn-primary{flex:1;min-width:110px}
 </style>
 </head>
 <body>
@@ -1930,10 +1955,32 @@ body.has-photo .tt-title[style*="#1d4ed8"]{color:#a9c6ff!important}
     <div style="display:flex;gap:8px">
       <label class="btn btn-primary" style="flex:1;text-align:center" id="bgPickBtn">📷 사진 올리기
         <input type="file" accept="image/*" style="display:none" onchange="bgPick(event)"></label>
+      <button class="btn btn-ghost" id="bgCropBtn" onclick="recropBgPhoto()">✂️ 자르기</button>
       <button class="btn btn-danger" id="bgDelBtn" onclick="deleteBgPhoto()">삭제</button>
     </div>
     <div class="bg-auto" id="bgAuto"></div>
     <div class="bg-note" id="bgNote"></div>
+  </div>
+</div>
+
+<!-- 사진 자르기 -->
+<div class="overlay" id="cropOverlay">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title" id="cropTitle">✂️ 사진 자르기</div>
+      <button class="modal-close" onclick="cropDone(null)" title="취소">✕</button>
+    </div>
+    <div class="crop-wrap" id="cropWrap">
+      <div class="crop-stage" id="cropStage"><canvas id="cropImg"></canvas>
+        <div class="crop-box" id="cropBox"><i class="crop-h" data-h="nw"></i><i class="crop-h" data-h="n"></i><i class="crop-h" data-h="ne"></i><i class="crop-h" data-h="e"></i><i class="crop-h" data-h="se"></i><i class="crop-h" data-h="s"></i><i class="crop-h" data-h="sw"></i><i class="crop-h" data-h="w"></i></div>
+      </div>
+    </div>
+    <div class="crop-info"><span id="cropHelp">모서리나 변을 끌면 크기가, 안쪽을 끌면 위치가 바뀌어요.</span><b id="cropSize"></b></div>
+    <div class="crop-btns">
+      <button class="btn btn-ghost" id="cropSkipBtn" onclick="cropSkip()">자르지 않고 그대로</button>
+      <button class="btn btn-ghost" onclick="cropReset()">처음으로</button>
+      <button class="btn btn-primary" onclick="cropApply()">✂️ 자르기 적용</button>
+    </div>
   </div>
 </div>
 
@@ -6907,6 +6954,7 @@ function renderBgModal(msg){
   document.querySelectorAll('#bgCtrls .only-bg').forEach(e=>e.style.display=isBg?'':'none');
   document.querySelectorAll('#bgCtrls .only-cls').forEach(e=>e.style.display=isBg?'none':'');
   document.getElementById('bgDelBtn').style.display=has?'':'none';
+  document.getElementById('bgCropBtn').style.display=has?'':'none';
   document.getElementById('bgPickBtn').firstChild.textContent=(has?'📷 사진 바꾸기':'📷 사진 올리기');
   document.getElementById('bgDim').value=Math.round((p?.dim??0.45)*100);
   document.getElementById('bgGlass').value=p?.glass??50;
@@ -7019,28 +7067,141 @@ window.saveBgTune = async function(){
   try{ await updateDoc(doc(db,PH[mode].col,y), upd); window.bgEdit={...window.bgEdit,...upd}; }
   catch(e){ toast('저장 실패: '+e.message, true); }
 };
+// Firestore 문서 한도(1MB) 안에 들어가도록 줄인다 (못 줄이면 null)
+function phShrink(im){
+  let data='';
+  for(const MAX of [2200,1800,1400]){
+    let w=im.width, h=im.height;
+    if(w>MAX){ h=Math.round(h*MAX/w); w=MAX; }
+    const cv=document.createElement('canvas'); cv.width=w; cv.height=h;
+    cv.getContext('2d').drawImage(im,0,0,w,h);
+    let q=0.82; data=cv.toDataURL('image/jpeg',q);
+    while(data.length>900000 && q>0.5){ q-=0.08; data=cv.toDataURL('image/jpeg',q); }
+    if(data.length<=900000) break;
+  }
+  return data.length>900000 ? null : data;
+}
+// ── 사진 자르기: 고른 사진에서 남길 부분을 네모 틀로 정한다 ──
+// cropOpen(img,{title,square,round,recrop}) → 잘린 canvas / 그대로면 img / 취소면 null
+const CROP={};
+function cropOpen(img,opt){
+  opt=opt||{};
+  return new Promise(res=>{
+    if(CROP.res) CROP.res(null);
+    CROP.img=img; CROP.W=img.naturalWidth||img.width; CROP.H=img.naturalHeight||img.height;
+    CROP.sq=!!opt.square; CROP.recrop=!!opt.recrop; CROP.res=res;
+    document.getElementById('cropTitle').textContent='✂️ '+(opt.title||'사진 자르기');
+    document.getElementById('cropSkipBtn').textContent=CROP.recrop?'취소':'자르지 않고 그대로';
+    document.getElementById('cropHelp').textContent=CROP.sq?'모서리를 끌면 크기가, 안쪽을 끌면 위치가 바뀌어요.':'모서리나 변을 끌면 크기가, 안쪽을 끌면 위치가 바뀌어요.';
+    const box=document.getElementById('cropBox');
+    box.classList.toggle('sq',CROP.sq); box.classList.toggle('round',!!opt.round);
+    const cv=document.getElementById('cropImg'), r=Math.min(1,1400/Math.max(CROP.W,CROP.H));
+    cv.width=Math.round(CROP.W*r); cv.height=Math.round(CROP.H*r); cv.getContext('2d').drawImage(img,0,0,cv.width,cv.height);
+    document.getElementById('cropOverlay').classList.add('open');
+    requestAnimationFrame(()=>{ cropLayout(); window.cropReset(); });
+  });
+}
+function cropLayout(){
+  if(!CROP.res) return;
+  const wrapW=document.getElementById('cropWrap').clientWidth||300;
+  const maxH=Math.max(200,Math.min(window.innerHeight*0.58,560));
+  let w=wrapW, h=w*CROP.H/CROP.W;
+  if(h>maxH){ h=maxH; w=h*CROP.W/CROP.H; }
+  const st=document.getElementById('cropStage'); st.style.width=Math.round(w)+'px'; st.style.height=Math.round(h)+'px';
+  CROP.s=w/CROP.W; cropDraw();
+}
+function cropDraw(){
+  const b=CROP.box, s=CROP.s, el=document.getElementById('cropBox'); if(!b) return;
+  el.style.left=(b.x*s)+'px'; el.style.top=(b.y*s)+'px'; el.style.width=(b.w*s)+'px'; el.style.height=(b.h*s)+'px';
+  document.getElementById('cropSize').textContent=Math.round(b.w)+' × '+Math.round(b.h);
+}
+window.cropReset=function(){
+  const W=CROP.W,H=CROP.H;
+  if(CROP.sq){ const d=Math.min(W,H); CROP.box={x:(W-d)/2,y:(H-d)/2,w:d,h:d}; }
+  else CROP.box={x:0,y:0,w:W,h:H};
+  cropDraw();
+};
+(function(){
+  const box=document.getElementById('cropBox'); let st=null;
+  box.addEventListener('pointerdown',e=>{
+    e.preventDefault();
+    st={h:e.target.dataset.h||'move',x:e.clientX,y:e.clientY,b:{...CROP.box}};
+    box.setPointerCapture(e.pointerId);
+  });
+  box.addEventListener('pointermove',e=>{
+    if(!st) return;
+    const W=CROP.W,H=CROP.H,b0=st.b,dx=(e.clientX-st.x)/CROP.s,dy=(e.clientY-st.y)/CROP.s;
+    const min=Math.max(24,Math.min(W,H)*0.04), cl=(v,a,z)=>Math.max(a,Math.min(z,v)), h=st.h;
+    let b;
+    if(h==='move') b={...b0,x:cl(b0.x+dx,0,W-b0.w),y:cl(b0.y+dy,0,H-b0.h)};
+    else if(CROP.sq){
+      const sx=h.includes('e')?1:-1, sy=h.includes('s')?1:-1;
+      const ax=sx>0?b0.x:b0.x+b0.w, ay=sy>0?b0.y:b0.y+b0.h;
+      const lim=Math.min(sx>0?W-ax:ax, sy>0?H-ay:ay);
+      const d=cl(b0.w+Math.max(sx*dx,sy*dy),min,lim);
+      b={x:sx>0?ax:ax-d,y:sy>0?ay:ay-d,w:d,h:d};
+    } else {
+      let l=b0.x,t=b0.y,r=b0.x+b0.w,bt=b0.y+b0.h;
+      if(h.includes('w')) l=cl(l+dx,0,r-min);
+      if(h.includes('e')) r=cl(r+dx,l+min,W);
+      if(h.includes('n')) t=cl(t+dy,0,bt-min);
+      if(h.includes('s')) bt=cl(bt+dy,t+min,H);
+      b={x:l,y:t,w:r-l,h:bt-t};
+    }
+    CROP.box=b; cropDraw();
+  });
+  const end=()=>{ st=null; };
+  box.addEventListener('pointerup',end); box.addEventListener('pointercancel',end);
+  window.addEventListener('resize',()=>{ if(document.getElementById('cropOverlay').classList.contains('open')) cropLayout(); });
+})();
+window.cropDone=function(v){
+  document.getElementById('cropOverlay').classList.remove('open');
+  const cv=document.getElementById('cropImg'); cv.width=cv.height=1;
+  const r=CROP.res; CROP.res=null; CROP.img=null; if(r) r(v);
+};
+window.cropSkip=function(){ window.cropDone(CROP.recrop?null:CROP.img); };
+window.cropApply=function(){
+  const b=CROP.box, x=Math.round(b.x), y=Math.round(b.y);
+  const w=Math.min(CROP.W-x,Math.round(b.w)), h=Math.min(CROP.H-y,Math.round(b.h));
+  if(x===0&&y===0&&w>=CROP.W&&h>=CROP.H){ window.cropDone(CROP.recrop?null:CROP.img); return; }
+  const c=document.createElement('canvas'); c.width=w; c.height=h;
+  c.getContext('2d').drawImage(CROP.img,x,y,w,h,0,0,w,h);
+  window.cropDone(c);
+};
+function imgFromData(data){
+  return new Promise((res,rej)=>{ const im=new Image(); im.onload=()=>res(im); im.onerror=()=>rej(new Error('사진을 읽지 못했습니다')); im.src=data; });
+}
+// 올려 둔 사진의 여백 자르기 (자른 사진으로 바꾸고 위치는 가운데로, 크기·글·어둡게 설정은 그대로)
+window.recropBgPhoto = async function(){
+  const p=window.bgEdit, mode=window.phMode, y=document.getElementById('bgYear').value;
+  if(!p||!p.data) return;
+  try{
+    const src=await cropOpen(await imgFromData(p.data),{title:PH[mode].name+' 자르기', recrop:true});
+    if(!src) return;
+    const data=phShrink(src);
+    if(!data){ toast('사진이 너무 큽니다. 다른 사진으로 해주세요', true); return; }
+    const upd={data, updatedAt:new Date().toISOString()};
+    for(const k of ['pos','posX','posWide','posXWide']) if(p[k]!=null) upd[k]=50;
+    await updateDoc(doc(db,PH[mode].col,y), upd);
+    if(window.bgEdit===p && mode===window.phMode){ window.bgEdit={...p,...upd}; renderBgModal(); }
+    toast(`✂️ ${PH[mode].name}을 잘랐습니다`);
+    if(Number(y)!==schoolYear() && window.phShown[mode] && String(window.phShown[mode].year)===y) showPh(mode,{year:Number(y),...p,...upd});
+  }catch(e){ toast('자르기 실패: '+e.message, true); }
+};
 window.bgPick = function(e){
   const f=e.target.files[0]; e.target.value='';
   if(!f) return;
   if(!f.type.startsWith('image/')){ toast('이미지 파일만 넣을 수 있습니다', true); return; }
   const mode=window.phMode;
-  renderBgModal('사진 줄이는 중…');
   const reader=new FileReader();
   reader.onload=ev=>{
     const im=new Image();
     im.onload=async ()=>{
-      // Firestore 문서 한도(1MB) 안에 들어가도록 줄인다
-      let data='';
-      for(const MAX of [2200,1800,1400]){
-        let w=im.width, h=im.height;
-        if(w>MAX){ h=Math.round(h*MAX/w); w=MAX; }
-        const cv=document.createElement('canvas'); cv.width=w; cv.height=h;
-        cv.getContext('2d').drawImage(im,0,0,w,h);
-        let q=0.82; data=cv.toDataURL('image/jpeg',q);
-        while(data.length>900000 && q>0.5){ q-=0.08; data=cv.toDataURL('image/jpeg',q); }
-        if(data.length<=900000) break;
-      }
-      if(data.length>900000){ toast('사진이 너무 큽니다. 다른 사진으로 해주세요', true); renderBgModal(); return; }
+      const src=await cropOpen(im,{title:PH[mode].name+' 자르기'});
+      if(!src){ renderBgModal(); return; }
+      renderBgModal('사진 줄이는 중…');
+      const data=phShrink(src);
+      if(!data){ toast('사진이 너무 큽니다. 다른 사진으로 해주세요', true); renderBgModal(); return; }
       const y=document.getElementById('bgYear').value, t=phTune(), now=new Date().toISOString();
       // 사진을 바꿔도 컴퓨터·폰 크기·위치 설정은 이어서 쓴다
       const devTune={};
@@ -7117,6 +7278,7 @@ function initUI(){
 
 document.addEventListener('keydown', e=>{
   if(e.key==='Escape'){
+    if(document.getElementById('cropOverlay').classList.contains('open')){ cropDone(null); return; }
     if(window.editBlock||window.editMemo) return;   // 기록 편집 중이면 해당 칸에서 처리
     closeModal(); closeLinksModal(); closeTtModal(); closeStatModal(); closeTtZoom(); closeMissingModal(); closeCkModal(); closeSemesterModal(); closeHolidayModal(); closeCatModal(); closeAttModal(); closeAttStatModal(); closeLsnModal(); closeExModal();
   }
