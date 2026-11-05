@@ -6888,13 +6888,15 @@ function applyCls(p){
   paintPhoto(el.querySelector('.hc-img'),p.data,phView(p,curDev()));
   el.querySelector('.hc-title').textContent=clsText(p).line1;
   el.querySelector('.hc-sub').textContent=clsText(p).line2;
-  let fold=false; try{ fold=localStorage.getItem('wf_clsFold')==='1'; }catch(e){}
+  // 폰은 처음에 접혀 있다(펼치면 그 폰에서 기억). 컴퓨터는 시계 옆 칸이라 접지 않는다.
+  let fold=false; try{ const s=localStorage.getItem(clsFoldKey()); fold= s==null ? !isWide() : s==='1'; }catch(e){}
   el.classList.toggle('folded', fold);
   el.querySelector('.hc-fold').textContent= fold ? '펼치기 ▼' : '접기 ▲';
 }
+function clsFoldKey(){ return isWide() ? 'wf_clsFold' : 'wf_clsFoldM'; }
 window.toggleClsFold = function(){
   const el=document.getElementById('homeClass'), fold=!el.classList.contains('folded');
-  try{ localStorage.setItem('wf_clsFold', fold?'1':'0'); }catch(e){}
+  try{ localStorage.setItem(clsFoldKey(), fold?'1':'0'); }catch(e){}
   el.classList.toggle('folded', fold);
   el.querySelector('.hc-fold').textContent= fold ? '펼치기 ▼' : '접기 ▲';
 };
