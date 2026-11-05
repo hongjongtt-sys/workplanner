@@ -1308,6 +1308,28 @@ body.has-photo .modal{background:rgba(20,24,33,.86);border-color:rgba(255,255,25
 .hcard-class .hc-btn:hover{background:rgba(255,255,255,.28)}
 .hcard-class:hover{transform:none!important}
 @media(max-width:600px){.hcard-class .hc-change{display:none}.hcard-class .hc-cap{padding:30px 16px 12px}}
+/* 반 사진이 있으면: 빠른 추가를 맨 위 한 줄로, 반 사진은 시계 옆(빠른 추가 자리)에 */
+.home-grid.has-cls .hcard-clock{order:-1}
+.home-grid.has-cls .hcard-quick{order:-2;grid-column:1/-1;display:flex;align-items:center;gap:16px;flex-wrap:wrap;min-height:0;padding-top:14px;padding-bottom:14px}
+.home-grid.has-cls .hcard-quick .hcard-head{margin:0}
+.home-grid.has-cls .hcard-quick .hquick{flex:1;grid-template-columns:repeat(4,minmax(0,1fr))}
+.home-grid.has-cls .hcard-quick .hlinks{margin-top:0}
+.home-grid.has-cls .hcard-quick .hlinks:empty{display:none}
+.home-grid.has-cls .hcard-class{grid-column:auto}
+@media (min-width:769px){
+  .home-grid.has-cls .hcard-class .hc-img,.home-grid.has-cls .hcard-class.folded .hc-img{height:100%;min-height:240px}
+  .home-grid.has-cls .hcard-class .hc-fold{display:none}
+  .home-grid.has-cls .hcard-class.folded .hc-cap{top:auto;padding:34px 22px 14px;align-items:flex-end;background:linear-gradient(180deg,transparent,rgba(8,10,16,.62))}
+  .home-grid.has-cls .hcard-class.folded .hc-sub{display:block}
+  .home-grid.has-cls .hcard-class .hc-title{font-size:clamp(15px,1.4vw,18px)}
+}
+@media (min-width:769px) and (max-width:1040px){ .home-grid.has-cls .hcard-class{grid-column:span 2} }
+@media (max-width:768px){
+  .home-grid.has-cls .hcard-quick{display:block}
+  .home-grid.has-cls .hcard-quick .hcard-head{margin-bottom:10px}
+  .home-grid.has-cls .hcard-quick .hlinks{margin-top:10px}
+  .home-grid.has-cls .hcard-quick .hq-btn{flex-direction:column;gap:3px;padding:9px 4px;font-size:11.5px}
+}
 .ph-tabs{display:flex;gap:6px;margin-bottom:14px}
 .ph-tab{flex:1;padding:9px 10px;font-size:13px;font-weight:600;font-family:inherit;border-radius:999px;cursor:pointer;
   background:rgba(255,255,255,.05);border:1px solid var(--border);color:var(--text-muted)}
@@ -1585,7 +1607,7 @@ body.has-photo .tt-title[style*="#1d4ed8"]{color:#a9c6ff!important}
             <div class="hmeta" id="hMeta"></div>
           </div>
 
-          <div class="hcard">
+          <div class="hcard hcard-quick" id="homeQuick">
             <div class="hcard-head"><span>⚡ 빠른 추가</span></div>
             <div class="hquick">
               <button class="hq-btn" onclick="openModal()"><span>✅</span>업무</button>
@@ -6860,6 +6882,7 @@ function clsText(p){
 function applyCls(p){
   const el=document.getElementById('homeClass');
   if(!el) return;
+  el.parentElement.classList.toggle('has-cls', !!(p&&p.data));
   if(!(p&&p.data)){ el.style.display='none'; return; }
   el.style.display='';
   paintPhoto(el.querySelector('.hc-img'),p.data,phView(p,curDev()));
@@ -6989,10 +7012,11 @@ function phImgSize(data){
 function phBoxAR(mode,dev){
   const here=dev===curDev();
   if(mode==='bg') return here ? innerWidth/innerHeight : (dev==='pc' ? 16/10 : 390/844);
-  const hc=document.getElementById('homeClass');
-  const vw= here ? innerWidth : (dev==='pc'?1280:390);
-  const w= here&&hc&&hc.offsetWidth ? hc.offsetWidth : (dev==='pc'? Math.min(vw-56,1180) : vw-24);
-  return w/Math.min(400,Math.max(220,vw*0.32));
+  // 지금 화면에 보이는 반 사진 칸이 있으면 그 모양 그대로
+  const hi=document.querySelector('#homeClass .hc-img');
+  if(here&&hi&&hi.offsetWidth&&hi.offsetHeight&&!document.getElementById('homeClass').classList.contains('folded')) return hi.offsetWidth/hi.offsetHeight;
+  // 컴퓨터: 시계 옆 칸(가로 약 390 · 세로 약 300), 폰: 화면 너비 · 세로 220
+  return dev==='pc' ? 1.3 : (innerWidth<=768&&here ? innerWidth-28 : 362)/220;
 }
 function phLoadDev(){
   const v=phView(window.phDraft,window.phDev);
