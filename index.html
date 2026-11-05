@@ -1966,6 +1966,7 @@ body.has-photo .tt-title[style*="#1d4ed8"]{color:#a9c6ff!important}
       <div class="ph-seg"><span>사진 크기</span><div class="seg">
         <button id="phFitFill" onclick="setPhFit('fill')">꽉 채우기</button>
         <button id="phFitAll" onclick="setPhFit('all')">사진 전체 보이기</button></div></div>
+      <div class="bg-range"><span>확대</span><input type="range" id="bgZoom" min="0" max="100" step="1" oninput="setPhZoom()" onchange="setPhZoom(true)"><b id="bgZoomV"></b></div>
       <div class="ph-devnote" id="phDevNote"></div>
       <div class="form-group only-cls"><label class="form-label">첫째 줄 글</label>
         <input type="text" class="form-input" id="clsLine1" maxlength="30" oninput="bgPreviewTune()" onchange="saveBgTune()"></div>
@@ -6825,25 +6826,43 @@ function photoLum(data){
 function autoBoost(L){ return Math.max(0,(L-0.42))*0.75; }   // 밝기 0.7 → 약 +21%
 const WIDE_MQ=window.matchMedia('(min-width:769px)');   // 이 앱의 폰 화면 = 768px 이하
 function isWide(){ return WIDE_MQ.matches; }
-const PH_DEV_KEYS={pc:['posWide','posXWide','fitWide'], m:['pos','posX','fit']};
+const PH_DEV_KEYS={pc:['posWide','posXWide','fitWide','zoomWide'], m:['pos','posX','fit','zoom']};
 // 기기별 보기 값 {y,x,all}
+// z = 사진 크기: 0 = 사진 전체 보이기, 100 = 꽉 채우기, 그 사이는 그만큼 확대 (예전 사진은 fit 값으로 정함)
 function phView(p,dev){
-  if(dev==='pc') return {y:p?.posWide??p?.pos??50, x:p?.posXWide??50, all:p?.fitWide==='all'};
-  return {y:p?.pos??50, x:p?.posX??50, all:p?.fit==='all'};
+  const v= dev==='pc' ? {y:p?.posWide??p?.pos??50, x:p?.posXWide??50, z:p?.zoomWide ?? (p?.fitWide==='all'?0:100)}
+                      : {y:p?.pos??50, x:p?.posX??50, z:p?.zoom ?? (p?.fit==='all'?0:100)};
+  v.all= v.z<=0; return v;
 }
 function curDev(){ return isWide()?'pc':'m'; }
 // el에 사진을 그린다: 꽉 채우기(위치 x,y) 또는 사진 전체 보이기(양옆·위아래는 흐린 사진)
+const phImgAR={};
+const phArKey=data=>data.length+data.slice(-40);
+// 칸 크기가 바뀌면(창 크기, 접기·펼치기) 확대 중인 사진을 다시 맞춘다
+const phRO= window.ResizeObserver ? new ResizeObserver(es=>es.forEach(e=>{ const s=e.target._ph; if(s&&s.v.z>0&&s.v.z<100) paintPhoto(e.target,s.data,s.v); })) : null;
 function paintPhoto(el,data,v){
+  el._ph={data,v}; if(phRO&&!el._phObs){ el._phObs=1; phRO.observe(el); }
   el.querySelectorAll(':scope>.ph-blur,:scope>.ph-all').forEach(n=>n.remove());
-  if(v.all){
-    el.style.backgroundImage='';
-    const u=`url("${data}")`, b=document.createElement('div'), a=document.createElement('div');
-    b.className='ph-blur'; b.style.backgroundImage=u; a.className='ph-all'; a.style.backgroundImage=u;
-    el.prepend(b,a);
-  } else {
+  const z=v.z??(v.all?0:100);
+  if(z>=100){
     el.style.backgroundImage=`url("${data}")`;
     el.style.backgroundPosition=`${v.x}% ${v.y}%`;
+    return;
   }
+  el.style.backgroundImage='';
+  const u=`url("${data}")`, b=document.createElement('div'), a=document.createElement('div');
+  b.className='ph-blur'; b.style.backgroundImage=u; a.className='ph-all'; a.style.backgroundImage=u;
+  if(z>0){
+    const ar=phImgAR[phArKey(data)], W=el.clientWidth, H=el.clientHeight;
+    if(!ar) phImgSize(data).then(()=>{ if(el._ph&&el._ph.data===data) paintPhoto(el,data,el._ph.v); });
+    else if(W&&H){
+      const r=ar/(W/H)*100, t=z/100;   // r = 전체 보이기일 때와 꽉 채우기일 때 가로 폭(%) 중 하나
+      const w= r>100 ? 100+t*(r-100) : r+t*(100-r);
+      a.style.backgroundSize=`${w.toFixed(2)}% auto`;
+      a.style.backgroundPosition=`${v.x}% ${v.y}%`;
+    }
+  }
+  el.prepend(b,a);
 }
 function applyBg(p){
   const el=document.getElementById('bgPhoto');
@@ -7004,7 +7023,6 @@ function renderBgModal(msg){
 // ── 컴퓨터·폰 따로 맞추기 ──
 window.phDev='pc';
 window.phDraft={};
-const phImgAR={};
 function phImgSize(data){
   const k=data.length+data.slice(-40);
   if(phImgAR[k]) return Promise.resolve(phImgAR[k]);
@@ -7024,6 +7042,7 @@ function phLoadDev(){
   const v=phView(window.phDraft,window.phDev);
   document.getElementById('bgPos').value=v.y;
   document.getElementById('bgPosX').value=v.x;
+  document.getElementById('bgZoom').value=v.z;
 }
 // 미리보기 사진을 끌어서 위치 조절 (사진이 손가락을 따라 잘리는 쪽으로만 움직임)
 (function(){
@@ -7032,8 +7051,10 @@ function phLoadDev(){
     if(!el.classList.contains('dragok')) return;
     const ed=window.bgEdit, v=phView(window.phDraft,window.phDev);
     const imgAR=phImgAR[ed.data.length+ed.data.slice(-40)], box=phBoxAR(window.phMode,window.phDev), cutX=imgAR>box;
+    // 사진이 칸보다 넘치는 길이(확대 중이면 그만큼만)
+    const t=v.z/100, over= t*(cutX ? imgAR/box-1 : box/imgAR-1);
     st={x:e.clientX,y:e.clientY,v0:cutX?v.x:v.y,cutX,moved:false,
-        span: cutX ? el.clientWidth*(imgAR/box-1) : el.clientHeight*(box/imgAR-1)};
+        span: (cutX ? el.clientWidth : el.clientHeight)*Math.max(.001,over)};
     el.setPointerCapture(e.pointerId); e.preventDefault();
   });
   el.addEventListener('pointermove',e=>{
@@ -7047,8 +7068,15 @@ function phLoadDev(){
 })();
 window.setPhDev = function(dev){ window.phDev=dev; phLoadDev(); bgPreviewTune(); };
 window.setPhFit = function(fit){
-  const [,,fk]=PH_DEV_KEYS[window.phDev];
-  window.phDraft[fk]=fit; bgPreviewTune(); saveBgTune();
+  const [,,fk,zk]=PH_DEV_KEYS[window.phDev];
+  window.phDraft[fk]=fit; window.phDraft[zk]= fit==='all'?0:100;
+  phLoadDev(); bgPreviewTune(); saveBgTune();
+};
+// 확대 막대: 0 = 전체 보이기 … 100 = 꽉 채우기
+window.setPhZoom = function(save){
+  const [,,fk,zk]=PH_DEV_KEYS[window.phDev], z=Number(document.getElementById('bgZoom').value);
+  window.phDraft[zk]=z; window.phDraft[fk]= z<=0?'all':'fill';
+  bgPreviewTune(); if(save) saveBgTune();
 };
 function phTune(){
   return {
@@ -7072,8 +7100,9 @@ window.bgPreviewTune = function(){
   document.getElementById('bgPosXV').textContent=v.x+'%';
   document.getElementById('phDevPc').classList.toggle('on',dev==='pc');
   document.getElementById('phDevM').classList.toggle('on',dev==='m');
-  document.getElementById('phFitFill').classList.toggle('on',!v.all);
+  document.getElementById('phFitFill').classList.toggle('on',v.z>=100);
   document.getElementById('phFitAll').classList.toggle('on',v.all);
+  document.getElementById('bgZoomV').textContent= v.all?'전체':v.z>=100?'꽉':v.z+'%';
   // 미리보기 모양을 그 화면의 사진 칸과 같게
   const box=phBoxAR(mode,dev), ed=window.bgEdit, hasImg=!!(ed&&ed.data);
   prev.style.aspectRatio= hasImg ? `${box.toFixed(3)}` : '';
