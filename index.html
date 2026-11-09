@@ -5569,18 +5569,55 @@ function needsDoc(a){
   if(r==='출석인정') return /체험학습|현장/.test(a.note||'');
   return true;
 }
-// 출결일 포함 5일 이내 제출
-function docDue(dateStr){
-  const [y,m,d]=dateStr.split('-').map(Number);
-  const dt=new Date(y,m-1,d); dt.setDate(dt.getDate()+4);
-  return dk(dt.getFullYear(), dt.getMonth()+1, dt.getDate());
+// 확인서 기한
+//  · 현장체험학습: 체험학습 끝난 날로부터 7일 (보고서)
+//  · 그 밖의 사유: 시작한 날을 1일째로 5일 이내, 이어진 결석은 첫날 기준
+function isFieldTrip(a){ return (a.reason||'')==='출석인정' && /체험학습|현장/.test(a.note||''); }
+function docDue(dateStr, trip){ return addDaysStr(dateStr, trip?7:4); }
+// 두 날짜 사이가 모두 학교에 안 나오는 날(주말·공휴일·휴업일·방학)이면 이어진 것으로 봄
+function attContiguous(a, b){
+  let d=addDaysStr(a,1), guard=0;
+  while(d<b && guard++<60){
+    if(!(isWeekend(d)||holidayKind(d)==='off'||isVacation(d))) return false;
+    d=addDaysStr(d,1);
+  }
+  return d===b;
 }
-// 남은 일수 (음수면 기한 초과)
-function docDaysLeft(dateStr){ return daysUntil(docDue(dateStr)); }
+// 같은 학생의 이어진 결석(같은 사유 묶음)을 한 건으로 묶음: id → {start,end,due,ok,ids}
+let _docGrpRef=null, _docGrp=null;
+function attDocGroups(){
+  if(_docGrpRef===window.attendance && _docGrp) return _docGrp;
+  const map={}, buckets={};
+  window.attendance.forEach(a=>{
+    if(!needsDoc(a)) return;
+    const trip=isFieldTrip(a);
+    if(a.type!=='결석' && !trip){            // 지각·조퇴·결과는 그날 하나
+      map[a.id]={start:a.date,end:a.date,trip:false,ids:[a.id],ok:!!a.doc,due:docDue(a.date,false)};
+      return;
+    }
+    const k=a.stuId+'|'+(trip?'trip':'abs');
+    (buckets[k]=buckets[k]||[]).push(a);
+  });
+  Object.entries(buckets).forEach(([k,list])=>{
+    const trip=k.endsWith('|trip');
+    list.sort((x,y)=>x.date<y.date?-1:x.date>y.date?1:0);
+    let g=null;
+    list.forEach(a=>{
+      if(g && (a.date===g.end || attContiguous(g.end,a.date))){ g.end=a.date; g.ids.push(a.id); g.ok=g.ok||!!a.doc; }
+      else{ g={start:a.date,end:a.date,trip,ids:[a.id],ok:!!a.doc}; }
+      map[a.id]=g;
+    });
+  });
+  Object.values(map).forEach(g=>{ g.due=docDue(g.trip?g.end:g.start, g.trip); });
+  _docGrpRef=window.attendance; _docGrp=map;
+  return map;
+}
+function docGroupOf(a){ return a&&a.id ? attDocGroups()[a.id] : null; }
 function docState(a){
   if(!needsDoc(a)) return null;
-  if(a.doc) return {k:'ok'};
-  const left=docDaysLeft(a.date);
+  const g=docGroupOf(a);
+  if(a.doc || (g&&g.ok)) return {k:'ok'};
+  const left=daysUntil(g?g.due:docDue(a.date, isFieldTrip(a)));
   if(left<0) return {k:'over', left};
   if(left<=2) return {k:'soon', left};
   return {k:'wait', left};
@@ -5675,7 +5712,7 @@ window.editAtt = function(id){
   document.getElementById('attNote').value=a.note||'';
   document.getElementById('attDeleteBtn').style.display='block';
   document.getElementById('attDeleteBtn').textContent = a.repId ? '이 날만 삭제' : '삭제';
-  document.getElementById('attDoc').checked=!!a.doc;
+  document.getElementById('attDoc').checked=!!a.doc || !!(docGroupOf(a)&&docGroupOf(a).ok);   // 이어진 날 중 하나라도 받았으면 받은 것
   document.getElementById('attRepGroup').style.display='none';
   renderAttRepEdit(a);
   renderAttPick(); renderAttBtns(); fillPeriodSelects(a.pStart||'조회', a.pEnd||'종례'); updateDocNote(); renderNotePresets();
@@ -5841,8 +5878,20 @@ window.updateDocNote = function(){
       : '출석인정은 확인서 대상이 아닙니다 (비고에 "체험학습"을 넣으면 대상이 됩니다)';
     return;
   }
-  const due=docDue(window.dailyDate);
-  el.textContent=`제출 기한: ${due}까지 (출결일 포함 5일)`;
+  const trip=isFieldTrip({reason:window.attReason, note});
+  const cur=window.attEditId ? window.attendance.find(x=>x.id===window.attEditId) : null;
+  const g=cur && needsDoc(cur) && isFieldTrip(cur)===trip ? docGroupOf(cur) : null;
+  const md=s=>s.slice(5).replace('-','/');
+  if(g && g.start!==g.end){
+    el.textContent = trip
+      ? `제출 기한: ${g.due}까지 (체험학습 ${md(g.start)}~${md(g.end)}, 끝난 날로부터 7일)`
+      : `제출 기한: ${g.due}까지 (이어진 결석 ${md(g.start)}~${md(g.end)}, 첫날 포함 5일)`;
+    return;
+  }
+  const due=docDue(window.dailyDate, trip);
+  el.textContent = trip
+    ? `제출 기한: ${due}까지 (체험학습 끝난 날로부터 7일 · 며칠 이어지면 마지막 날 기준)`
+    : `제출 기한: ${due}까지 (출결일 포함 5일 · 이어진 결석은 첫날 기준)`;
 };
 // ── 자주 쓰는 비고 ───────────────────────────────────
 function notePresets(){ return (window.config.attNotes&&window.config.attNotes.list)||[]; }
@@ -6037,14 +6086,18 @@ function renderAttStat(){
         return ac?`<span class="att-reason">출석인정 ${ac} (합계 제외)</span>`:'';})()}
     </div>
     ${(()=>{
-      const miss=dated.filter(a=>{const st=docState(a); return st&&st.k!=='ok';})
+      const seenGrp=new Set();
+      const miss=dated.filter(a=>{const st=docState(a); if(!st||st.k==='ok') return false;
+          const g=docGroupOf(a); if(!g) return true;
+          if(seenGrp.has(g)) return false; seenGrp.add(g); return true;})
         .sort((x,y)=>x.date<y.date?-1:1);
       if(!miss.length) return `<div class="doc-panel ok">✓ 확인서 미제출 없음</div>`;
       return `<div class="doc-panel">
         <div class="doc-panel-head">⚠ 확인서 미제출 ${miss.length}건</div>
         ${miss.map(a=>{const st=docState(a);
           return `<div class="doc-row doc-${st.k}" onclick="goAttDate('${a.date}')">
-            <span class="doc-date">${a.date.slice(5)}</span>
+            <span class="doc-date">${(()=>{const g=docGroupOf(a);
+              return g&&g.start!==g.end?`${g.start.slice(5)}~${g.end.slice(5)}`:a.date.slice(5);})()}</span>
             <span style="font-weight:600">${esc(String(a.stuNo||a.number||''))} ${esc(a.name||'')}</span>
             <span class="att-tag att-t-${a.type}">${esc(attLabel(a))}</span>
             <span style="flex:1"></span>
