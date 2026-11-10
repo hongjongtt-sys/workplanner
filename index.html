@@ -2260,8 +2260,10 @@ body.has-photo .tt-title[style*="#1d4ed8"]{color:#a9c6ff!important}
     </div>
     <div class="form-group">
       <label class="form-label">확인서</label>
+      <label class="doc-check" id="attNoDocWrap" style="margin-bottom:6px;display:none"><input type="checkbox" id="attNoDoc" onchange="updateDocNote();renderNotePresets()"> 확인서 필요 없음 <span style="font-size:11px;color:var(--text-dim)">(공문 처리 등)</span></label>
       <div id="attDocWrap">
         <label class="doc-check"><input type="checkbox" id="attDoc" onchange="updateDocNote()"> 확인서를 받았음</label>
+        <label class="doc-check" id="attDocLinkWrap" style="margin-top:6px;display:none"><input type="checkbox" id="attDocLink" onchange="updateDocNote()"> 🔗 앞 결석과 묶기 <span style="font-size:11px;color:var(--text-dim)">(입원·격리 등)</span></label>
         <div id="attDocNote" style="font-size:10.5px;color:var(--text-dim);margin-top:6px"></div>
       </div>
     </div>
@@ -5561,12 +5563,12 @@ window.setSchoolInfo = async function(){
   }catch(e){ toast('저장 실패: '+e.message, true); }
 };
 function attLabel(a){ return `${a.reason||''}${a.type}`; }
-// 확인서 대상: 미인정은 제외, 출석인정은 현장체험학습만, 나머지 사유(질병·기타)는 대상
+// 확인서 대상: 미인정은 제외, 출석인정은 '확인서 필요 없음'(공문 처리 등)을 체크한 날만 제외, 나머지는 대상
 function needsDoc(a){
   if(!a) return false;
   const r=a.reason||'';
   if(r==='미인정') return false;
-  if(r==='출석인정') return /체험학습|현장/.test(a.note||'');
+  if(r==='출석인정' && a.noDoc && !/체험학습|현장/.test(a.note||'')) return false;
   return true;
 }
 // 확인서 기한
@@ -5583,7 +5585,9 @@ function attContiguous(a, b){
   }
   return d===b;
 }
-// 같은 학생의 이어진 결석(같은 사유 묶음)을 한 건으로 묶음: id → {start,end,due,ok,ids}
+// 확인서 묶음: id → {start,end,due,ok,ids}
+//  · 체험학습: 같은 학생의 이어진 날을 자동으로 한 건
+//  · 질병·기타 결석: 날마다 따로. '앞 결석과 확인서 하나로 묶기'(docLink)를 체크한 날만 앞 결석에 이어 붙임 (입원·격리 등)
 let _docGrpRef=null, _docGrp=null;
 function attDocGroups(){
   if(_docGrpRef===window.attendance && _docGrp) return _docGrp;
@@ -5603,7 +5607,8 @@ function attDocGroups(){
     list.sort((x,y)=>x.date<y.date?-1:x.date>y.date?1:0);
     let g=null;
     list.forEach(a=>{
-      if(g && (a.date===g.end || attContiguous(g.end,a.date))){ g.end=a.date; g.ids.push(a.id); g.ok=g.ok||!!a.doc; }
+      const join = g && (a.date===g.end || attContiguous(g.end,a.date)) && (trip || a.docLink);
+      if(join){ g.end=a.date; g.ids.push(a.id); g.ok=g.ok||!!a.doc; }
       else{ g={start:a.date,end:a.date,trip,ids:[a.id],ok:!!a.doc}; }
       map[a.id]=g;
     });
@@ -5613,6 +5618,12 @@ function attDocGroups(){
   return map;
 }
 function docGroupOf(a){ return a&&a.id ? attDocGroups()[a.id] : null; }
+// 바로 앞 등교일에 같은 학생의 확인서 대상 결석(체험학습 제외)이 있으면 그 기록
+function prevAbsOf(stuId, dateStr){
+  let d=addDaysStr(dateStr,-1), guard=0;
+  while(guard++<60 && (isWeekend(d)||holidayKind(d)==='off'||isVacation(d))) d=addDaysStr(d,-1);
+  return window.attendance.find(x=>x.stuId===stuId && x.date===d && x.type==='결석' && needsDoc(x) && !isFieldTrip(x)) || null;
+}
 function docState(a){
   if(!needsDoc(a)) return null;
   const g=docGroupOf(a);
@@ -5690,6 +5701,8 @@ window.openAttModal = function(){
   document.getElementById('attNote').value='';
   document.getElementById('attDeleteBtn').style.display='none';
   document.getElementById('attDoc').checked=false;
+  document.getElementById('attDocLink').checked=false;
+  document.getElementById('attNoDoc').checked=false;
   // 요일 반복 초기화
   document.getElementById('attRepGroup').style.display='';
   document.getElementById('attRepEdit').style.display='none';
@@ -5712,7 +5725,9 @@ window.editAtt = function(id){
   document.getElementById('attNote').value=a.note||'';
   document.getElementById('attDeleteBtn').style.display='block';
   document.getElementById('attDeleteBtn').textContent = a.repId ? '이 날만 삭제' : '삭제';
-  document.getElementById('attDoc').checked=!!a.doc || !!(docGroupOf(a)&&docGroupOf(a).ok);   // 이어진 날 중 하나라도 받았으면 받은 것
+  document.getElementById('attDoc').checked=!!a.doc || !!(docGroupOf(a)&&docGroupOf(a).ok);   // 묶인 날 중 하나라도 받았으면 받은 것
+  document.getElementById('attDocLink').checked=!!a.docLink;
+  document.getElementById('attNoDoc').checked=!!a.noDoc;
   document.getElementById('attRepGroup').style.display='none';
   renderAttRepEdit(a);
   renderAttPick(); renderAttBtns(); fillPeriodSelects(a.pStart||'조회', a.pEnd||'종례'); updateDocNote(); renderNotePresets();
@@ -5863,26 +5878,46 @@ function updatePeriodState(){
   g.style.opacity=off?'.45':'1';
   document.getElementById('attPeriodNote').textContent = off ? '결석은 교시를 입력하지 않습니다' : '';
 }
-window.setAttType = function(t){ window.attType=t; renderAttBtns(); updatePeriodState(); };
-window.setAttReason = function(r){ window.attReason=r; renderAttBtns(); updateDocNote(); };
+window.setAttType = function(t){ window.attType=t; renderAttBtns(); updatePeriodState(); updateDocNote(); };
+window.setAttReason = function(r){ window.attReason=r; renderAttBtns(); updateDocNote(); renderNotePresets(); };
 window.updateDocNote = function(){
   const el=document.getElementById('attDocNote'); if(!el) return;
   const note=document.getElementById('attNote')?.value||'';
-  const target=needsDoc({reason:window.attReason, note});
+  const tripNow=isFieldTrip({reason:window.attReason, note});
+  const noDocOk = window.attReason==='출석인정' && !tripNow;
+  document.getElementById('attNoDocWrap').style.display = noDocOk ? '' : 'none';
+  const noDoc = noDocOk && document.getElementById('attNoDoc').checked;
+  const target=needsDoc({reason:window.attReason, note, noDoc});
   const wrap=document.getElementById('attDocWrap');
   wrap.style.opacity=target?'1':'.45';
   document.getElementById('attDoc').disabled=!target;
+  const trip=isFieldTrip({reason:window.attReason, note});
+  const linkable = target && !trip && window.attType==='결석';
+  document.getElementById('attDocLinkWrap').style.display = linkable ? '' : 'none';
+  const link = linkable && document.getElementById('attDocLink').checked;
   if(!target){
     el.textContent = window.attReason==='미인정'
       ? '미인정은 확인서 대상이 아닙니다'
-      : '출석인정은 확인서 대상이 아닙니다 (비고에 "체험학습"을 넣으면 대상이 됩니다)';
+      : '확인서 필요 없음으로 표시했습니다 (미제출 목록에 나오지 않습니다)';
     return;
   }
-  const trip=isFieldTrip({reason:window.attReason, note});
   const cur=window.attEditId ? window.attendance.find(x=>x.id===window.attEditId) : null;
-  const g=cur && needsDoc(cur) && isFieldTrip(cur)===trip ? docGroupOf(cur) : null;
   const md=s=>s.slice(5).replace('-','/');
-  if(g && g.start!==g.end){
+  if(link){
+    const sid = window.attEditId ? window.attPickId : (window.attPicks.length===1 ? window.attPicks[0] : null);
+    const prev = sid ? prevAbsOf(sid, window.dailyDate) : null;
+    if(sid && !prev){ el.textContent='바로 앞 등교일에 이 학생의 결석이 없어 묶이지 않습니다 (이 날부터 새로 셉니다)'; return; }
+    if(prev){
+      const pg=docGroupOf(prev);
+      const st=pg?pg.start:prev.date;
+      el.textContent=`제출 기한: ${docDue(st,false)}까지 (${md(st)}부터 이어진 결석, 첫날 포함 5일 · 확인서 하나)`;
+      return;
+    }
+    el.textContent='바로 앞 등교일 결석과 확인서 하나로 처리합니다 (기한은 첫날 포함 5일)';
+    return;
+  }
+  const g=cur && needsDoc(cur) && isFieldTrip(cur)===trip && !(cur.docLink && !link) ? docGroupOf(cur) : null;
+  if(g && g.start!==g.end && (trip || link)){
     el.textContent = trip
       ? `제출 기한: ${g.due}까지 (체험학습 ${md(g.start)}~${md(g.end)}, 끝난 날로부터 7일)`
       : `제출 기한: ${g.due}까지 (이어진 결석 ${md(g.start)}~${md(g.end)}, 첫날 포함 5일)`;
@@ -5891,12 +5926,15 @@ window.updateDocNote = function(){
   const due=docDue(window.dailyDate, trip);
   el.textContent = trip
     ? `제출 기한: ${due}까지 (체험학습 끝난 날로부터 7일 · 며칠 이어지면 마지막 날 기준)`
-    : `제출 기한: ${due}까지 (출결일 포함 5일 · 이어진 결석은 첫날 기준)`;
+    : `제출 기한: ${due}까지 (출결일 포함 5일)`;
 };
 // ── 자주 쓰는 비고 ───────────────────────────────────
 function notePresets(){ return (window.config.attNotes&&window.config.attNotes.list)||[]; }
-async function saveNotePresets(list){
-  try{ await setDoc(doc(db,CFG_COL,'attNotes'), {list}); }
+// '확인서 필요 없음'으로 표시한 비고 (예: 운동부 훈련)
+function noDocPresets(){ return (window.config.attNotes&&window.config.attNotes.noDoc)||[]; }
+async function saveNotePresets(list, noDoc){
+  noDoc=(noDoc||noDocPresets()).filter(n=>list.includes(n));
+  try{ await setDoc(doc(db,CFG_COL,'attNotes'), {list, noDoc}); }
   catch(e){ toast('저장 실패: '+e.message, true); }
 }
 window.renderNotePresets = function(){
@@ -5904,26 +5942,40 @@ window.renderNotePresets = function(){
   const cur=(document.getElementById('attNote').value||'').trim();
   const list=notePresets();
   const btn=document.getElementById('attNoteSave');
-  const saved=cur&&list.includes(cur);
-  btn.textContent=saved?'★ 저장됨':'☆ 저장';
-  btn.disabled=!cur||saved;
+  const nd=noDocPresets();
+  const ndShown=document.getElementById('attNoDocWrap').style.display!=='none';
+  const ndNow=ndShown && document.getElementById('attNoDoc').checked;
+  const inList=cur&&list.includes(cur);
+  const flagDiff=inList && ndShown && nd.includes(cur)!==ndNow;
+  btn.textContent=!inList?'☆ 저장':(flagDiff?'★ 다시 저장':'★ 저장됨');
+  btn.disabled=!cur||(inList&&!flagDiff);
   el.innerHTML = list.length
-    ? list.map((n,i)=>`<span class="note-chip ${n===cur?'on':''}" onclick="pickNotePreset(${i})">${esc(n)}<span class="nx" title="목록에서 삭제" onclick="event.stopPropagation();delNotePreset(${i})">✕</span></span>`).join('')
+    ? list.map((n,i)=>`<span class="note-chip ${n===cur?'on':''}" onclick="pickNotePreset(${i})">${esc(n)}${nd.includes(n)?'<span style="font-size:10px;opacity:.7;margin-left:4px">확인서 없음</span>':''}<span class="nx" title="목록에서 삭제" onclick="event.stopPropagation();delNotePreset(${i})">✕</span></span>`).join('')
     : `<span class="note-presets-empty">자주 쓰는 비고를 입력하고 ☆ 저장을 누르면 여기에 버튼으로 생깁니다</span>`;
 };
 window.pickNotePreset = function(i){
   const n=notePresets()[i]; if(n==null) return;
   const inp=document.getElementById('attNote');
   inp.value = inp.value.trim()===n ? '' : n;   // 같은 버튼 다시 누르면 지움
+  document.getElementById('attNoDoc').checked = inp.value===n && noDocPresets().includes(n);
   updateDocNote(); renderNotePresets();
 };
 window.addNotePreset = async function(){
   const cur=(document.getElementById('attNote').value||'').trim();
   if(!cur) return;
   const list=notePresets();
-  if(list.includes(cur)) return;
-  await saveNotePresets([...list, cur]);
-  toast('⭐ 자주 쓰는 비고에 저장했습니다');
+  const ndShown=document.getElementById('attNoDocWrap').style.display!=='none';
+  const ndNow=ndShown && document.getElementById('attNoDoc').checked;
+  let nd=noDocPresets().filter(n=>n!==cur);
+  if(ndNow) nd.push(cur);
+  if(list.includes(cur)){
+    if(!ndShown) return;
+    await saveNotePresets(list, nd);
+    toast(ndNow?'⭐ "확인서 없음" 비고로 저장했습니다':'⭐ 확인서 받는 비고로 저장했습니다');
+    return;
+  }
+  await saveNotePresets([...list, cur], nd);
+  toast(ndNow?'⭐ 자주 쓰는 비고에 저장했습니다 (확인서 없음)':'⭐ 자주 쓰는 비고에 저장했습니다');
 };
 window.delNotePreset = async function(i){
   const list=[...notePresets()]; if(i<0||i>=list.length) return;
@@ -5944,6 +5996,8 @@ window.saveAtt = async function(){
   const base={
     type:window.attType, reason:window.attReason,
     pStart:ps, pEnd:pe, doc:document.getElementById('attDoc').checked,
+    docLink: document.getElementById('attDocLinkWrap').style.display!=='none' && document.getElementById('attDocLink').checked,
+    noDoc: document.getElementById('attNoDocWrap').style.display!=='none' && document.getElementById('attNoDoc').checked,
     note:document.getElementById('attNote').value.trim()
   };
   const stuData=id=>{ const s=window.students.find(x=>x.id===id);
@@ -5952,7 +6006,16 @@ window.saveAtt = async function(){
   // 수정: 이 기록 하나만
   if(editing){
     try{
+      const cur=window.attendance.find(x=>x.id===window.attEditId);
+      const g0=cur?docGroupOf(cur):null;
       await updateDoc(doc(db,ATT_COL,window.attEditId), {...base, ...stuData(ids[0]), date:window.dailyDate});
+      // 묶인 날들의 확인서 체크를 같은 값으로 맞춤 (체크·해제 모두)
+      const stillIn = g0 && (g0.trip || base.docLink || g0.ids[0]===window.attEditId);
+      if(g0 && g0.ids.length>1 && stillIn){
+        const others=g0.ids.filter(id=>id!==window.attEditId)
+          .filter(id=>{const x=window.attendance.find(y=>y.id===id); return x && !!x.doc!==base.doc;});
+        for(const id of others) await updateDoc(doc(db,ATT_COL,id), {doc:base.doc});
+      }
       toast('✏️ 수정되었습니다'); closeAttModal();
     }catch(e){ toast('저장 실패: '+e.message, true); }
     return;
