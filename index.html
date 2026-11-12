@@ -761,6 +761,9 @@ body.dark-ui .mr-row.mr-pink td{background:rgba(244,114,182,.17)!important}
 .link-name:hover{color:var(--accent)}
 .link-del{background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:13px;padding:0 2px}
 .link-del:hover{color:var(--high)}
+.link-move{font-size:14px;padding:2px 5px}
+.link-move:hover{color:var(--accent)}
+.link-move:disabled{opacity:.25;cursor:default;color:var(--text-dim)}
 .side-link{display:flex;align-items:center;gap:7px;padding:7px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-size:12px;margin-bottom:5px;cursor:pointer;transition:all .15s;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .side-link:hover{border-color:var(--accent);background:var(--accent-light);color:var(--accent)}
 
@@ -6889,8 +6892,10 @@ function renderLinks(){
   const list=document.getElementById('linkList');
   if(list){
     list.innerHTML = window.quickLinks.length
-      ? window.quickLinks.map(l=>`<div class="link-item">
+      ? window.quickLinks.map((l,i,a)=>`<div class="link-item">
           <span class="link-name" onclick="openLink('${jsStr(l.url)}')">🔗 ${esc(l.name)}</span>
+          <button class="link-del link-move" title="위로" onclick="moveLink(${i},-1)" ${i===0?'disabled':''}>↑</button>
+          <button class="link-del link-move" title="아래로" onclick="moveLink(${i},1)" ${i===a.length-1?'disabled':''}>↓</button>
           <button class="link-del" onclick="editLink('${l.id}','${jsStr(l.name)}','${jsStr(l.url)}')">✏️</button>
           <button class="link-del" onclick="deleteLink('${l.id}')">✕</button>
         </div>`).join('')
@@ -7440,7 +7445,8 @@ window.addLink = async function(){
   if(!name||!url){ toast('이름과 주소를 모두 입력하세요', true); return; }
   if(!/^https?:\/\//i.test(url)) url='https://'+url;
   try{
-    await addDoc(collection(db,LINK_COL), {name, url, order:window.quickLinks.length});
+    const nextOrder=window.quickLinks.reduce((m,l)=>Math.max(m,Number(l.order)||0),-1)+1;
+    await addDoc(collection(db,LINK_COL), {name, url, order:nextOrder});
     document.getElementById('lName').value='';
     document.getElementById('lUrl').value='';
     toast('✅ 바로가기가 추가되었습니다');
@@ -7453,6 +7459,23 @@ window.editLink = async function(id, name, url){
   if(!/^https?:\/\//i.test(u.trim())) u='https://'+u.trim();
   try{ await updateDoc(doc(db,LINK_COL,id), {name:n.trim(), url:u.trim()}); toast('✏️ 수정되었습니다'); }
   catch(e){ toast('수정 실패: '+e.message, true); }
+};
+// 순서 바꾸기: 화면에서 먼저 바꾸고, 모든 바로가기의 order를 0,1,2…로 다시 매겨 한 번에 저장
+window.moveLink = async function(i, d){
+  const arr=window.quickLinks.slice(), j=i+d;
+  if(j<0||j>=arr.length) return;
+  [arr[i],arr[j]]=[arr[j],arr[i]];
+  const before=window.quickLinks;
+  window.quickLinks=arr.map((l,k)=>({...l,order:k}));
+  renderLinks(); homeTouch();
+  try{
+    const b=writeBatch(db);
+    window.quickLinks.forEach((l,k)=>b.update(doc(db,LINK_COL,l.id),{order:k}));
+    await b.commit();
+  }catch(e){
+    window.quickLinks=before; renderLinks();
+    toast('순서 저장 실패: '+e.message, true);
+  }
 };
 window.deleteLink = async function(id){
   if(!confirm('이 바로가기를 삭제할까요?')) return;
