@@ -1405,6 +1405,50 @@ body.has-photo .tt-title[style*="#1d4ed8"]{color:#a9c6ff!important}
 .crop-info b{font-weight:600;color:var(--text-muted);white-space:nowrap}
 .crop-btns{display:flex;gap:8px;flex-wrap:wrap}
 .crop-btns .btn-primary{flex:1;min-width:110px}
+/* ── 주간(위클리) ── 일간의 조회·종례·자유 기록·할 일을 한 주로 모아 봄. 데이터는 일간과 같음 */
+.cal-nav .mode-btn.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.cal-nav .mode-sep{width:1px;height:18px;background:var(--border2);margin:0 4px}
+.wk-grid{display:grid;grid-template-columns:repeat(var(--wk-cols,5),minmax(170px,1fr));gap:10px;overflow-x:auto;padding-bottom:4px;align-items:start}
+.wk-day{margin-bottom:0}
+.wk-day.today{border-color:var(--accent)!important;box-shadow:0 0 0 1px var(--accent),var(--shadow)}
+.wk-day.off .wk-num{color:var(--high)}
+.wk-head{display:flex;align-items:baseline;gap:6px;padding:10px 12px 8px;cursor:pointer;flex-wrap:wrap}
+.wk-head:hover .wk-open{opacity:1}
+.wk-num{font-family:'Instrument Serif',serif;font-size:28px;line-height:1}
+.wk-dow{font-size:11.5px;font-weight:700;color:var(--text-muted)}
+.wk-today{font-size:10px;font-weight:700;color:var(--accent);background:var(--accent-light);border-radius:8px;padding:1px 6px}
+.wk-prog{margin-left:auto;font-size:10.5px;color:var(--text-dim);white-space:nowrap}
+.wk-bar{height:3px;background:var(--border);margin:0 12px 6px;border-radius:2px;overflow:hidden}
+.wk-bar i{display:block;height:100%;background:var(--low);border-radius:2px;transition:width .3s}
+.wk-open{font-size:10px;color:var(--text-dim);opacity:0;transition:opacity .15s}
+.wk-hol{width:100%;font-size:10.5px;font-weight:700;color:var(--high)}
+.wk-hol.evt{color:var(--text-muted)}
+.wk-sec{padding:5px 11px 7px;border-top:1px solid var(--border)}
+.wk-lab{display:inline-block;font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:9px;margin:2px 0 3px;cursor:pointer;border:none;font-family:inherit}
+.wk-sec .blk-view{padding:0;font-size:12.5px;line-height:1.55;cursor:text}
+.wk-sec .chk-line{gap:6px;min-height:20px}
+.wk-sec .chk-box{width:15px;height:15px;font-size:9px;border-radius:4px;margin-top:2px}
+.wk-sec .plain-line{min-height:18px}
+.wk-add{display:block;width:100%;border:none;border-bottom:1px dashed transparent;background:transparent;font-size:11.5px;color:var(--text);padding:3px 0;outline:none;font-family:inherit}
+.wk-add::placeholder{color:var(--text-dim);opacity:.8}
+.wk-add:focus{border-bottom-color:var(--accent)}
+.wk-sec .daily-textarea{min-height:96px;font-size:12.5px;padding:8px 9px;border:1px solid var(--accent);border-radius:7px}
+.wk-edit-bar{display:flex;gap:5px;justify-content:flex-end;margin-top:5px}
+.wk-task{display:flex;align-items:flex-start;gap:6px;font-size:12.5px;line-height:1.5;padding:2px 0;cursor:pointer}
+.wk-task .mini-check{width:16px;height:16px;font-size:8px;border-width:2px;margin-top:1px}
+.wk-task .t{flex:1;min-width:0;word-break:break-word}
+.wk-task .t.done{text-decoration:line-through;color:var(--text-dim)}
+.wk-task .pd{width:6px;height:6px;border-radius:50%;flex-shrink:0;margin-top:7px}
+.wk-task:hover .t{color:var(--accent)}
+.wk-addtask{background:none;border:none;color:var(--text-dim);font-size:11.5px;padding:3px 0;cursor:pointer;font-family:inherit}
+.wk-addtask:hover{color:var(--accent)}
+.wk-note{font-size:11px;color:var(--text-dim);margin-top:10px}
+@media (max-width:768px){
+  .wk-grid{grid-template-columns:1fr;overflow:visible}
+  .wk-open{opacity:1}
+  .cal-nav{flex-wrap:wrap}
+}
+
 </style>
 </head>
 <body>
@@ -1460,6 +1504,9 @@ body.has-photo .tt-title[style*="#1d4ed8"]{color:#a9c6ff!important}
       <div class="page-header">
         <div class="page-title">월간</div>
         <div class="cal-nav">
+          <button class="mode-btn on" onclick="setCalMode('month')">월간</button>
+          <button class="mode-btn" onclick="setCalMode('week')">주간</button>
+          <span class="mode-sep"></span>
           <button onclick="changeYear(-1)" title="이전 해">«</button>
           <button onclick="changeMonth(-1)">‹</button>
           <span class="cal-month-label" id="calMonthLabel"></span>
@@ -1482,6 +1529,25 @@ body.has-photo .tt-title[style*="#1d4ed8"]{color:#a9c6ff!important}
         </div>
         <div id="blkMemo"></div>
       </div>
+    </div>
+
+    <!-- WEEK (위클리) -->
+    <div class="view" id="view-week">
+      <div class="page-header">
+        <div class="page-title">주간</div>
+        <div class="cal-nav">
+          <button class="mode-btn" onclick="setCalMode('month')">월간</button>
+          <button class="mode-btn on" onclick="setCalMode('week')">주간</button>
+          <span class="mode-sep"></span>
+          <button onclick="shiftWeek(-1)" title="지난주">‹</button>
+          <span class="cal-month-label" id="weekLabel"></span>
+          <button onclick="shiftWeek(1)" title="다음 주">›</button>
+          <button onclick="goThisWeek()" style="margin-left:4px">이번 주</button>
+          <button id="wkEndBtn" onclick="toggleWeekEnd()">토·일 보기</button>
+        </div>
+      </div>
+      <div class="wk-grid" id="weekGrid"></div>
+      <p class="wk-note">여기서 적거나 체크한 내용은 그 날짜의 일간 기록과 같은 곳에 저장됩니다. 날짜를 누르면 그날 일간으로 갑니다. 조회·종례 칸에 적으면 체크 항목, 자유 기록에 적으면 메모 한 줄로 들어갑니다.</p>
     </div>
 
     <!-- DAILY -->
@@ -2811,23 +2877,26 @@ window.renderAll = function(){
 
 // ── TABS ─────────────────────────────────────────────
 window.switchTab = async function(view){
+  if(view==='month' && getCalMode()==='week') view='week';
+  if(window.wkEdit) await flushWeek();
   if(window.dirtyBlock) await flushDaily();
   if(window.dirtyStudent) await flushStudent();
   if(window.dirtyClubNote) await flushClubNote();
   if(window.dirtyMemo) await flushMemo();
   document.querySelectorAll('.tab,.mobile-tab').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
-  const map={home:0,month:1,daily:2,todo:3,goal:4,class:5,student:6,merit:7,check:8,club:9,timetable:10};
+  const map={home:0,month:1,week:1,daily:2,todo:3,goal:4,class:5,student:6,merit:7,check:8,club:9,timetable:10};
   document.querySelectorAll('.tab')[map[view]]?.classList.add('active');
   document.querySelectorAll('.mobile-tab')[map[view]]?.classList.add('active');
   document.getElementById('view-'+view).classList.add('active');
   if(TAB_GROUP[view]) loadGroup(TAB_GROUP[view]);
   (GROUP_EXTRA[view]||[]).forEach(g=>loadGroup(g));
   // 업무 추가 버튼은 월간·일간·할 일에서만 (모바일에서 저장 버튼을 가리지 않도록)
-  document.body.classList.toggle('fab-on', ['home','month','daily','todo'].includes(view));
+  document.body.classList.toggle('fab-on', ['home','month','week','daily','todo'].includes(view));
   document.body.classList.toggle('home-mode', view==='home');
   document.body.classList.add('dark-ui');
   if(view==='daily'){ if(!window.dailyDate) window.dailyDate=getTodayStr(); loadDaily(window.dailyDate); }
+  else if(view==='week'){ if(!window.weekStart) window.weekStart=defaultWeekStart(); renderWeek(); }
   else if(view==='timetable') renderTimetable();
   else if(view==='class'){ if(window.clsView==='cal') renderClassCal(); else renderClass(); }
   else if(view==='student') renderStudent();
@@ -2913,6 +2982,7 @@ function renderCalendar(){
   const rem=(first.getDay()+last.getDate())%7;
   if(rem>0) for(let d=1;d<=7-rem;d++) html+=`<div class="cal-cell other"><div class="cal-date">${d}</div></div>`;
   el.innerHTML=html;
+  renderWeek();
 }
 
 window.openDaily = function(dateStr){
@@ -2922,7 +2992,177 @@ window.openDaily = function(dateStr){
 window.goMonthFromDaily = function(){
   const [y,m]=window.dailyDate.split('-').map(Number);
   window.calDate=new Date(y,m-1,1);
+  window.weekStart=mondayOf(window.dailyDate);
   switchTab('month');
+};
+
+// ── WEEK (위클리) ────────────────────────────────────
+// 일간과 같은 데이터(journals/{날짜}의 morning·closing·content, tasks)를 한 주로 모아 보여 주고 고친다.
+function getCalMode(){ try{ return localStorage.getItem('wf_calMode')==='week'?'week':'month'; }catch(e){ return 'month'; } }
+window.setCalMode = function(mode){
+  try{ localStorage.setItem('wf_calMode', mode); }catch(e){}
+  if(mode==='week' && !window.weekStart){
+    // 월간에서 보던 달이 이번 달이 아니면 그 달 첫 주로
+    const n=new Date(), c=window.calDate;
+    window.weekStart = (c.getFullYear()===n.getFullYear()&&c.getMonth()===n.getMonth())
+      ? defaultWeekStart() : mondayOf(dk(c.getFullYear(),c.getMonth()+1,1));
+  }
+  if(mode==='month' && window.weekStart){ const w=window.weekStart; window.calDate=new Date(w.getFullYear(), w.getMonth(), 1); }
+  switchTab(mode);
+};
+function showWeekEnd(){ try{ return localStorage.getItem('wf_wkEnd')==='1'; }catch(e){ return false; } }
+window.toggleWeekEnd = function(){
+  try{ localStorage.setItem('wf_wkEnd', showWeekEnd()?'0':'1'); }catch(e){}
+  renderWeek();
+};
+function mondayOf(dateStr){
+  const [y,m,d]=dateStr.split('-').map(Number);
+  const dt=new Date(y,m-1,d); const wd=dt.getDay();
+  dt.setDate(dt.getDate()-(wd===0?6:wd-1));
+  return dt;
+}
+// 토·일을 안 보는 중이면 주말에는 다음 주를 보여 줌
+function defaultWeekStart(){
+  const t=getTodayStr(); const mon=mondayOf(t);
+  if(!showWeekEnd() && isWeekend(t)) mon.setDate(mon.getDate()+7);
+  return mon;
+}
+window.shiftWeek = async function(delta){
+  if(window.wkEdit) await flushWeek();
+  const w=new Date(window.weekStart); w.setDate(w.getDate()+7*delta); window.weekStart=w; renderWeek();
+};
+window.goThisWeek = async function(){
+  if(window.wkEdit) await flushWeek();
+  window.weekStart=defaultWeekStart(); renderWeek();
+};
+function weekDays(){
+  const n=showWeekEnd()?7:5, out=[];
+  for(let i=0;i<n;i++){ const d=new Date(window.weekStart); d.setDate(d.getDate()+i); out.push(dk(d.getFullYear(), d.getMonth()+1, d.getDate())); }
+  return out;
+}
+function weekLabelText(days){
+  const [y,m,d]=days[0].split('-').map(Number);
+  const fmt=s=>{ const [,mm,dd]=s.split('-').map(Number); return `${mm}/${dd}`; };
+  return `${y}년 ${m}월 ${Math.ceil(d/7)}주 <small style="font-size:12px;opacity:.75">${fmt(days[0])} ~ ${fmt(days[days.length-1])}</small>`;
+}
+const WK_SECS=[
+  {f:'morning', lab:'🌅 조회', cls:'dh-morning', add:'+ 조회 할 일', chk:true},
+  {f:'closing', lab:'🌇 종례', cls:'dh-closing', add:'+ 종례 할 일', chk:true},
+  {f:'content', lab:'📝 자유 기록', cls:'dh-free', add:'+ 메모', chk:false}];
+window.wkEdit=null;   // {date, field} : 지금 글 상자로 고치는 칸
+function wkText(date, field){ return ((window.journals||{})[date]||{})[field]||''; }
+function wkLinesHtml(date, field, text){
+  if(!text.trim()) return '';
+  return `<div class="blk-view">${text.split('\n').map((line,i)=>{
+    const p=parseLine(line);
+    if(p) return `<div class="chk-line ${p.done?'done':''}">
+      <span class="chk-box ${p.done?'on':''}" onclick="wkToggle('${date}','${field}',${i})">${p.done?'✓':''}</span>
+      <span class="chk-text" onclick="wkStartEdit('${date}','${field}')">${esc(p.text)||'&nbsp;'}</span></div>`;
+    return `<div class="plain-line" onclick="wkStartEdit('${date}','${field}')">${esc(line)||'&nbsp;'}</div>`;
+  }).join('')}</div>`;
+}
+function renderWeek(){
+  const grid=document.getElementById('weekGrid'); if(!grid || !window.weekStart) return;
+  if(window.wkEdit) return;                         // 글 상자로 고치는 중이면 다시 그리지 않음
+  if(!isActive('week')) return;
+  // 한 줄 입력칸에 쓰던 글·커서 지키기
+  const act=document.activeElement;
+  const keep = act && act.classList && act.classList.contains('wk-add') ? {id:act.id, v:act.value} : null;
+  const days=weekDays(), today=getTodayStr(), dn=['일','월','화','수','목','금','토'];
+  document.getElementById('weekLabel').innerHTML=weekLabelText(days);
+  const eb=document.getElementById('wkEndBtn'); if(eb){ eb.classList.toggle('mode-btn',true); eb.classList.toggle('on', showWeekEnd()); }
+  grid.style.setProperty('--wk-cols', days.length);
+  grid.innerHTML=days.map(date=>{
+    const [y,m,d]=date.split('-').map(Number);
+    const wd=new Date(y,m-1,d).getDay();
+    const hol=holidayName(date), hk=holidayKind(date), off=hk==='off'||wd===0;
+    const all=tasksOn(date), evs=all.filter(isEvent), tks=all.filter(t=>!isEvent(t));
+    // 진행: 체크 항목 + 할 일
+    let tot=0, done=0;
+    WK_SECS.forEach(s=>wkText(date,s.f).split('\n').forEach(l=>{ const p=parseLine(l); if(p&&p.text.trim()){ tot++; if(p.done) done++; } }));
+    tks.forEach(t=>{ tot++; if(t.status==='done') done++; });
+    const secs=WK_SECS.map(s=>{
+      const text=wkText(date,s.f);
+      const body = wkLinesHtml(date,s.f,text)+`<input class="wk-add" id="wkadd_${date}_${s.f}" placeholder="${s.add}" onkeydown="wkAddKey(event,'${date}','${s.f}')">`;
+      return `<div class="wk-sec"><button class="wk-lab ${s.cls}" onclick="wkStartEdit('${date}','${s.f}')" title="눌러서 이 칸 전체 고치기">${s.lab}</button>${body}</div>`;
+    }).join('');
+    const taskHtml = evs.map(t=>`<div class="wk-task" onclick="editTask('${t.id}')"><span style="font-size:11px">📌</span><span class="t" style="font-weight:600">${esc(t.title)}</span></div>`).join('')
+      + tks.map(t=>{ const dn2=t.status==='done';
+        return `<div class="wk-task" onclick="editTask('${t.id}')">
+          <div class="mini-check ${dn2?'checked':''}" onclick="toggleDone(event,'${t.id}')">${dn2?'✓':''}</div>
+          <span class="t ${dn2?'done':''}">${esc(t.title)}</span><span class="pd" style="background:${prioColor(t.priority)}"></span></div>`; }).join('');
+    return `<div class="daily-block wk-day ${date===today?'today':''} ${off?'off':''}">
+      <div class="wk-head" onclick="openDaily('${date}')" title="이 날 일간으로">
+        <span class="wk-num">${d}</span><span class="wk-dow" style="${wd===6?'color:var(--accent)':off?'color:var(--high)':''}">${dn[wd]}</span>
+        ${date===today?'<span class="wk-today">오늘</span>':''}
+        <span class="wk-prog">${tot?`✓ ${done}/${tot}`:''}</span>
+        ${hol?`<span class="wk-hol ${hk==='event'?'evt':''}">${hk==='event'?'🏫 ':'🏖 '}${esc(hol)}</span>`:''}
+      </div>
+      <div class="wk-bar"><i style="width:${tot?Math.round(done/tot*100):0}%"></i></div>
+      ${secs}
+      <div class="wk-sec"><button class="wk-lab dh-task" onclick="wkAddTask('${date}')" title="할 일 추가">✅ 할 일</button>
+        ${taskHtml}<button class="wk-addtask" onclick="wkAddTask('${date}')">+ 할 일 추가</button></div>
+    </div>`;
+  }).join('');
+  if(keep){ const el=document.getElementById(keep.id); if(el){ el.value=keep.v; el.focus(); } }
+  if(window.wkFocus){ const el=document.getElementById(window.wkFocus); window.wkFocus=null; if(el) el.focus(); }
+}
+window.wkToggle = async function(date, field, idx){
+  const lines=wkText(date,field).split('\n');
+  const p=parseLine(lines[idx]); if(!p) return;
+  lines[idx]=`${p.indent}[${p.done?' ':'x'}] ${p.text}`;
+  await saveField(field, date, lines.join('\n'));
+};
+window.wkAddKey = async function(e, date, field){
+  if(e.key!=='Enter' || e.isComposing) return;
+  e.preventDefault();
+  const v=e.target.value.trim(); if(!v) return;
+  const sec=WK_SECS.find(s=>s.f===field);
+  const prev=wkText(date,field);
+  const line = sec.chk ? `[] ${v}` : v;
+  e.target.value='';
+  window.wkFocus=e.target.id;                       // 저장 뒤 다시 그려도 같은 칸에서 계속 적기
+  await saveField(field, date, (prev.trim()? prev.replace(/\s+$/,'')+'\n' : '')+line);
+};
+window.wkStartEdit = async function(date, field){
+  if(window.wkEdit){ if(window.wkEdit.date===date && window.wkEdit.field===field) return; await flushWeek(); }
+  renderWeekWith({date, field});
+};
+function renderWeekWith(ed){
+  window.wkEdit=null; renderWeek();                 // 먼저 최신으로 그린 다음
+  window.wkEdit=ed;
+  const sec=document.querySelector(`#wkadd_${ed.date}_${ed.field}`)?.closest('.wk-sec');
+  if(!sec) { window.wkEdit=null; return; }
+  const s=WK_SECS.find(x=>x.f===ed.field);
+  sec.innerHTML=`<button class="wk-lab ${s.cls}">${s.lab}</button>
+    <textarea class="daily-textarea" id="wkta" onkeydown="wkKey(event)" placeholder="줄 앞에 [] 를 넣으면 체크 항목">${esc(wkText(ed.date,ed.field))}</textarea>
+    <div class="wk-edit-bar"><button class="btn btn-ghost btn-sm" onclick="wkCancel()">취소</button><button class="btn btn-primary btn-sm" onclick="wkCommit()">저장</button></div>`;
+  const ta=document.getElementById('wkta'); ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length);
+}
+window.wkKey = function(e){
+  if(e.key==='Enter' && (e.ctrlKey||e.metaKey)){ e.preventDefault(); wkCommit(); }
+  if(e.key==='Escape'){ e.preventDefault(); wkCancel(); }
+};
+window.wkCommit = async function(){
+  const ed=window.wkEdit, ta=document.getElementById('wkta');
+  window.wkEdit=null;
+  if(ed && ta && ta.value!==wkText(ed.date,ed.field)) await saveField(ed.field, ed.date, ta.value);
+  renderWeek();
+};
+window.wkCancel = function(){
+  const ed=window.wkEdit, ta=document.getElementById('wkta');
+  if(ed && ta && ta.value!==wkText(ed.date,ed.field) && !confirm('작성한 내용을 저장하지 않고 취소할까요?')) return;
+  window.wkEdit=null; renderWeek();
+};
+// 다른 화면으로 가거나 주를 옮길 때 고치던 글은 저장
+async function flushWeek(){
+  const ed=window.wkEdit, ta=document.getElementById('wkta');
+  window.wkEdit=null;
+  if(ed && ta && ta.value!==wkText(ed.date,ed.field)) await saveField(ed.field, ed.date, ta.value);
+}
+window.wkAddTask = function(date){
+  window.dailyDate=date;
+  openModalForDaily();
 };
 
 // ── DAILY ────────────────────────────────────────────
@@ -2946,7 +3186,7 @@ window.loadDaily = async function(dateStr){
     `<span style="${nameClr}">${y}년 ${m}월 ${d}일 <small>(${dayLabels[wd]})${isToday?' · 오늘':''}</small></span>
      ${hol?`<span class="hol-badge ${hkind==='event'?'evt':''}" style="margin-left:8px">${hkind==='event'?'🏫 ':''}${esc(hol)}</span>`:''}`;
   document.getElementById('dailyDatePicker').value=dateStr;
-  document.getElementById('backToMonthBtn').textContent=`◀ ${m}월`;
+  document.getElementById('backToMonthBtn').textContent= getCalMode()==='week' ? '◀ 주간' : `◀ ${m}월`;
   const hb=document.getElementById('holidayBtn');
   if(hb){
     const cu=window.customHolidays[dateStr];
